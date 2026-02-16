@@ -155,6 +155,90 @@
             background: #f8fafc;
         }
 
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast.info {
+            border-left: 4px solid #3b82f6;
+        }
+
+        .toast.active {
+            display: flex;
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: #1e293b;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         /* Filtros */
         .filters-bar {
             background: white;
@@ -312,12 +396,18 @@
             transform: scale(1.02);
         }
 
+        .section-header button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-secondary {
             background: #f1f5f9 !important;
             color: #1e293b !important;
         }
 
-        .btn-secondary:hover {
+        .btn-secondary:hover:not(:disabled) {
             background: #e2e8f0 !important;
         }
 
@@ -447,8 +537,13 @@
             transition: all 0.3s;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
         }
 
         .btn-danger {
@@ -462,8 +557,13 @@
             transition: all 0.3s;
         }
 
-        .btn-danger:hover {
+        .btn-danger:hover:not(:disabled) {
             background: #dc2626;
+        }
+
+        .btn-danger:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
         }
 
         .btn-success {
@@ -478,8 +578,13 @@
             transition: all 0.3s;
         }
 
-        .btn-success:hover {
+        .btn-success:hover:not(:disabled) {
             background: #059669;
+        }
+
+        .btn-success:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
         }
 
         .action-btn {
@@ -492,8 +597,13 @@
             transition: background 0.3s;
         }
 
-        .action-btn:hover {
+        .action-btn:hover:not(:disabled) {
             background: #e2e8f0;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .action-btn.edit {
@@ -729,15 +839,20 @@
             transition: all 0.3s;
         }
 
-        .btn-toggle-pedido:hover {
+        .btn-toggle-pedido:hover:not(:disabled) {
             background: #2563eb;
+        }
+
+        .btn-toggle-pedido:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
         }
 
         .btn-toggle-pedido.ver-menos {
             background: #64748b;
         }
 
-        .btn-toggle-pedido.ver-menos:hover {
+        .btn-toggle-pedido.ver-menos:hover:not(:disabled) {
             background: #475569;
         }
 
@@ -889,6 +1004,17 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Toast -->
+        <div id="toast" class="toast">
+            <span id="toastIcon" class="toast-icon"></span>
+            <span id="toastMessage" class="toast-message"></span>
+        </div>
+
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -1048,7 +1174,7 @@
                     
                     <!-- Container dos aniversariantes -->
                     <div id="aniversariantesContainer" class="aniversariantes-grid">
-                        <!-- Cards serão inseridos via JavaScript -->
+                        <div class="empty-message">Carregando dados...</div>
                     </div>
                 </div>
             </div>
@@ -1065,7 +1191,7 @@
                     
                     <!-- Container dos aniversariantes de empresa -->
                     <div id="aniversariantesEmpresaContainer" class="aniversariantes-grid">
-                        <!-- Cards serão inseridos via JavaScript -->
+                        <div class="empty-message">Carregando dados...</div>
                     </div>
                 </div>
             </div>
@@ -1130,7 +1256,7 @@
                                 </tr>
                             </thead>
                             <tbody id="corpoTabelaPizzas">
-                                <!-- Linhas serão inseridas via JavaScript -->
+                                <tr><td colspan="5" class="empty-message">Carregando dados...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1213,7 +1339,7 @@
                                 </tr>
                             </thead>
                             <tbody id="corpoTabelaColaboradores">
-                                <!-- Linhas serão inseridas via JavaScript -->
+                                <tr><td colspan="8" class="empty-message">Carregando dados...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1253,7 +1379,7 @@
                                 </tr>
                             </thead>
                             <tbody id="corpoTabelaEmpresas">
-                                <!-- Linhas serão inseridas via JavaScript -->
+                                <tr><td colspan="2" class="empty-message">Carregando dados...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1293,7 +1419,7 @@
                                 </tr>
                             </thead>
                             <tbody id="corpoTabelaDepartamentos">
-                                <!-- Linhas serão inseridas via JavaScript -->
+                                <tr><td colspan="2" class="empty-message">Carregando dados...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1314,17 +1440,35 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
     <script>
-        // Arrays para armazenar os dados
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgd9rY-Sat1TIxUl0DzM6zamcE1CVnQng",
+            authDomain: "gestao-de-aniversarios.firebaseapp.com",
+            projectId: "gestao-de-aniversarios",
+            storageBucket: "gestao-de-aniversarios.firebasestorage.app",
+            messagingSenderId: "844928197269",
+            appId: "1:844928197269:web:7ead1ab98364400ca9319c"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // Arrays para armazenar os dados em memória
         let colaboradores = [];
         let empresas = [];
         let departamentos = [];
         let pizzas = [];
-        let aniversariosChecklist = {}; // Objeto para armazenar o estado dos checklists de vida
-        let empresaChecklist = {}; // Objeto para armazenar o estado dos checklists de empresa
-        let pedidosPizzaEmpresa = {}; // Objeto para armazenar os pedidos de pizza
-        let nextId = 1;
-        let nextPizzaId = 1;
+        let aniversariosChecklist = {};
+        let empresaChecklist = {};
+        let pedidosPizzaEmpresa = {};
 
         // Data atual para referência
         const hoje = new Date();
@@ -1332,85 +1476,34 @@
         const mesAtual = hoje.getMonth() + 1;
         const diaAtual = hoje.getDate();
 
-        // Dados de exemplo para teste
-        function carregarDadosExemplo() {
-            empresas = [
-                { id: 1, nome: "Empresa Principal" },
-                { id: 2, nome: "Filial Sul" }
-            ];
+        // Funções de utilidade
+        function mostrarLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function esconderLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function mostrarToast(mensagem, tipo = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const message = document.getElementById('toastMessage');
             
-            departamentos = [
-                { id: 1, nome: "RH" },
-                { id: 2, nome: "TI" },
-                { id: 3, nome: "Marketing" },
-                { id: 4, nome: "Vendas" }
-            ];
+            toast.className = 'toast ' + tipo;
+            icon.textContent = tipo === 'success' ? '✅' : tipo === 'error' ? '❌' : 'ℹ️';
+            message.textContent = mensagem;
             
-            pizzas = [
-                { id: 1, nome: "Calabresa", descricao: "Calabresa, cebola, mussarela e azeitonas", pizzaria: "Pizzaria Bella", valor: 45.90 },
-                { id: 2, nome: "Margherita", descricao: "Mussarela, manjericão, tomate e orégano", pizzaria: "Pizzaria Bella", valor: 55.90 },
-                { id: 3, nome: "Portuguesa", descricao: "Presunto, ovo, cebola, ervilha e mussarela", pizzaria: "Fornalha Pizzaria", valor: 49.90 },
-                { id: 4, nome: "Frango com Catupiry", descricao: "Frango desfiado, catupiry, milho", pizzaria: "Pizzaria Bella", valor: 52.90 },
-                { id: 5, nome: "Quatro Queijos", descricao: "Mussarela, provolone, parmesão, catupiry", pizzaria: "Fornalha Pizzaria", valor: 58.90 }
-            ];
+            toast.classList.add('active');
             
-            colaboradores = [
-                { 
-                    id: 1, 
-                    nome: "João Silva", 
-                    dataNascimento: "1990-02-15",
-                    dataAdmissao: "2020-02-10",
-                    cidade: "Itanhaém",
-                    departamentoId: 1,
-                    departamentoNome: "RH",
-                    empresaId: 1,
-                    empresaNome: "Empresa Principal",
-                    status: "Ativo"
-                },
-                { 
-                    id: 2, 
-                    nome: "Maria Santos", 
-                    dataNascimento: "1985-03-20",
-                    dataAdmissao: "2019-02-15",
-                    cidade: "Peruíbe",
-                    departamentoId: 2,
-                    departamentoNome: "TI",
-                    empresaId: 1,
-                    empresaNome: "Empresa Principal",
-                    status: "Ativo"
-                },
-                { 
-                    id: 3, 
-                    nome: "Pedro Oliveira", 
-                    dataNascimento: "1992-04-10",
-                    dataAdmissao: "2021-02-20",
-                    cidade: "Mongaguá",
-                    departamentoId: 3,
-                    departamentoNome: "Marketing",
-                    empresaId: 2,
-                    empresaNome: "Filial Sul",
-                    status: "Ativo"
-                },
-                { 
-                    id: 4, 
-                    nome: "Ana Costa", 
-                    dataNascimento: "1988-05-25",
-                    dataAdmissao: "2018-02-05",
-                    cidade: "São Paulo",
-                    departamentoId: 4,
-                    departamentoNome: "Vendas",
-                    empresaId: 2,
-                    empresaNome: "Filial Sul",
-                    status: "Ativo"
-                }
-            ];
-            
-            nextId = 5;
-            nextPizzaId = 6;
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
         }
 
         // Função para formatar data no padrão brasileiro
         function formatarDataBR(dataString) {
+            if (!dataString) return '';
             const data = new Date(dataString + 'T12:00:00');
             const dia = data.getDate().toString().padStart(2, '0');
             const mes = (data.getMonth() + 1).toString().padStart(2, '0');
@@ -1439,6 +1532,7 @@
 
         // Função para verificar se checklist está completo
         function checklistCompleto(checklistState, tipo) {
+            if (!checklistState) return false;
             if (tipo === 'vida') {
                 const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
                 return items.every(item => checklistState[item]);
@@ -1450,6 +1544,98 @@
                     'entregaConfirmada'
                 ];
                 return items.every(item => checklistState[item]);
+            }
+        }
+
+        // Funções para carregar dados do Firebase
+        async function carregarEmpresas() {
+            try {
+                const snapshot = await db.collection('empresas').get();
+                empresas = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                atualizarTabelaEmpresas();
+                return empresas;
+            } catch (error) {
+                console.error('Erro ao carregar empresas:', error);
+                mostrarToast('Erro ao carregar empresas', 'error');
+                return [];
+            }
+        }
+
+        async function carregarDepartamentos() {
+            try {
+                const snapshot = await db.collection('departamentos').get();
+                departamentos = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                atualizarTabelaDepartamentos();
+                return departamentos;
+            } catch (error) {
+                console.error('Erro ao carregar departamentos:', error);
+                mostrarToast('Erro ao carregar departamentos', 'error');
+                return [];
+            }
+        }
+
+        async function carregarPizzas() {
+            try {
+                const snapshot = await db.collection('pizzas').get();
+                pizzas = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                atualizarTabelaPizzas();
+                return pizzas;
+            } catch (error) {
+                console.error('Erro ao carregar pizzas:', error);
+                mostrarToast('Erro ao carregar pizzas', 'error');
+                return [];
+            }
+        }
+
+        async function carregarColaboradores() {
+            try {
+                const snapshot = await db.collection('colaboradores').get();
+                colaboradores = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                atualizarTabelaColaboradores();
+                return colaboradores;
+            } catch (error) {
+                console.error('Erro ao carregar colaboradores:', error);
+                mostrarToast('Erro ao carregar colaboradores', 'error');
+                return [];
+            }
+        }
+
+        async function carregarChecklists() {
+            try {
+                const snapshot = await db.collection('checklists').get();
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    if (data.tipo === 'vida') {
+                        aniversariosChecklist[doc.id] = data;
+                    } else if (data.tipo === 'empresa') {
+                        empresaChecklist[doc.id] = data;
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar checklists:', error);
+            }
+        }
+
+        async function carregarPedidos() {
+            try {
+                const snapshot = await db.collection('pedidos').get();
+                snapshot.docs.forEach(doc => {
+                    pedidosPizzaEmpresa[doc.id] = doc.data();
+                });
+            } catch (error) {
+                console.error('Erro ao carregar pedidos:', error);
             }
         }
 
@@ -1536,124 +1722,282 @@
         }
 
         // Funções CRUD para Empresas
-        function salvarEmpresa() {
+        async function salvarEmpresa() {
             const nome = document.getElementById('nomeEmpresa').value;
             
             if (!nome) {
-                alert('Por favor, preencha o nome da empresa');
+                mostrarToast('Por favor, preencha o nome da empresa', 'error');
                 return;
             }
             
-            const novaEmpresa = {
-                id: nextId++,
-                nome: nome
-            };
+            mostrarLoading();
             
-            empresas.push(novaEmpresa);
-            atualizarTabelaEmpresas();
-            esconderFormularioEmpresa();
-            alert('Empresa cadastrada com sucesso!');
+            try {
+                const docRef = await db.collection('empresas').add({
+                    nome: nome,
+                    dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                await carregarEmpresas();
+                esconderFormularioEmpresa();
+                mostrarToast('Empresa cadastrada com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar empresa:', error);
+                mostrarToast('Erro ao salvar empresa', 'error');
+            } finally {
+                esconderLoading();
+            }
         }
 
-        function editarEmpresa(id) {
+        async function editarEmpresa(id) {
             const empresa = empresas.find(e => e.id === id);
             if (empresa) {
                 const novoNome = prompt('Editar nome da empresa:', empresa.nome);
-                if (novoNome) {
-                    empresa.nome = novoNome;
-                    atualizarTabelaEmpresas();
+                if (novoNome && novoNome !== empresa.nome) {
+                    mostrarLoading();
+                    try {
+                        await db.collection('empresas').doc(id).update({
+                            nome: novoNome
+                        });
+                        await carregarEmpresas();
+                        mostrarToast('Empresa atualizada com sucesso!');
+                    } catch (error) {
+                        console.error('Erro ao editar empresa:', error);
+                        mostrarToast('Erro ao editar empresa', 'error');
+                    } finally {
+                        esconderLoading();
+                    }
                 }
             }
         }
 
-        function excluirEmpresa(id) {
+        async function excluirEmpresa(id) {
             if (confirm('Tem certeza que deseja excluir esta empresa?')) {
-                empresas = empresas.filter(e => e.id !== id);
-                atualizarTabelaEmpresas();
+                mostrarLoading();
+                try {
+                    await db.collection('empresas').doc(id).delete();
+                    await carregarEmpresas();
+                    mostrarToast('Empresa excluída com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao excluir empresa:', error);
+                    mostrarToast('Erro ao excluir empresa', 'error');
+                } finally {
+                    esconderLoading();
+                }
             }
         }
 
         // Funções CRUD para Departamentos
-        function salvarDepartamento() {
+        async function salvarDepartamento() {
             const nome = document.getElementById('nomeDepartamento').value;
             
             if (!nome) {
-                alert('Por favor, preencha o nome do departamento');
+                mostrarToast('Por favor, preencha o nome do departamento', 'error');
                 return;
             }
             
-            const novoDepartamento = {
-                id: nextId++,
-                nome: nome
-            };
+            mostrarLoading();
             
-            departamentos.push(novoDepartamento);
-            atualizarTabelaDepartamentos();
-            esconderFormularioDepartamento();
-            alert('Departamento cadastrado com sucesso!');
+            try {
+                const docRef = await db.collection('departamentos').add({
+                    nome: nome,
+                    dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                await carregarDepartamentos();
+                esconderFormularioDepartamento();
+                mostrarToast('Departamento cadastrado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar departamento:', error);
+                mostrarToast('Erro ao salvar departamento', 'error');
+            } finally {
+                esconderLoading();
+            }
         }
 
-        function editarDepartamento(id) {
+        async function editarDepartamento(id) {
             const dept = departamentos.find(d => d.id === id);
             if (dept) {
                 const novoNome = prompt('Editar nome do departamento:', dept.nome);
-                if (novoNome) {
-                    dept.nome = novoNome;
-                    atualizarTabelaDepartamentos();
+                if (novoNome && novoNome !== dept.nome) {
+                    mostrarLoading();
+                    try {
+                        await db.collection('departamentos').doc(id).update({
+                            nome: novoNome
+                        });
+                        await carregarDepartamentos();
+                        mostrarToast('Departamento atualizado com sucesso!');
+                    } catch (error) {
+                        console.error('Erro ao editar departamento:', error);
+                        mostrarToast('Erro ao editar departamento', 'error');
+                    } finally {
+                        esconderLoading();
+                    }
                 }
             }
         }
 
-        function excluirDepartamento(id) {
+        async function excluirDepartamento(id) {
             if (confirm('Tem certeza que deseja excluir este departamento?')) {
-                departamentos = departamentos.filter(d => d.id !== id);
-                atualizarTabelaDepartamentos();
+                mostrarLoading();
+                try {
+                    await db.collection('departamentos').doc(id).delete();
+                    await carregarDepartamentos();
+                    mostrarToast('Departamento excluído com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao excluir departamento:', error);
+                    mostrarToast('Erro ao excluir departamento', 'error');
+                } finally {
+                    esconderLoading();
+                }
             }
         }
 
         // Funções CRUD para Pizzas
-        function salvarPizza() {
+        async function salvarPizza() {
             const nome = document.getElementById('nomePizza').value;
             const descricao = document.getElementById('descricaoPizza').value;
             const pizzaria = document.getElementById('pizzariaPizza').value;
             const valor = parseFloat(document.getElementById('valorPizza').value);
             
             if (!nome || !pizzaria || !valor) {
-                alert('Por favor, preencha todos os campos obrigatórios');
+                mostrarToast('Por favor, preencha todos os campos obrigatórios', 'error');
                 return;
             }
             
-            const novaPizza = {
-                id: nextPizzaId++,
-                nome: nome,
-                descricao: descricao,
-                pizzaria: pizzaria,
-                valor: valor
-            };
+            mostrarLoading();
             
-            pizzas.push(novaPizza);
-            atualizarTabelaPizzas();
-            esconderFormularioPizza();
-            updateDashboard();
-            alert('Pizza cadastrada com sucesso!');
+            try {
+                const docRef = await db.collection('pizzas').add({
+                    nome: nome,
+                    descricao: descricao,
+                    pizzaria: pizzaria,
+                    valor: valor,
+                    dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                await carregarPizzas();
+                esconderFormularioPizza();
+                mostrarToast('Pizza cadastrada com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar pizza:', error);
+                mostrarToast('Erro ao salvar pizza', 'error');
+            } finally {
+                esconderLoading();
+            }
         }
 
-        function editarPizza(id) {
+        async function editarPizza(id) {
             const pizza = pizzas.find(p => p.id === id);
             if (pizza) {
                 const novoNome = prompt('Editar nome da pizza:', pizza.nome);
-                if (novoNome) {
-                    pizza.nome = novoNome;
-                    atualizarTabelaPizzas();
+                if (novoNome && novoNome !== pizza.nome) {
+                    mostrarLoading();
+                    try {
+                        await db.collection('pizzas').doc(id).update({
+                            nome: novoNome
+                        });
+                        await carregarPizzas();
+                        mostrarToast('Pizza atualizada com sucesso!');
+                    } catch (error) {
+                        console.error('Erro ao editar pizza:', error);
+                        mostrarToast('Erro ao editar pizza', 'error');
+                    } finally {
+                        esconderLoading();
+                    }
                 }
             }
         }
 
-        function excluirPizza(id) {
+        async function excluirPizza(id) {
             if (confirm('Tem certeza que deseja excluir esta pizza?')) {
-                pizzas = pizzas.filter(p => p.id !== id);
-                atualizarTabelaPizzas();
+                mostrarLoading();
+                try {
+                    await db.collection('pizzas').doc(id).delete();
+                    await carregarPizzas();
+                    mostrarToast('Pizza excluída com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao excluir pizza:', error);
+                    mostrarToast('Erro ao excluir pizza', 'error');
+                } finally {
+                    esconderLoading();
+                }
+            }
+        }
+
+        // Funções CRUD para Colaboradores
+        async function salvarColaborador() {
+            const nome = document.getElementById('nomeColaborador').value;
+            const dataNasc = document.getElementById('dataNascimento').value;
+            const dataAdm = document.getElementById('dataAdmissao').value;
+            const cidade = document.getElementById('cidadeColaborador').value;
+            const deptId = document.getElementById('departamentoColaborador').value;
+            const empId = document.getElementById('empresaColaborador').value;
+            const status = document.getElementById('statusColaborador').value;
+            
+            if (!nome || !dataNasc || !dataAdm || !cidade || !deptId || !empId) {
+                mostrarToast('Por favor, preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+            
+            const departamento = departamentos.find(d => d.id == deptId);
+            const empresa = empresas.find(e => e.id == empId);
+            
+            mostrarLoading();
+            
+            try {
+                const docRef = await db.collection('colaboradores').add({
+                    nome: nome,
+                    dataNascimento: dataNasc,
+                    dataAdmissao: dataAdm,
+                    cidade: cidade,
+                    departamentoId: deptId,
+                    departamentoNome: departamento ? departamento.nome : '',
+                    empresaId: empId,
+                    empresaNome: empresa ? empresa.nome : '',
+                    status: status,
+                    dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                await carregarColaboradores();
+                esconderFormularioColaborador();
+                mostrarToast('Colaborador cadastrado com sucesso!');
+                
+                // Atualiza os filtros
+                atualizarFiltros();
+                filtrarAniversariantesVida();
+                filtrarAniversariantesEmpresa();
                 updateDashboard();
+            } catch (error) {
+                console.error('Erro ao salvar colaborador:', error);
+                mostrarToast('Erro ao salvar colaborador', 'error');
+            } finally {
+                esconderLoading();
+            }
+        }
+
+        async function editarColaborador(id) {
+            // Implementar edição posteriormente
+            mostrarToast('Função de edição será implementada em breve!', 'info');
+        }
+
+        async function excluirColaborador(id) {
+            if (confirm('Tem certeza que deseja excluir este colaborador?')) {
+                mostrarLoading();
+                try {
+                    await db.collection('colaboradores').doc(id).delete();
+                    await carregarColaboradores();
+                    atualizarFiltros();
+                    filtrarAniversariantesVida();
+                    filtrarAniversariantesEmpresa();
+                    updateDashboard();
+                    mostrarToast('Colaborador excluído com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao excluir colaborador:', error);
+                    mostrarToast('Erro ao excluir colaborador', 'error');
+                } finally {
+                    esconderLoading();
+                }
             }
         }
 
@@ -1672,8 +2016,8 @@
                 tr.innerHTML = `
                     <td>${emp.nome}</td>
                     <td>
-                        <button class="action-btn edit" onclick="editarEmpresa(${emp.id})">✏️</button>
-                        <button class="action-btn delete" onclick="excluirEmpresa(${emp.id})">🗑️</button>
+                        <button class="action-btn edit" onclick="editarEmpresa('${emp.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="excluirEmpresa('${emp.id}')">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1694,8 +2038,8 @@
                 tr.innerHTML = `
                     <td>${dept.nome}</td>
                     <td>
-                        <button class="action-btn edit" onclick="editarDepartamento(${dept.id})">✏️</button>
-                        <button class="action-btn delete" onclick="excluirDepartamento(${dept.id})">🗑️</button>
+                        <button class="action-btn edit" onclick="editarDepartamento('${dept.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="excluirDepartamento('${dept.id}')">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1717,10 +2061,10 @@
                     <td>${pizza.nome}</td>
                     <td>${pizza.descricao || '-'}</td>
                     <td>${pizza.pizzaria}</td>
-                    <td>R$ ${pizza.valor.toFixed(2)}</td>
+                    <td>R$ ${pizza.valor ? pizza.valor.toFixed(2) : '0,00'}</td>
                     <td>
-                        <button class="action-btn edit" onclick="editarPizza(${pizza.id})">✏️</button>
-                        <button class="action-btn delete" onclick="excluirPizza(${pizza.id})">🗑️</button>
+                        <button class="action-btn edit" onclick="editarPizza('${pizza.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="excluirPizza('${pizza.id}')">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1737,25 +2081,25 @@
             }
             
             colaboradores.forEach(col => {
-                const dataNascFormatada = col.dataNascimento.split('-').reverse().join('/');
-                const dataAdmFormatada = col.dataAdmissao.split('-').reverse().join('/');
+                const dataNascFormatada = col.dataNascimento ? col.dataNascimento.split('-').reverse().join('/') : '';
+                const dataAdmFormatada = col.dataAdmissao ? col.dataAdmissao.split('-').reverse().join('/') : '';
                 
                 const tr = document.createElement('tr');
-                if (col.cidade !== 'Itanhaém' && col.cidade !== 'Peruíbe' && col.cidade !== 'Mongaguá') {
+                if (col.cidade && col.cidade !== 'Itanhaém' && col.cidade !== 'Peruíbe' && col.cidade !== 'Mongaguá') {
                     tr.className = 'alert-row';
                 }
                 
                 tr.innerHTML = `
-                    <td>${col.nome}</td>
+                    <td>${col.nome || ''}</td>
                     <td>${dataNascFormatada}</td>
                     <td>${dataAdmFormatada}</td>
-                    <td>${col.cidade}</td>
-                    <td>${col.departamentoNome}</td>
-                    <td>${col.empresaNome}</td>
-                    <td><span class="status-badge ${col.status === 'Ativo' ? 'status-ativo' : 'status-inativo'}">${col.status}</span></td>
+                    <td>${col.cidade || ''}</td>
+                    <td>${col.departamentoNome || ''}</td>
+                    <td>${col.empresaNome || ''}</td>
+                    <td><span class="status-badge ${col.status === 'Ativo' ? 'status-ativo' : 'status-inativo'}">${col.status || 'Inativo'}</span></td>
                     <td>
-                        <button class="action-btn edit" onclick="editarColaborador(${col.id})">✏️</button>
-                        <button class="action-btn delete" onclick="excluirColaborador(${col.id})">🗑️</button>
+                        <button class="action-btn edit" onclick="editarColaborador('${col.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="excluirColaborador('${col.id}')">🗑️</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1763,8 +2107,8 @@
         }
 
         function atualizarFiltros() {
-            const setores = [...new Set(colaboradores.map(c => c.departamentoNome))];
-            const cidades = [...new Set(colaboradores.map(c => c.cidade))];
+            const setores = [...new Set(colaboradores.map(c => c.departamentoNome).filter(Boolean))];
+            const cidades = [...new Set(colaboradores.map(c => c.cidade).filter(Boolean))];
             
             const sectorFilter = document.getElementById('sectorFilter');
             const cityFilter = document.getElementById('cityFilter');
@@ -1796,7 +2140,7 @@
             
             // Filtrar colaboradores ativos que fazem aniversário no mês selecionado
             let aniversariantes = colaboradores.filter(col => {
-                if (col.status !== 'Ativo') return false;
+                if (col.status !== 'Ativo' || !col.dataNascimento) return false;
                 
                 const mesNasc = new Date(col.dataNascimento).getMonth() + 1;
                 return mesNasc == mesSelecionado;
@@ -1849,11 +2193,15 @@
             // Atualizar título com o mês
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#vida-section .section-header h2');
-            titulo.textContent = `🎂 Aniversários de Vida - ${meses[mesSelecionado - 1]} 2026`;
+            if (titulo) {
+                titulo.textContent = `🎂 Aniversários de Vida - ${meses[mesSelecionado - 1]} 2026`;
+            }
         }
 
         function exibirAniversariantes(aniversariantes) {
             const container = document.getElementById('aniversariantesContainer');
+            
+            if (!container) return;
             
             if (aniversariantes.length === 0) {
                 container.innerHTML = '<div class="empty-message">Nenhum aniversariante encontrado para este período.</div>';
@@ -1893,7 +2241,6 @@
                 // Calcular progresso do checklist
                 const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
                 const concluidos = items.filter(item => checklistState[item]).length;
-                const progresso = Math.round((concluidos / items.length) * 100);
                 const progressoClass = completo ? 'completo' : '';
                 
                 // Definir classe da data
@@ -1901,13 +2248,13 @@
                 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3>${col.nome} ${completo ? '✅' : ''}</h3>
+                        <h3>${col.nome || ''} ${completo ? '✅' : ''}</h3>
                         <span class="${dataClass}">${dataFormatada}</span>
                     </div>
                     <div class="card-info">
-                        <p><strong>Departamento:</strong> ${col.departamentoNome}</p>
-                        <p><strong>Empresa:</strong> ${col.empresaNome}</p>
-                        <p><strong>Cidade:</strong> ${col.cidade}</p>
+                        <p><strong>Departamento:</strong> ${col.departamentoNome || ''}</p>
+                        <p><strong>Empresa:</strong> ${col.empresaNome || ''}</p>
+                        <p><strong>Cidade:</strong> ${col.cidade || ''}</p>
                     </div>
                     
                     <div class="checklist">
@@ -1917,34 +2264,34 @@
                         </h4>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="arteInstagram_${col.id}" ${checklistState.arteInstagram ? 'checked' : ''} onchange="atualizarChecklist(${col.id}, 'arteInstagram', this.checked)">
+                            <input type="checkbox" id="arteInstagram_${col.id}" ${checklistState.arteInstagram ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'arteInstagram', this.checked)">
                             <label for="arteInstagram_${col.id}">🎨 Arte Instagram</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="arteTV_${col.id}" ${checklistState.arteTV ? 'checked' : ''} onchange="atualizarChecklist(${col.id}, 'arteTV', this.checked)">
+                            <input type="checkbox" id="arteTV_${col.id}" ${checklistState.arteTV ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'arteTV', this.checked)">
                             <label for="arteTV_${col.id}">📺 Arte TV</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="postInstagram_${col.id}" ${checklistState.postInstagram ? 'checked' : ''} onchange="atualizarChecklist(${col.id}, 'postInstagram', this.checked)">
+                            <input type="checkbox" id="postInstagram_${col.id}" ${checklistState.postInstagram ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postInstagram', this.checked)">
                             <label for="postInstagram_${col.id}">📱 Post Instagram</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="postIntranet_${col.id}" ${checklistState.postIntranet ? 'checked' : ''} onchange="atualizarChecklist(${col.id}, 'postIntranet', this.checked)">
+                            <input type="checkbox" id="postIntranet_${col.id}" ${checklistState.postIntranet ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postIntranet', this.checked)">
                             <label for="postIntranet_${col.id}">💻 Post Intranet</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="postWhatsapp_${col.id}" ${checklistState.postWhatsapp ? 'checked' : ''} onchange="atualizarChecklist(${col.id}, 'postWhatsapp', this.checked)">
+                            <input type="checkbox" id="postWhatsapp_${col.id}" ${checklistState.postWhatsapp ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postWhatsapp', this.checked)">
                             <label for="postWhatsapp_${col.id}">📱 Post WhatsApp</label>
                         </div>
                     </div>
                     
                     <div class="postagem-texto">
                         <label>📝 Texto da postagem:</label>
-                        <textarea id="texto_${col.id}" placeholder="Digite aqui o texto que será publicado junto com a foto..." onchange="salvarTexto(${col.id}, this.value)">${checklistState.texto || ''}</textarea>
+                        <textarea id="texto_${col.id}" placeholder="Digite aqui o texto que será publicado junto com a foto..." onchange="salvarTexto('${col.id}', this.value)">${checklistState.texto || ''}</textarea>
                     </div>
                     
                     <div class="upload-foto">
@@ -1954,14 +2301,14 @@
                             <div class="upload-text">
                                 <strong>Clique para upload</strong> ou arraste a imagem
                             </div>
-                            <input type="file" id="file_${col.id}" accept="image/*" onchange="previewFoto(this, ${col.id})">
+                            <input type="file" id="file_${col.id}" accept="image/*" onchange="previewFoto(this, '${col.id}')">
                         </div>
                         <img id="preview_${col.id}" class="preview-foto ${checklistState.fotoPreview ? 'active' : ''}" 
                              src="${checklistState.fotoPreview || ''}" alt="Preview">
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                        <button class="btn-success" onclick="salvarChecklist(${col.id})">✓ Salvar Progresso</button>
+                        <button class="btn-success" onclick="salvarChecklist('${col.id}')">✓ Salvar Progresso</button>
                     </div>
                 `;
                 
@@ -1969,33 +2316,39 @@
             });
         }
 
-        function atualizarChecklist(colaboradorId, item, checked) {
+        async function atualizarChecklist(colaboradorId, item, checked) {
             const checklistKey = `checklist_${colaboradorId}`;
             if (!aniversariosChecklist[checklistKey]) {
-                aniversariosChecklist[checklistKey] = {};
+                aniversariosChecklist[checklistKey] = {
+                    colaboradorId: colaboradorId,
+                    tipo: 'vida',
+                    items: {}
+                };
             }
             aniversariosChecklist[checklistKey][item] = checked;
             
             // Atualizar progresso
             const card = document.getElementById(`card_${colaboradorId}`);
-            const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
-            const concluidos = items.filter(i => aniversariosChecklist[checklistKey][i]).length;
-            const completo = concluidos === items.length;
-            const progressoClass = completo ? 'completo' : '';
-            
-            const progressoEl = card.querySelector('.progresso-checklist');
-            if (progressoEl) {
-                progressoEl.textContent = `${concluidos}/${items.length}`;
-                progressoEl.className = `progresso-checklist ${progressoClass}`;
-            }
-            
-            // Atualizar título se completo
-            const tituloEl = card.querySelector('.card-header h3');
-            if (tituloEl) {
-                if (completo && !tituloEl.textContent.includes('✅')) {
-                    tituloEl.textContent = tituloEl.textContent + ' ✅';
-                } else if (!completo && tituloEl.textContent.includes('✅')) {
-                    tituloEl.textContent = tituloEl.textContent.replace(' ✅', '');
+            if (card) {
+                const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
+                const concluidos = items.filter(i => aniversariosChecklist[checklistKey][i]).length;
+                const completo = concluidos === items.length;
+                const progressoClass = completo ? 'completo' : '';
+                
+                const progressoEl = card.querySelector('.progresso-checklist');
+                if (progressoEl) {
+                    progressoEl.textContent = `${concluidos}/${items.length}`;
+                    progressoEl.className = `progresso-checklist ${progressoClass}`;
+                }
+                
+                // Atualizar título se completo
+                const tituloEl = card.querySelector('.card-header h3');
+                if (tituloEl) {
+                    if (completo && !tituloEl.textContent.includes('✅')) {
+                        tituloEl.textContent = tituloEl.textContent + ' ✅';
+                    } else if (!completo && tituloEl.textContent.includes('✅')) {
+                        tituloEl.textContent = tituloEl.textContent.replace(' ✅', '');
+                    }
                 }
             }
         }
@@ -2003,7 +2356,11 @@
         function salvarTexto(colaboradorId, texto) {
             const checklistKey = `checklist_${colaboradorId}`;
             if (!aniversariosChecklist[checklistKey]) {
-                aniversariosChecklist[checklistKey] = {};
+                aniversariosChecklist[checklistKey] = {
+                    colaboradorId: colaboradorId,
+                    tipo: 'vida',
+                    items: {}
+                };
             }
             aniversariosChecklist[checklistKey].texto = texto;
         }
@@ -2014,33 +2371,50 @@
                 
                 reader.onload = function(e) {
                     const preview = document.getElementById(`preview_${colaboradorId}`);
-                    preview.src = e.target.result;
-                    preview.classList.add('active');
-                    
-                    // Salvar no estado
-                    const checklistKey = `checklist_${colaboradorId}`;
-                    if (!aniversariosChecklist[checklistKey]) {
-                        aniversariosChecklist[checklistKey] = {};
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.classList.add('active');
+                        
+                        // Salvar no estado
+                        const checklistKey = `checklist_${colaboradorId}`;
+                        if (!aniversariosChecklist[checklistKey]) {
+                            aniversariosChecklist[checklistKey] = {
+                                colaboradorId: colaboradorId,
+                                tipo: 'vida',
+                                items: {}
+                            };
+                        }
+                        aniversariosChecklist[checklistKey].fotoPreview = e.target.result;
+                        aniversariosChecklist[checklistKey].fotoNome = input.files[0].name;
                     }
-                    aniversariosChecklist[checklistKey].fotoPreview = e.target.result;
-                    aniversariosChecklist[checklistKey].fotoNome = input.files[0].name;
                 }
                 
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function salvarChecklist(colaboradorId) {
+        async function salvarChecklist(colaboradorId) {
             // Salvar texto atual
             const textoEl = document.getElementById(`texto_${colaboradorId}`);
             if (textoEl) {
                 salvarTexto(colaboradorId, textoEl.value);
             }
             
-            // Salvar no localStorage
-            localStorage.setItem('aniversariosChecklist', JSON.stringify(aniversariosChecklist));
+            const checklistKey = `checklist_${colaboradorId}`;
+            const checklistData = aniversariosChecklist[checklistKey];
             
-            alert('Checklist salvo com sucesso!');
+            if (checklistData) {
+                mostrarLoading();
+                try {
+                    await db.collection('checklists').doc(checklistKey).set(checklistData);
+                    mostrarToast('Checklist salvo com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao salvar checklist:', error);
+                    mostrarToast('Erro ao salvar checklist', 'error');
+                } finally {
+                    esconderLoading();
+                }
+            }
         }
 
         function exportarChecklistVida() {
@@ -2053,24 +2427,26 @@
                 const checklistKey = `checklist_${col.id}`;
                 const checklist = aniversariosChecklist[checklistKey] || {};
                 
-                const dataNasc = new Date(col.dataNascimento);
-                const dataFormatada = dataNasc.toLocaleDateString('pt-BR');
-                
-                conteudo += `------------------------------------------------\n`;
-                conteudo += `Nome: ${col.nome}\n`;
-                conteudo += `Data: ${dataFormatada}\n`;
-                conteudo += `Departamento: ${col.departamentoNome}\n`;
-                conteudo += `Empresa: ${col.empresaNome}\n`;
-                conteudo += `Cidade: ${col.cidade}\n`;
-                conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? '✅ COMPLETO' : '⏳ PENDENTE'}\n`;
-                conteudo += `\nCHECKLIST:\n`;
-                conteudo += `✓ Arte Instagram: ${checklist.arteInstagram ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Arte TV: ${checklist.arteTV ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Post Instagram: ${checklist.postInstagram ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Post Intranet: ${checklist.postIntranet ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Post WhatsApp: ${checklist.postWhatsapp ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n`;
-                conteudo += `FOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
+                if (col.dataNascimento) {
+                    const dataNasc = new Date(col.dataNascimento);
+                    const dataFormatada = dataNasc.toLocaleDateString('pt-BR');
+                    
+                    conteudo += `------------------------------------------------\n`;
+                    conteudo += `Nome: ${col.nome || ''}\n`;
+                    conteudo += `Data: ${dataFormatada}\n`;
+                    conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
+                    conteudo += `Empresa: ${col.empresaNome || ''}\n`;
+                    conteudo += `Cidade: ${col.cidade || ''}\n`;
+                    conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? '✅ COMPLETO' : '⏳ PENDENTE'}\n`;
+                    conteudo += `\nCHECKLIST:\n`;
+                    conteudo += `✓ Arte Instagram: ${checklist.arteInstagram ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Arte TV: ${checklist.arteTV ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Post Instagram: ${checklist.postInstagram ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Post Intranet: ${checklist.postIntranet ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Post WhatsApp: ${checklist.postWhatsapp ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n`;
+                    conteudo += `FOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
+                }
             });
             
             // Criar arquivo para download
@@ -2093,7 +2469,7 @@
             
             // Filtrar colaboradores ativos que fazem aniversário de empresa no mês selecionado
             let aniversariantes = colaboradores.filter(col => {
-                if (col.status !== 'Ativo') return false;
+                if (col.status !== 'Ativo' || !col.dataAdmissao) return false;
                 
                 const mesAdm = new Date(col.dataAdmissao).getMonth() + 1;
                 return mesAdm == mesSelecionado;
@@ -2146,25 +2522,31 @@
             // Atualizar título com o mês
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#empresa-section .section-header h2');
-            titulo.textContent = `🏢 Aniversários de Empresa - ${meses[mesSelecionado - 1]} 2026`;
+            if (titulo) {
+                titulo.textContent = `🏢 Aniversários de Empresa - ${meses[mesSelecionado - 1]} 2026`;
+            }
         }
 
         function togglePedidoPizza(colaboradorId, botao) {
             const pedidoDiv = document.getElementById(`pedido_${colaboradorId}`);
             
-            if (pedidoDiv.classList.contains('active')) {
-                pedidoDiv.classList.remove('active');
-                botao.textContent = 'Ver pedido';
-                botao.classList.remove('ver-menos');
-            } else {
-                pedidoDiv.classList.add('active');
-                botao.textContent = 'Ver menos';
-                botao.classList.add('ver-menos');
+            if (pedidoDiv) {
+                if (pedidoDiv.classList.contains('active')) {
+                    pedidoDiv.classList.remove('active');
+                    botao.textContent = 'Ver pedido';
+                    botao.classList.remove('ver-menos');
+                } else {
+                    pedidoDiv.classList.add('active');
+                    botao.textContent = 'Ver menos';
+                    botao.classList.add('ver-menos');
+                }
             }
         }
 
         function exibirAniversariantesEmpresa(aniversariantes) {
             const container = document.getElementById('aniversariantesEmpresaContainer');
+            
+            if (!container) return;
             
             if (aniversariantes.length === 0) {
                 container.innerHTML = '<div class="empty-message">Nenhum aniversariante de empresa encontrado para este período.</div>';
@@ -2214,7 +2596,7 @@
                     dataEntrega: '',
                     dataEntregaBR: '',
                     horarioEntrega: '',
-                    local: col.cidade,
+                    local: col.cidade || '',
                     enderecoCompleto: '',
                     borda: '',
                     observacoes: ''
@@ -2252,7 +2634,7 @@
                         <div class="pedido-pizza-resumo">
                             <p><strong>🍕 Pizza:</strong> ${pizzaSelecionada ? pizzaSelecionada.nome : 'Selecionada'}</p>
                             <p><strong>📅 Data:</strong> ${pedidoState.dataEntregaBR || pedidoState.dataEntrega || 'Não definida'} ${pedidoState.horarioEntrega ? 'às ' + pedidoState.horarioEntrega : ''}</p>
-                            <p><strong>📍 Local:</strong> ${pedidoState.local || col.cidade}</p>
+                            <p><strong>📍 Local:</strong> ${pedidoState.local || col.cidade || ''}</p>
                             ${pedidoState.enderecoCompleto ? `<p><strong>🏠 Endereço:</strong> ${pedidoState.enderecoCompleto}</p>` : ''}
                             ${pedidoState.borda ? `<p><strong>🧀 Borda:</strong> ${pedidoState.borda.charAt(0).toUpperCase() + pedidoState.borda.slice(1)}</p>` : ''}
                             ${pedidoState.observacoes ? `<p><strong>📝 Obs:</strong> ${pedidoState.observacoes}</p>` : ''}
@@ -2262,13 +2644,13 @@
                 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3>${col.nome} ${completo ? '✅' : ''}</h3>
+                        <h3>${col.nome || ''} ${completo ? '✅' : ''}</h3>
                         <span class="${dataClass}">${dataFormatada} • ${anosEmpresa} anos</span>
                     </div>
                     <div class="card-info">
-                        <p><strong>Departamento:</strong> ${col.departamentoNome}</p>
-                        <p><strong>Empresa:</strong> ${col.empresaNome}</p>
-                        <p><strong>Cidade:</strong> ${col.cidade}</p>
+                        <p><strong>Departamento:</strong> ${col.departamentoNome || ''}</p>
+                        <p><strong>Empresa:</strong> ${col.empresaNome || ''}</p>
+                        <p><strong>Cidade:</strong> ${col.cidade || ''}</p>
                         ${col.cidade === 'Mongaguá' ? '<span class="alerta-mongagua">⚠️ Atenção: Entrega em Mongaguá - verificar disponibilidade</span>' : ''}
                     </div>
                     
@@ -2279,67 +2661,67 @@
                         </h4>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_arteTrofeu_${col.id}" ${checklistState.arteTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'arteTrofeu', this.checked)">
+                            <input type="checkbox" id="empresa_arteTrofeu_${col.id}" ${checklistState.arteTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'arteTrofeu', this.checked)">
                             <label for="empresa_arteTrofeu_${col.id}">🏆 Arte troféu</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_arteTvCorporativa_${col.id}" ${checklistState.arteTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'arteTvCorporativa', this.checked)">
+                            <input type="checkbox" id="empresa_arteTvCorporativa_${col.id}" ${checklistState.arteTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'arteTvCorporativa', this.checked)">
                             <label for="empresa_arteTvCorporativa_${col.id}">📺 Arte TV corporativa</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_impressaoTrofeu_${col.id}" ${checklistState.impressaoTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'impressaoTrofeu', this.checked)">
+                            <input type="checkbox" id="empresa_impressaoTrofeu_${col.id}" ${checklistState.impressaoTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'impressaoTrofeu', this.checked)">
                             <label for="empresa_impressaoTrofeu_${col.id}">🖨️ Impressão troféu</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_entregaPizzariaTrofeu_${col.id}" ${checklistState.entregaPizzariaTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'entregaPizzariaTrofeu', this.checked)">
+                            <input type="checkbox" id="empresa_entregaPizzariaTrofeu_${col.id}" ${checklistState.entregaPizzariaTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'entregaPizzariaTrofeu', this.checked)">
                             <label for="empresa_entregaPizzariaTrofeu_${col.id}">🏪 Entrega pizzaria troféu com impressão</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_listagemPizzaria_${col.id}" ${checklistState.listagemPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'listagemPizzaria', this.checked)">
+                            <input type="checkbox" id="empresa_listagemPizzaria_${col.id}" ${checklistState.listagemPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'listagemPizzaria', this.checked)">
                             <label for="empresa_listagemPizzaria_${col.id}">📋 Listagem para pizzaria</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_escolhaSabor_${col.id}" ${checklistState.escolhaSabor ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'escolhaSabor', this.checked)">
+                            <input type="checkbox" id="empresa_escolhaSabor_${col.id}" ${checklistState.escolhaSabor ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'escolhaSabor', this.checked)">
                             <label for="empresa_escolhaSabor_${col.id}">🍕 Escolha do sabor colaborador</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_postagemGrupoInterno_${col.id}" ${checklistState.postagemGrupoInterno ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'postagemGrupoInterno', this.checked)">
+                            <input type="checkbox" id="empresa_postagemGrupoInterno_${col.id}" ${checklistState.postagemGrupoInterno ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemGrupoInterno', this.checked)">
                             <label for="empresa_postagemGrupoInterno_${col.id}">💬 Postagem grupo interno</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_postagemInstagram_${col.id}" ${checklistState.postagemInstagram ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'postagemInstagram', this.checked)">
+                            <input type="checkbox" id="empresa_postagemInstagram_${col.id}" ${checklistState.postagemInstagram ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemInstagram', this.checked)">
                             <label for="empresa_postagemInstagram_${col.id}">📱 Postagem Instagram</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_postagemTvCorporativa_${col.id}" ${checklistState.postagemTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'postagemTvCorporativa', this.checked)">
+                            <input type="checkbox" id="empresa_postagemTvCorporativa_${col.id}" ${checklistState.postagemTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemTvCorporativa', this.checked)">
                             <label for="empresa_postagemTvCorporativa_${col.id}">📺 Postagem TV corporativa</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_contatoPizzaria_${col.id}" ${checklistState.contatoPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'contatoPizzaria', this.checked)">
+                            <input type="checkbox" id="empresa_contatoPizzaria_${col.id}" ${checklistState.contatoPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'contatoPizzaria', this.checked)">
                             <label for="empresa_contatoPizzaria_${col.id}">📞 Contato com pizzaria</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_passarContato_${col.id}" ${checklistState.passarContato ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'passarContato', this.checked)">
+                            <input type="checkbox" id="empresa_passarContato_${col.id}" ${checklistState.passarContato ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'passarContato', this.checked)">
                             <label for="empresa_passarContato_${col.id}">👤 Passar contato colaborador pizzaria</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_acompanharPedidos_${col.id}" ${checklistState.acompanharPedidos ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'acompanharPedidos', this.checked)">
+                            <input type="checkbox" id="empresa_acompanharPedidos_${col.id}" ${checklistState.acompanharPedidos ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'acompanharPedidos', this.checked)">
                             <label for="empresa_acompanharPedidos_${col.id}">📦 Acompanhar pedidos</label>
                         </div>
                         
                         <div class="checklist-item">
-                            <input type="checkbox" id="empresa_entregaConfirmada_${col.id}" ${checklistState.entregaConfirmada ? 'checked' : ''} onchange="atualizarChecklistEmpresa(${col.id}, 'entregaConfirmada', this.checked)">
+                            <input type="checkbox" id="empresa_entregaConfirmada_${col.id}" ${checklistState.entregaConfirmada ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'entregaConfirmada', this.checked)">
                             <label for="empresa_entregaConfirmada_${col.id}">✅ Entrega confirmada</label>
                         </div>
                     </div>
@@ -2348,7 +2730,7 @@
                     <div class="pedido-pizza">
                         <div class="pedido-pizza-header">
                             <h4>🍕 Pedido de Pizza</h4>
-                            <button class="btn-toggle-pedido" onclick="togglePedidoPizza(${col.id}, this)">
+                            <button class="btn-toggle-pedido" onclick="togglePedidoPizza('${col.id}', this)">
                                 ${pedidoState.pizzaId ? 'Ver pedido' : 'Fazer pedido'}
                             </button>
                         </div>
@@ -2358,7 +2740,7 @@
                         <div id="pedido_${col.id}" class="pedido-pizza-content">
                             <div class="pedido-form-group">
                                 <label>Escolha a pizza:</label>
-                                <select id="pizza_select_${col.id}" onchange="salvarPedidoPizza(${col.id}, 'pizzaId', this.value)">
+                                <select id="pizza_select_${col.id}" onchange="salvarPedidoPizza('${col.id}', 'pizzaId', this.value)">
                                     <option value="">Selecione...</option>
                                     ${pizzas.map(p => `<option value="${p.id}" ${pedidoState.pizzaId == p.id ? 'selected' : ''}>${p.nome} - ${p.descricao}</option>`).join('')}
                                 </select>
@@ -2367,19 +2749,19 @@
                             <div class="pedido-form-group">
                                 <label>Data de entrega (DD/MM/AAAA):</label>
                                 <div class="data-input-group">
-                                    <input type="text" id="data_entrega_${col.id}" placeholder="DD/MM/AAAA" value="${pedidoState.dataEntregaBR || ''}" onchange="salvarDataEntregaBR(${col.id}, this.value)" maxlength="10">
+                                    <input type="text" id="data_entrega_${col.id}" placeholder="DD/MM/AAAA" value="${pedidoState.dataEntregaBR || ''}" onchange="salvarDataEntregaBR('${col.id}', this.value)" maxlength="10">
                                 </div>
                                 <small style="color: #64748b;">Digite no formato DD/MM/AAAA</small>
                             </div>
                             
                             <div class="pedido-form-group">
                                 <label>Horário de entrega:</label>
-                                <input type="time" id="horario_entrega_${col.id}" value="${pedidoState.horarioEntrega || ''}" onchange="salvarPedidoPizza(${col.id}, 'horarioEntrega', this.value)">
+                                <input type="time" id="horario_entrega_${col.id}" value="${pedidoState.horarioEntrega || ''}" onchange="salvarPedidoPizza('${col.id}', 'horarioEntrega', this.value)">
                             </div>
                             
                             <div class="pedido-form-group">
                                 <label>Cidade de entrega:</label>
-                                <select id="cidade_entrega_${col.id}" onchange="salvarPedidoPizza(${col.id}, 'local', this.value)">
+                                <select id="cidade_entrega_${col.id}" onchange="salvarPedidoPizza('${col.id}', 'local', this.value)">
                                     <option value="Itanhaém" ${pedidoState.local === 'Itanhaém' ? 'selected' : ''}>Itanhaém</option>
                                     <option value="Peruíbe" ${pedidoState.local === 'Peruíbe' ? 'selected' : ''}>Peruíbe</option>
                                     <option value="Mongaguá" ${pedidoState.local === 'Mongaguá' ? 'selected' : ''}>Mongaguá</option>
@@ -2389,22 +2771,22 @@
                             
                             <div class="pedido-form-group">
                                 <label>Endereço completo:</label>
-                                <input type="text" id="endereco_${col.id}" placeholder="Rua, número, complemento..." value="${pedidoState.enderecoCompleto || ''}" onchange="salvarPedidoPizza(${col.id}, 'enderecoCompleto', this.value)">
+                                <input type="text" id="endereco_${col.id}" placeholder="Rua, número, complemento..." value="${pedidoState.enderecoCompleto || ''}" onchange="salvarPedidoPizza('${col.id}', 'enderecoCompleto', this.value)">
                             </div>
                             
                             <div class="pedido-form-group">
                                 <label>Borda recheada:</label>
                                 <div class="borda-options">
                                     <div class="borda-option">
-                                        <input type="radio" name="borda_${col.id}" id="borda_cheddar_${col.id}" value="cheddar" ${pedidoState.borda === 'cheddar' ? 'checked' : ''} onchange="salvarPedidoPizza(${col.id}, 'borda', this.value)">
+                                        <input type="radio" name="borda_${col.id}" id="borda_cheddar_${col.id}" value="cheddar" ${pedidoState.borda === 'cheddar' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
                                         <label for="borda_cheddar_${col.id}">Cheddar</label>
                                     </div>
                                     <div class="borda-option">
-                                        <input type="radio" name="borda_${col.id}" id="borda_requeijao_${col.id}" value="requeijao" ${pedidoState.borda === 'requeijao' ? 'checked' : ''} onchange="salvarPedidoPizza(${col.id}, 'borda', this.value)">
+                                        <input type="radio" name="borda_${col.id}" id="borda_requeijao_${col.id}" value="requeijao" ${pedidoState.borda === 'requeijao' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
                                         <label for="borda_requeijao_${col.id}">Requeijão</label>
                                     </div>
                                     <div class="borda-option">
-                                        <input type="radio" name="borda_${col.id}" id="borda_catupiry_${col.id}" value="catupiry" ${pedidoState.borda === 'catupiry' ? 'checked' : ''} onchange="salvarPedidoPizza(${col.id}, 'borda', this.value)">
+                                        <input type="radio" name="borda_${col.id}" id="borda_catupiry_${col.id}" value="catupiry" ${pedidoState.borda === 'catupiry' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
                                         <label for="borda_catupiry_${col.id}">Catupiry</label>
                                     </div>
                                 </div>
@@ -2412,11 +2794,11 @@
                             
                             <div class="pedido-form-group">
                                 <label>Observações:</label>
-                                <textarea id="observacoes_${col.id}" placeholder="Observações adicionais..." onchange="salvarPedidoPizza(${col.id}, 'observacoes', this.value)">${pedidoState.observacoes || ''}</textarea>
+                                <textarea id="observacoes_${col.id}" placeholder="Observações adicionais..." onchange="salvarPedidoPizza('${col.id}', 'observacoes', this.value)">${pedidoState.observacoes || ''}</textarea>
                             </div>
                             
                             <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                                <button class="btn-success" onclick="salvarPedidoCompleto(${col.id})">✓ Salvar Pedido</button>
+                                <button class="btn-success" onclick="salvarPedidoCompleto('${col.id}')">✓ Salvar Pedido</button>
                             </div>
                         </div>
                     </div>
@@ -2428,14 +2810,14 @@
                             <div class="upload-text">
                                 <strong>Clique para upload</strong> ou arraste a imagem
                             </div>
-                            <input type="file" id="empresa_file_${col.id}" accept="image/*" onchange="previewFotoEmpresa(this, ${col.id})">
+                            <input type="file" id="empresa_file_${col.id}" accept="image/*" onchange="previewFotoEmpresa(this, '${col.id}')">
                         </div>
                         <img id="empresa_preview_${col.id}" class="preview-foto ${checklistState.fotoPreview ? 'active' : ''}" 
                              src="${checklistState.fotoPreview || ''}" alt="Preview">
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                        <button class="btn-success" onclick="salvarChecklistEmpresa(${col.id})">✓ Salvar Progresso</button>
+                        <button class="btn-success" onclick="salvarChecklistEmpresa('${col.id}')">✓ Salvar Progresso</button>
                     </div>
                 `;
                 
@@ -2460,75 +2842,95 @@
                     salvarPedidoPizza(colaboradorId, 'dataEntrega', dataISO);
                     salvarPedidoPizza(colaboradorId, 'dataEntregaBR', dataBR);
                 } else {
-                    alert('Data inválida!');
+                    mostrarToast('Data inválida!', 'error');
                 }
             } else if (dataBR) {
-                alert('Formato inválido! Use DD/MM/AAAA');
+                mostrarToast('Formato inválido! Use DD/MM/AAAA', 'error');
             }
         }
 
         function salvarPedidoPizza(colaboradorId, campo, valor) {
             const pedidoKey = `pedido_empresa_${colaboradorId}`;
             if (!pedidosPizzaEmpresa[pedidoKey]) {
-                pedidosPizzaEmpresa[pedidoKey] = {};
+                pedidosPizzaEmpresa[pedidoKey] = {
+                    colaboradorId: colaboradorId
+                };
             }
             pedidosPizzaEmpresa[pedidoKey][campo] = valor;
         }
 
-        function salvarPedidoCompleto(colaboradorId) {
-            // Salvar no localStorage
-            localStorage.setItem('pedidosPizzaEmpresa', JSON.stringify(pedidosPizzaEmpresa));
+        async function salvarPedidoCompleto(colaboradorId) {
+            const pedidoKey = `pedido_empresa_${colaboradorId}`;
+            const pedidoData = pedidosPizzaEmpresa[pedidoKey];
             
-            // Fechar o formulário de pedido
-            const pedidoDiv = document.getElementById(`pedido_${colaboradorId}`);
-            const botao = document.querySelector(`#empresa_card_${colaboradorId} .btn-toggle-pedido`);
-            
-            if (pedidoDiv && pedidoDiv.classList.contains('active')) {
-                pedidoDiv.classList.remove('active');
-                if (botao) {
-                    botao.textContent = 'Ver pedido';
-                    botao.classList.remove('ver-menos');
+            if (pedidoData) {
+                mostrarLoading();
+                try {
+                    await db.collection('pedidos').doc(pedidoKey).set(pedidoData);
+                    
+                    // Fechar o formulário de pedido
+                    const pedidoDiv = document.getElementById(`pedido_${colaboradorId}`);
+                    const botao = document.querySelector(`#empresa_card_${colaboradorId} .btn-toggle-pedido`);
+                    
+                    if (pedidoDiv && pedidoDiv.classList.contains('active')) {
+                        pedidoDiv.classList.remove('active');
+                        if (botao) {
+                            botao.textContent = 'Ver pedido';
+                            botao.classList.remove('ver-menos');
+                        }
+                    }
+                    
+                    // Recarregar o card para mostrar o resumo
+                    filtrarAniversariantesEmpresa();
+                    
+                    mostrarToast('Pedido salvo com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao salvar pedido:', error);
+                    mostrarToast('Erro ao salvar pedido', 'error');
+                } finally {
+                    esconderLoading();
                 }
             }
-            
-            // Recarregar o card para mostrar o resumo
-            filtrarAniversariantesEmpresa();
-            
-            alert('Pedido salvo com sucesso!');
         }
 
         function atualizarChecklistEmpresa(colaboradorId, item, checked) {
             const checklistKey = `empresa_${colaboradorId}`;
             if (!empresaChecklist[checklistKey]) {
-                empresaChecklist[checklistKey] = {};
+                empresaChecklist[checklistKey] = {
+                    colaboradorId: colaboradorId,
+                    tipo: 'empresa',
+                    items: {}
+                };
             }
             empresaChecklist[checklistKey][item] = checked;
             
             // Atualizar progresso
             const card = document.getElementById(`empresa_card_${colaboradorId}`);
-            const items = [
-                'arteTrofeu', 'arteTvCorporativa', 'impressaoTrofeu', 'entregaPizzariaTrofeu',
-                'listagemPizzaria', 'escolhaSabor', 'postagemGrupoInterno', 'postagemInstagram',
-                'postagemTvCorporativa', 'contatoPizzaria', 'passarContato', 'acompanharPedidos',
-                'entregaConfirmada'
-            ];
-            const concluidos = items.filter(i => empresaChecklist[checklistKey][i]).length;
-            const completo = concluidos === items.length;
-            const progressoClass = completo ? 'completo' : '';
-            
-            const progressoEl = card.querySelector('.progresso-checklist');
-            if (progressoEl) {
-                progressoEl.textContent = `${concluidos}/${items.length}`;
-                progressoEl.className = `progresso-checklist ${progressoClass}`;
-            }
-            
-            // Atualizar título se completo
-            const tituloEl = card.querySelector('.card-header h3');
-            if (tituloEl) {
-                if (completo && !tituloEl.textContent.includes('✅')) {
-                    tituloEl.textContent = tituloEl.textContent + ' ✅';
-                } else if (!completo && tituloEl.textContent.includes('✅')) {
-                    tituloEl.textContent = tituloEl.textContent.replace(' ✅', '');
+            if (card) {
+                const items = [
+                    'arteTrofeu', 'arteTvCorporativa', 'impressaoTrofeu', 'entregaPizzariaTrofeu',
+                    'listagemPizzaria', 'escolhaSabor', 'postagemGrupoInterno', 'postagemInstagram',
+                    'postagemTvCorporativa', 'contatoPizzaria', 'passarContato', 'acompanharPedidos',
+                    'entregaConfirmada'
+                ];
+                const concluidos = items.filter(i => empresaChecklist[checklistKey][i]).length;
+                const completo = concluidos === items.length;
+                const progressoClass = completo ? 'completo' : '';
+                
+                const progressoEl = card.querySelector('.progresso-checklist');
+                if (progressoEl) {
+                    progressoEl.textContent = `${concluidos}/${items.length}`;
+                    progressoEl.className = `progresso-checklist ${progressoClass}`;
+                }
+                
+                // Atualizar título se completo
+                const tituloEl = card.querySelector('.card-header h3');
+                if (tituloEl) {
+                    if (completo && !tituloEl.textContent.includes('✅')) {
+                        tituloEl.textContent = tituloEl.textContent + ' ✅';
+                    } else if (!completo && tituloEl.textContent.includes('✅')) {
+                        tituloEl.textContent = tituloEl.textContent.replace(' ✅', '');
+                    }
                 }
             }
         }
@@ -2539,30 +2941,52 @@
                 
                 reader.onload = function(e) {
                     const preview = document.getElementById(`empresa_preview_${colaboradorId}`);
-                    preview.src = e.target.result;
-                    preview.classList.add('active');
-                    
-                    // Salvar no estado
-                    const checklistKey = `empresa_${colaboradorId}`;
-                    if (!empresaChecklist[checklistKey]) {
-                        empresaChecklist[checklistKey] = {};
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.classList.add('active');
+                        
+                        // Salvar no estado
+                        const checklistKey = `empresa_${colaboradorId}`;
+                        if (!empresaChecklist[checklistKey]) {
+                            empresaChecklist[checklistKey] = {
+                                colaboradorId: colaboradorId,
+                                tipo: 'empresa',
+                                items: {}
+                            };
+                        }
+                        empresaChecklist[checklistKey].fotoPreview = e.target.result;
+                        empresaChecklist[checklistKey].fotoNome = input.files[0].name;
                     }
-                    empresaChecklist[checklistKey].fotoPreview = e.target.result;
-                    empresaChecklist[checklistKey].fotoNome = input.files[0].name;
                 }
                 
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function salvarChecklistEmpresa(colaboradorId) {
-            // Salvar no localStorage
-            localStorage.setItem('empresaChecklist', JSON.stringify(empresaChecklist));
+        async function salvarChecklistEmpresa(colaboradorId) {
+            const checklistKey = `empresa_${colaboradorId}`;
+            const checklistData = empresaChecklist[checklistKey];
             
-            // Salvar pedidos também
-            localStorage.setItem('pedidosPizzaEmpresa', JSON.stringify(pedidosPizzaEmpresa));
-            
-            alert('Checklist de empresa salvo com sucesso!');
+            if (checklistData) {
+                mostrarLoading();
+                try {
+                    await db.collection('checklists').doc(checklistKey).set(checklistData);
+                    
+                    // Salvar pedidos também
+                    const pedidoKey = `pedido_empresa_${colaboradorId}`;
+                    const pedidoData = pedidosPizzaEmpresa[pedidoKey];
+                    if (pedidoData) {
+                        await db.collection('pedidos').doc(pedidoKey).set(pedidoData);
+                    }
+                    
+                    mostrarToast('Checklist de empresa salvo com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao salvar checklist:', error);
+                    mostrarToast('Erro ao salvar checklist', 'error');
+                } finally {
+                    esconderLoading();
+                }
+            }
         }
 
         function exportarChecklistEmpresa() {
@@ -2577,40 +3001,42 @@
                 const pedidoKey = `pedido_empresa_${col.id}`;
                 const pedido = pedidosPizzaEmpresa[pedidoKey] || {};
                 
-                const dataAdm = new Date(col.dataAdmissao);
-                const dataFormatada = dataAdm.toLocaleDateString('pt-BR');
-                const pizza = pizzas.find(p => p.id == pedido.pizzaId);
-                
-                conteudo += `------------------------------------------------\n`;
-                conteudo += `Nome: ${col.nome}\n`;
-                conteudo += `Data Admissão: ${dataFormatada}\n`;
-                conteudo += `Departamento: ${col.departamentoNome}\n`;
-                conteudo += `Empresa: ${col.empresaNome}\n`;
-                conteudo += `Cidade: ${col.cidade}\n`;
-                conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? '✅ COMPLETO' : '⏳ PENDENTE'}\n`;
-                conteudo += `\nCHECKLIST EMPRESA:\n`;
-                conteudo += `✓ Arte troféu: ${checklist.arteTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Arte TV corporativa: ${checklist.arteTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Impressão troféu: ${checklist.impressaoTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Entrega pizzaria troféu: ${checklist.entregaPizzariaTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Listagem para pizzaria: ${checklist.listagemPizzaria ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Escolha do sabor: ${checklist.escolhaSabor ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Postagem grupo interno: ${checklist.postagemGrupoInterno ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Postagem Instagram: ${checklist.postagemInstagram ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Postagem TV corporativa: ${checklist.postagemTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Contato com pizzaria: ${checklist.contatoPizzaria ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Passar contato: ${checklist.passarContato ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Acompanhar pedidos: ${checklist.acompanharPedidos ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `✓ Entrega confirmada: ${checklist.entregaConfirmada ? 'Concluído' : 'Pendente'}\n`;
-                conteudo += `\nPEDIDO DE PIZZA:\n`;
-                conteudo += `✓ Pizza: ${pizza ? pizza.nome + ' - ' + pizza.descricao : 'Não selecionada'}\n`;
-                conteudo += `✓ Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
-                conteudo += `✓ Horário: ${pedido.horarioEntrega || 'Não definido'}\n`;
-                conteudo += `✓ Cidade: ${pedido.local || col.cidade}\n`;
-                conteudo += `✓ Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
-                conteudo += `✓ Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
-                conteudo += `✓ Observações: ${pedido.observacoes || 'Nenhuma'}\n`;
-                conteudo += `\nFOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
+                if (col.dataAdmissao) {
+                    const dataAdm = new Date(col.dataAdmissao);
+                    const dataFormatada = dataAdm.toLocaleDateString('pt-BR');
+                    const pizza = pizzas.find(p => p.id == pedido.pizzaId);
+                    
+                    conteudo += `------------------------------------------------\n`;
+                    conteudo += `Nome: ${col.nome || ''}\n`;
+                    conteudo += `Data Admissão: ${dataFormatada}\n`;
+                    conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
+                    conteudo += `Empresa: ${col.empresaNome || ''}\n`;
+                    conteudo += `Cidade: ${col.cidade || ''}\n`;
+                    conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? '✅ COMPLETO' : '⏳ PENDENTE'}\n`;
+                    conteudo += `\nCHECKLIST EMPRESA:\n`;
+                    conteudo += `✓ Arte troféu: ${checklist.arteTrofeu ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Arte TV corporativa: ${checklist.arteTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Impressão troféu: ${checklist.impressaoTrofeu ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Entrega pizzaria troféu: ${checklist.entregaPizzariaTrofeu ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Listagem para pizzaria: ${checklist.listagemPizzaria ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Escolha do sabor: ${checklist.escolhaSabor ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Postagem grupo interno: ${checklist.postagemGrupoInterno ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Postagem Instagram: ${checklist.postagemInstagram ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Postagem TV corporativa: ${checklist.postagemTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Contato com pizzaria: ${checklist.contatoPizzaria ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Passar contato: ${checklist.passarContato ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Acompanhar pedidos: ${checklist.acompanharPedidos ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `✓ Entrega confirmada: ${checklist.entregaConfirmada ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `\nPEDIDO DE PIZZA:\n`;
+                    conteudo += `✓ Pizza: ${pizza ? pizza.nome + ' - ' + pizza.descricao : 'Não selecionada'}\n`;
+                    conteudo += `✓ Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
+                    conteudo += `✓ Horário: ${pedido.horarioEntrega || 'Não definido'}\n`;
+                    conteudo += `✓ Cidade: ${pedido.local || col.cidade || ''}\n`;
+                    conteudo += `✓ Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
+                    conteudo += `✓ Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
+                    conteudo += `✓ Observações: ${pedido.observacoes || 'Nenhuma'}\n`;
+                    conteudo += `\nFOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
+                }
             });
             
             // Criar arquivo para download
@@ -2632,27 +3058,31 @@
                 item.classList.remove('active');
             });
             
-            document.getElementById(`${sectionId}-section`).classList.add('active');
+            const section = document.getElementById(`${sectionId}-section`);
+            if (section) {
+                section.classList.add('active');
+            }
             
             // Marcar o item do menu como ativo
             document.querySelectorAll('.nav-item').forEach(item => {
-                if (sectionId === 'dashboard' && item.textContent.includes('Dashboard')) {
+                const text = item.textContent || '';
+                if (sectionId === 'dashboard' && text.includes('Dashboard')) {
                     item.classList.add('active');
-                } else if (sectionId === 'vida' && item.textContent.includes('Aniversário de Vida')) {
+                } else if (sectionId === 'vida' && text.includes('Aniversário de Vida')) {
                     item.classList.add('active');
-                } else if (sectionId === 'empresa' && item.textContent.includes('Aniversário de Empresa')) {
+                } else if (sectionId === 'empresa' && text.includes('Aniversário de Empresa')) {
                     item.classList.add('active');
-                } else if (sectionId === 'financeiro' && item.textContent.includes('Controle Financeiro')) {
+                } else if (sectionId === 'financeiro' && text.includes('Controle Financeiro')) {
                     item.classList.add('active');
-                } else if (sectionId === 'pizzas' && item.textContent.includes('Cadastro de Pizzas')) {
+                } else if (sectionId === 'pizzas' && text.includes('Cadastro de Pizzas')) {
                     item.classList.add('active');
-                } else if (sectionId === 'cadastros' && item.textContent.includes('Colaboradores')) {
+                } else if (sectionId === 'cadastros' && text.includes('Colaboradores')) {
                     item.classList.add('active');
-                } else if (sectionId === 'empresas-cadastro' && item.textContent.includes('Empresas')) {
+                } else if (sectionId === 'empresas-cadastro' && text.includes('Empresas')) {
                     item.classList.add('active');
-                } else if (sectionId === 'departamentos' && item.textContent.includes('Departamentos')) {
+                } else if (sectionId === 'departamentos' && text.includes('Departamentos')) {
                     item.classList.add('active');
-                } else if (sectionId === 'relatorios' && item.textContent.includes('Relatórios')) {
+                } else if (sectionId === 'relatorios' && text.includes('Relatórios')) {
                     item.classList.add('active');
                 }
             });
@@ -2671,121 +3101,65 @@
             const mesSelecionado = document.getElementById('monthFilter').value;
             
             const aniversariantesVida = colaboradores.filter(c => {
-                if (c.status !== 'Ativo') return false;
+                if (c.status !== 'Ativo' || !c.dataNascimento) return false;
                 const mesNasc = new Date(c.dataNascimento).getMonth() + 1;
                 return mesNasc == mesSelecionado;
             });
             
             const aniversariantesEmpresa = colaboradores.filter(c => {
-                if (c.status !== 'Ativo') return false;
+                if (c.status !== 'Ativo' || !c.dataAdmissao) return false;
                 const mesAdm = new Date(c.dataAdmissao).getMonth() + 1;
                 return mesAdm == mesSelecionado;
             });
             
             const foraRegiao = colaboradores.filter(c => 
-                c.status === 'Ativo' && c.cidade !== 'Itanhaém' && c.cidade !== 'Peruíbe' && c.cidade !== 'Mongaguá'
+                c.status === 'Ativo' && c.cidade && c.cidade !== 'Itanhaém' && c.cidade !== 'Peruíbe' && c.cidade !== 'Mongaguá'
             );
             
             // Total de pizzas cadastradas
             const totalPizzas = pizzas.length;
             
-            document.getElementById('totalVida').textContent = aniversariantesVida.length;
-            document.getElementById('totalEmpresa').textContent = aniversariantesEmpresa.length;
-            document.getElementById('foraRegiao').textContent = foraRegiao.length;
-            document.getElementById('totalPizzas').textContent = totalPizzas;
-        }
-
-        // Funções CRUD para Colaboradores
-        function salvarColaborador() {
-            const nome = document.getElementById('nomeColaborador').value;
-            const dataNasc = document.getElementById('dataNascimento').value;
-            const dataAdm = document.getElementById('dataAdmissao').value;
-            const cidade = document.getElementById('cidadeColaborador').value;
-            const deptId = document.getElementById('departamentoColaborador').value;
-            const empId = document.getElementById('empresaColaborador').value;
-            const status = document.getElementById('statusColaborador').value;
+            const totalVidaEl = document.getElementById('totalVida');
+            const totalEmpresaEl = document.getElementById('totalEmpresa');
+            const foraRegiaoEl = document.getElementById('foraRegiao');
+            const totalPizzasEl = document.getElementById('totalPizzas');
             
-            if (!nome || !dataNasc || !dataAdm || !cidade || !deptId || !empId) {
-                alert('Por favor, preencha todos os campos obrigatórios');
-                return;
-            }
-            
-            const departamento = departamentos.find(d => d.id == deptId);
-            const empresa = empresas.find(e => e.id == empId);
-            
-            const novoColaborador = {
-                id: nextId++,
-                nome: nome,
-                dataNascimento: dataNasc,
-                dataAdmissao: dataAdm,
-                cidade: cidade,
-                departamentoId: parseInt(deptId),
-                departamentoNome: departamento ? departamento.nome : '',
-                empresaId: parseInt(empId),
-                empresaNome: empresa ? empresa.nome : '',
-                status: status
-            };
-            
-            colaboradores.push(novoColaborador);
-            atualizarTabelaColaboradores();
-            esconderFormularioColaborador();
-            alert('Colaborador cadastrado com sucesso!');
-            
-            // Atualiza os filtros
-            atualizarFiltros();
-            filtrarAniversariantesVida();
-            filtrarAniversariantesEmpresa();
-            updateDashboard();
-        }
-
-        function editarColaborador(id) {
-            const colaborador = colaboradores.find(c => c.id === id);
-            if (colaborador) {
-                // Implementar edição
-                alert('Função de edição será implementada em breve!');
-            }
-        }
-
-        function excluirColaborador(id) {
-            if (confirm('Tem certeza que deseja excluir este colaborador?')) {
-                colaboradores = colaboradores.filter(c => c.id !== id);
-                atualizarTabelaColaboradores();
-                atualizarFiltros();
-                filtrarAniversariantesVida();
-                filtrarAniversariantesEmpresa();
-                updateDashboard();
-            }
+            if (totalVidaEl) totalVidaEl.textContent = aniversariantesVida.length;
+            if (totalEmpresaEl) totalEmpresaEl.textContent = aniversariantesEmpresa.length;
+            if (foraRegiaoEl) foraRegiaoEl.textContent = foraRegiao.length;
+            if (totalPizzasEl) totalPizzasEl.textContent = totalPizzas;
         }
 
         // Inicialização
-        document.addEventListener('DOMContentLoaded', function() {
-            carregarDadosExemplo();
-            atualizarTabelaEmpresas();
-            atualizarTabelaDepartamentos();
-            atualizarTabelaColaboradores();
-            atualizarTabelaPizzas();
-            atualizarFiltros();
-            updateDashboard();
+        document.addEventListener('DOMContentLoaded', async function() {
+            mostrarLoading();
             
-            // Carregar checklists salvos do localStorage
-            const savedVida = localStorage.getItem('aniversariosChecklist');
-            if (savedVida) {
-                aniversariosChecklist = JSON.parse(savedVida);
+            try {
+                // Carregar todos os dados do Firebase
+                await Promise.all([
+                    carregarEmpresas(),
+                    carregarDepartamentos(),
+                    carregarPizzas(),
+                    carregarColaboradores(),
+                    carregarChecklists(),
+                    carregarPedidos()
+                ]);
+                
+                // Atualizar interface
+                atualizarFiltros();
+                updateDashboard();
+                
+                // Mostrar seção de empresa por padrão
+                showSection('empresa');
+                filtrarAniversariantesEmpresa();
+                
+                mostrarToast('Dados carregados com sucesso!');
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                mostrarToast('Erro ao carregar dados do servidor', 'error');
+            } finally {
+                esconderLoading();
             }
-            
-            const savedEmpresa = localStorage.getItem('empresaChecklist');
-            if (savedEmpresa) {
-                empresaChecklist = JSON.parse(savedEmpresa);
-            }
-            
-            const savedPedidos = localStorage.getItem('pedidosPizzaEmpresa');
-            if (savedPedidos) {
-                pedidosPizzaEmpresa = JSON.parse(savedPedidos);
-            }
-            
-            // Mostrar seção de empresa por padrão
-            showSection('empresa');
-            filtrarAniversariantesEmpresa();
         });
     </script>
 </body>
