@@ -554,6 +554,22 @@
             background: #047857;
         }
 
+        .btn-warning {
+            background: #d97706;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: #b45309;
+        }
+
         .action-btn {
             background: none;
             border: none;
@@ -575,6 +591,10 @@
 
         .action-btn.delete:hover {
             color: #dc2626;
+        }
+
+        .action-btn.add:hover {
+            color: #059669;
         }
 
         /* Hide/Show sections */
@@ -703,6 +723,22 @@
             gap: 6px;
         }
 
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checklist-header h4 {
+            margin-bottom: 0;
+        }
+
+        .checklist-actions {
+            display: flex;
+            gap: 6px;
+        }
+
         .checklist-item {
             display: flex;
             align-items: center;
@@ -729,6 +765,51 @@
             color: #4b5563;
             cursor: pointer;
             flex: 1;
+        }
+
+        .checklist-item .remove-item {
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 4px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .checklist-item .remove-item:hover {
+            opacity: 1;
+        }
+
+        .add-checklist-item {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #d1d5db;
+        }
+
+        .add-checklist-item input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .add-checklist-item button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .add-checklist-item button:hover {
+            background: #1d4ed8;
         }
 
         /* Pedido de Pizza */
@@ -898,6 +979,26 @@
             display: block;
         }
 
+        .upload-progress {
+            margin-top: 8px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: #2563eb;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
         /* Progresso checklist */
         .progresso-checklist {
             display: inline-block;
@@ -912,34 +1013,6 @@
         .progresso-checklist.completo {
             background: #059669;
             color: white;
-        }
-
-        /* Textarea de postagem */
-        .postagem-texto {
-            margin: 12px 0;
-        }
-
-        .postagem-texto label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: #4b5563;
-            margin-bottom: 6px;
-        }
-
-        .postagem-texto textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 13px;
-            min-height: 60px;
-            resize: vertical;
-        }
-
-        .postagem-texto textarea:focus {
-            border-color: #2563eb;
-            outline: none;
         }
 
         /* Estilos para gráficos */
@@ -1003,43 +1076,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-        }
-
-        .pizza-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .pizza-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-
-        .pizza-name {
-            flex: 1;
-            font-size: 12px;
-            color: #4b5563;
-        }
-
-        .pizza-quantity {
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        .pizza-percent {
-            color: #6b7280;
-            font-size: 11px;
-        }
-
-        .progress-ring {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: conic-gradient(#2563eb 0deg, #f3f4f6 0deg);
-            margin: 0 auto 20px;
         }
 
         /* Resumo financeiro */
@@ -1648,6 +1684,23 @@
         let empresaChecklist = {};
         let pedidosPizzaEmpresa = {};
 
+        // Itens padrão do checklist de empresa
+        const itensPadraoChecklistEmpresa = [
+            { id: 'arteTrofeu', nome: 'Arte troféu' },
+            { id: 'arteTvCorporativa', nome: 'Arte TV corporativa' },
+            { id: 'impressaoTrofeu', nome: 'Impressão troféu' },
+            { id: 'entregaPizzariaTrofeu', nome: 'Entrega pizzaria troféu com impressão' },
+            { id: 'listagemPizzaria', nome: 'Listagem para pizzaria' },
+            { id: 'escolhaSabor', nome: 'Escolha do sabor colaborador' },
+            { id: 'postagemGrupoInterno', nome: 'Postagem grupo interno' },
+            { id: 'postagemInstagram', nome: 'Postagem Instagram' },
+            { id: 'postagemTvCorporativa', nome: 'Postagem TV corporativa' },
+            { id: 'contatoPizzaria', nome: 'Contato com pizzaria' },
+            { id: 'passarContato', nome: 'Passar contato colaborador pizzaria' },
+            { id: 'acompanharPedidos', nome: 'Acompanhar pedidos' },
+            { id: 'entregaConfirmada', nome: 'Entrega confirmada' }
+        ];
+
         // Data atual para referência
         const hoje = new Date();
         const anoAtual = hoje.getFullYear();
@@ -1710,18 +1763,15 @@
 
         // Função para verificar se checklist está completo
         function checklistCompleto(checklistState, tipo) {
-            if (!checklistState) return false;
+            if (!checklistState || !checklistState.itens) return false;
+            
             if (tipo === 'vida') {
                 const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
                 return items.every(item => checklistState[item]);
             } else {
-                const items = [
-                    'arteTrofeu', 'arteTvCorporativa', 'impressaoTrofeu', 'entregaPizzariaTrofeu',
-                    'listagemPizzaria', 'escolhaSabor', 'postagemGrupoInterno', 'postagemInstagram',
-                    'postagemTvCorporativa', 'contatoPizzaria', 'passarContato', 'acompanharPedidos',
-                    'entregaConfirmada'
-                ];
-                return items.every(item => checklistState[item]);
+                // Para empresa, verificar todos os itens personalizados
+                const itens = checklistState.itens || [];
+                return itens.every(item => item.checked);
             }
         }
 
@@ -1954,17 +2004,6 @@
                 
                 if (error.code === 'permission-denied') {
                     mostrarToast('Erro de permissão. Configure as regras do Firestore.', 'error');
-                    console.log('Instruções: Acesse o console do Firebase > Firestore Database > Regras e cole as seguintes regras:');
-                    console.log(`
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}
-                    `);
                 } else {
                     mostrarToast('Erro ao salvar empresa: ' + error.message, 'error');
                 }
@@ -2631,8 +2670,24 @@ service cloud.firestore {
                 mostrarLoading();
                 
                 try {
+                    // Mostrar barra de progresso
+                    const progressBar = document.getElementById(`progress_${colaboradorId}`);
+                    if (progressBar) {
+                        progressBar.classList.add('active');
+                    }
+                    
                     // Upload da foto para o Storage
-                    const snapshot = await storageRef.put(file);
+                    const snapshot = await storageRef.put(file, {
+                        onUploadProgress: (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            if (progressBar) {
+                                const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                                if (progressBarInner) {
+                                    progressBarInner.style.width = progress + '%';
+                                }
+                            }
+                        }
+                    });
                     
                     // Pegar URL da foto
                     const downloadUrl = await snapshot.ref.getDownloadURL();
@@ -2654,21 +2709,51 @@ service cloud.firestore {
                             };
                         }
                         aniversariosChecklist[checklistKey].fotoUrl = downloadUrl;
+                        
+                        // Salvar automaticamente no Firebase
+                        await db.collection('checklists').doc(checklistKey).set(aniversariosChecklist[checklistKey]);
                     } else {
                         const checklistKey = `empresa_${colaboradorId}`;
                         if (!empresaChecklist[checklistKey]) {
                             empresaChecklist[checklistKey] = {
                                 colaboradorId: colaboradorId,
-                                tipo: 'empresa'
+                                tipo: 'empresa',
+                                itens: itensPadraoChecklistEmpresa.map(item => ({
+                                    id: item.id,
+                                    nome: item.nome,
+                                    checked: false
+                                }))
                             };
                         }
                         empresaChecklist[checklistKey].fotoUrl = downloadUrl;
+                        
+                        // Salvar automaticamente no Firebase
+                        await db.collection('checklists').doc(checklistKey).set(empresaChecklist[checklistKey]);
+                    }
+                    
+                    // Esconder barra de progresso
+                    if (progressBar) {
+                        progressBar.classList.remove('active');
+                        const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                        if (progressBarInner) {
+                            progressBarInner.style.width = '0%';
+                        }
                     }
                     
                     mostrarToast('Foto enviada com sucesso!');
                 } catch (error) {
                     console.error('Erro ao fazer upload da foto:', error);
                     mostrarToast('Erro ao enviar foto: ' + error.message, 'error');
+                    
+                    // Esconder barra de progresso em caso de erro
+                    const progressBar = document.getElementById(`progress_${colaboradorId}`);
+                    if (progressBar) {
+                        progressBar.classList.remove('active');
+                        const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                        if (progressBarInner) {
+                            progressBarInner.style.width = '0%';
+                        }
+                    }
                 } finally {
                     esconderLoading();
                 }
@@ -2824,6 +2909,169 @@ service cloud.firestore {
             }
         }
 
+        function adicionarItemChecklistEmpresa(colaboradorId, input) {
+            if (!input.value.trim()) return;
+            
+            const checklistKey = `empresa_${colaboradorId}`;
+            if (!empresaChecklist[checklistKey]) {
+                empresaChecklist[checklistKey] = {
+                    colaboradorId: colaboradorId,
+                    tipo: 'empresa',
+                    itens: itensPadraoChecklistEmpresa.map(item => ({
+                        id: item.id,
+                        nome: item.nome,
+                        checked: false
+                    }))
+                };
+            }
+            
+            // Gerar ID único para o novo item
+            const novoId = 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Adicionar novo item
+            empresaChecklist[checklistKey].itens.push({
+                id: novoId,
+                nome: input.value.trim(),
+                checked: false
+            });
+            
+            // Limpar input
+            input.value = '';
+            
+            // Recarregar o card
+            const card = document.getElementById(`empresa_card_${colaboradorId}`);
+            if (card) {
+                // Atualizar apenas a seção do checklist
+                const checklistDiv = card.querySelector('.checklist');
+                if (checklistDiv) {
+                    checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
+                }
+            }
+            
+            // Salvar automaticamente
+            salvarChecklistEmpresa(colaboradorId);
+        }
+
+        function removerItemChecklistEmpresa(colaboradorId, itemId) {
+            if (!confirm('Tem certeza que deseja remover este item do checklist?')) return;
+            
+            const checklistKey = `empresa_${colaboradorId}`;
+            if (empresaChecklist[checklistKey] && empresaChecklist[checklistKey].itens) {
+                // Filtrar para remover o item
+                empresaChecklist[checklistKey].itens = empresaChecklist[checklistKey].itens.filter(item => item.id !== itemId);
+                
+                // Recarregar o card
+                const card = document.getElementById(`empresa_card_${colaboradorId}`);
+                if (card) {
+                    // Atualizar apenas a seção do checklist
+                    const checklistDiv = card.querySelector('.checklist');
+                    if (checklistDiv) {
+                        checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
+                    }
+                    
+                    // Atualizar progresso
+                    atualizarProgressoEmpresa(colaboradorId);
+                }
+                
+                // Salvar automaticamente
+                salvarChecklistEmpresa(colaboradorId);
+            }
+        }
+
+        function gerarHTMLChecklistEmpresa(checklistState, colaboradorId) {
+            const itens = checklistState?.itens || itensPadraoChecklistEmpresa.map(item => ({
+                id: item.id,
+                nome: item.nome,
+                checked: false
+            }));
+            
+            const concluidos = itens.filter(item => item.checked).length;
+            const completo = itens.length > 0 && concluidos === itens.length;
+            const progressoClass = completo ? 'completo' : '';
+            
+            let html = `
+                <div class="checklist-header">
+                    <h4>
+                        Checklist
+                        <span class="progresso-checklist ${progressoClass}">${concluidos}/${itens.length}</span>
+                    </h4>
+                    <div class="checklist-actions">
+                        <button class="btn-success" style="padding: 2px 8px; font-size: 11px;" onclick="salvarChecklistEmpresa('${colaboradorId}')">Salvar</button>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar itens do checklist
+            itens.forEach(item => {
+                html += `
+                    <div class="checklist-item">
+                        <input type="checkbox" id="empresa_${item.id}_${colaboradorId}" 
+                            ${item.checked ? 'checked' : ''} 
+                            onchange="atualizarItemChecklistEmpresa('${colaboradorId}', '${item.id}', this.checked)">
+                        <label for="empresa_${item.id}_${colaboradorId}">${item.nome}</label>
+                        <span class="remove-item" onclick="removerItemChecklistEmpresa('${colaboradorId}', '${item.id}')">✕</span>
+                    </div>
+                `;
+            });
+            
+            // Adicionar campo para novo item
+            html += `
+                <div class="add-checklist-item">
+                    <input type="text" id="novo_item_${colaboradorId}" placeholder="Novo item do checklist...">
+                    <button onclick="adicionarItemChecklistEmpresa('${colaboradorId}', document.getElementById('novo_item_${colaboradorId}'))">Adicionar</button>
+                </div>
+            `;
+            
+            return html;
+        }
+
+        function atualizarItemChecklistEmpresa(colaboradorId, itemId, checked) {
+            const checklistKey = `empresa_${colaboradorId}`;
+            if (empresaChecklist[checklistKey] && empresaChecklist[checklistKey].itens) {
+                const item = empresaChecklist[checklistKey].itens.find(i => i.id === itemId);
+                if (item) {
+                    item.checked = checked;
+                    
+                    // Atualizar progresso
+                    atualizarProgressoEmpresa(colaboradorId);
+                    
+                    // Salvar automaticamente
+                    salvarChecklistEmpresa(colaboradorId);
+                }
+            }
+        }
+
+        function atualizarProgressoEmpresa(colaboradorId) {
+            const card = document.getElementById(`empresa_card_${colaboradorId}`);
+            if (!card) return;
+            
+            const checklistKey = `empresa_${colaboradorId}`;
+            const checklistState = empresaChecklist[checklistKey];
+            
+            if (checklistState && checklistState.itens) {
+                const itens = checklistState.itens;
+                const concluidos = itens.filter(item => item.checked).length;
+                const completo = itens.length > 0 && concluidos === itens.length;
+                const progressoClass = completo ? 'completo' : '';
+                
+                const progressoEl = card.querySelector('.progresso-checklist');
+                if (progressoEl) {
+                    progressoEl.textContent = `${concluidos}/${itens.length}`;
+                    progressoEl.className = `progresso-checklist ${progressoClass}`;
+                }
+                
+                // Atualizar título se completo
+                const tituloEl = card.querySelector('.card-header h3');
+                if (tituloEl) {
+                    if (completo && !tituloEl.textContent.includes('✓')) {
+                        tituloEl.textContent = tituloEl.textContent + ' ✓';
+                    } else if (!completo && tituloEl.textContent.includes('✓')) {
+                        tituloEl.textContent = tituloEl.textContent.replace(' ✓', '');
+                    }
+                }
+            }
+        }
+
         function exibirAniversariantesEmpresa(aniversariantes) {
             const container = document.getElementById('aniversariantesEmpresaContainer');
             
@@ -2850,22 +3098,22 @@ service cloud.firestore {
                 
                 // Recuperar estado salvo do checklist de empresa, se existir
                 const checklistKey = `empresa_${col.id}`;
-                let checklistState = empresaChecklist[checklistKey] || {
-                    arteTrofeu: false,
-                    arteTvCorporativa: false,
-                    impressaoTrofeu: false,
-                    entregaPizzariaTrofeu: false,
-                    listagemPizzaria: false,
-                    escolhaSabor: false,
-                    postagemGrupoInterno: false,
-                    postagemInstagram: false,
-                    postagemTvCorporativa: false,
-                    contatoPizzaria: false,
-                    passarContato: false,
-                    acompanharPedidos: false,
-                    entregaConfirmada: false,
-                    fotoUrl: ''
-                };
+                let checklistState = empresaChecklist[checklistKey];
+                
+                if (!checklistState) {
+                    // Inicializar com itens padrão se não existir
+                    checklistState = {
+                        colaboradorId: col.id,
+                        tipo: 'empresa',
+                        itens: itensPadraoChecklistEmpresa.map(item => ({
+                            id: item.id,
+                            nome: item.nome,
+                            checked: false
+                        })),
+                        fotoUrl: ''
+                    };
+                    empresaChecklist[checklistKey] = checklistState;
+                }
                 
                 const completo = checklistCompleto(checklistState, 'empresa');
                 
@@ -2894,16 +3142,6 @@ service cloud.firestore {
                 card.className = `aniversariante-card ${jaPassou ? 'passado' : ''}`;
                 card.id = `empresa_card_${col.id}`;
                 
-                // Calcular progresso do checklist
-                const items = [
-                    'arteTrofeu', 'arteTvCorporativa', 'impressaoTrofeu', 'entregaPizzariaTrofeu',
-                    'listagemPizzaria', 'escolhaSabor', 'postagemGrupoInterno', 'postagemInstagram',
-                    'postagemTvCorporativa', 'contatoPizzaria', 'passarContato', 'acompanharPedidos',
-                    'entregaConfirmada'
-                ];
-                const concluidos = items.filter(item => checklistState[item]).length;
-                const progressoClass = completo ? 'completo' : '';
-                
                 // Definir classe da data
                 const dataClass = jaPassou ? 'data-passado' : 'data-empresa';
                 
@@ -2923,6 +3161,9 @@ service cloud.firestore {
                     `;
                 }
                 
+                // Gerar HTML do checklist
+                const checklistHTML = gerarHTMLChecklistEmpresa(checklistState, col.id);
+                
                 card.innerHTML = `
                     <div class="card-header">
                         <h3>${col.nome || ''} ${completo ? '✓' : ''}</h3>
@@ -2936,75 +3177,7 @@ service cloud.firestore {
                     </div>
                     
                     <div class="checklist">
-                        <h4>
-                            Checklist
-                            <span class="progresso-checklist ${progressoClass}">${concluidos}/${items.length}</span>
-                        </h4>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_arteTrofeu_${col.id}" ${checklistState.arteTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'arteTrofeu', this.checked)">
-                            <label for="empresa_arteTrofeu_${col.id}">Arte troféu</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_arteTvCorporativa_${col.id}" ${checklistState.arteTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'arteTvCorporativa', this.checked)">
-                            <label for="empresa_arteTvCorporativa_${col.id}">Arte TV corporativa</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_impressaoTrofeu_${col.id}" ${checklistState.impressaoTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'impressaoTrofeu', this.checked)">
-                            <label for="empresa_impressaoTrofeu_${col.id}">Impressão troféu</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_entregaPizzariaTrofeu_${col.id}" ${checklistState.entregaPizzariaTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'entregaPizzariaTrofeu', this.checked)">
-                            <label for="empresa_entregaPizzariaTrofeu_${col.id}">Entrega pizzaria troféu com impressão</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_listagemPizzaria_${col.id}" ${checklistState.listagemPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'listagemPizzaria', this.checked)">
-                            <label for="empresa_listagemPizzaria_${col.id}">Listagem para pizzaria</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_escolhaSabor_${col.id}" ${checklistState.escolhaSabor ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'escolhaSabor', this.checked)">
-                            <label for="empresa_escolhaSabor_${col.id}">Escolha do sabor colaborador</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_postagemGrupoInterno_${col.id}" ${checklistState.postagemGrupoInterno ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemGrupoInterno', this.checked)">
-                            <label for="empresa_postagemGrupoInterno_${col.id}">Postagem grupo interno</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_postagemInstagram_${col.id}" ${checklistState.postagemInstagram ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemInstagram', this.checked)">
-                            <label for="empresa_postagemInstagram_${col.id}">Postagem Instagram</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_postagemTvCorporativa_${col.id}" ${checklistState.postagemTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemTvCorporativa', this.checked)">
-                            <label for="empresa_postagemTvCorporativa_${col.id}">Postagem TV corporativa</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_contatoPizzaria_${col.id}" ${checklistState.contatoPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'contatoPizzaria', this.checked)">
-                            <label for="empresa_contatoPizzaria_${col.id}">Contato com pizzaria</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_passarContato_${col.id}" ${checklistState.passarContato ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'passarContato', this.checked)">
-                            <label for="empresa_passarContato_${col.id}">Passar contato colaborador pizzaria</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_acompanharPedidos_${col.id}" ${checklistState.acompanharPedidos ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'acompanharPedidos', this.checked)">
-                            <label for="empresa_acompanharPedidos_${col.id}">Acompanhar pedidos</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="empresa_entregaConfirmada_${col.id}" ${checklistState.entregaConfirmada ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'entregaConfirmada', this.checked)">
-                            <label for="empresa_entregaConfirmada_${col.id}">Entrega confirmada</label>
-                        </div>
+                        ${checklistHTML}
                     </div>
                     
                     <!-- Pedido de Pizza -->
@@ -3093,11 +3266,10 @@ service cloud.firestore {
                             </div>
                             <input type="file" id="empresa_file_${col.id}" accept="image/*" onchange="fazerUploadFoto(this, '${col.id}', 'empresa')">
                         </div>
+                        <div id="progress_${col.id}" class="upload-progress">
+                            <div class="upload-progress-bar"></div>
+                        </div>
                         ${checklistState.fotoUrl ? `<img id="preview_${col.id}" class="preview-foto active" src="${checklistState.fotoUrl}" alt="Preview">` : `<img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">`}
-                    </div>
-                    
-                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                        <button class="btn-success" onclick="salvarChecklistEmpresa('${col.id}')">Salvar Progresso</button>
                     </div>
                 `;
                 
@@ -3177,47 +3349,6 @@ service cloud.firestore {
             }
         }
 
-        function atualizarChecklistEmpresa(colaboradorId, item, checked) {
-            const checklistKey = `empresa_${colaboradorId}`;
-            if (!empresaChecklist[checklistKey]) {
-                empresaChecklist[checklistKey] = {
-                    colaboradorId: colaboradorId,
-                    tipo: 'empresa'
-                };
-            }
-            empresaChecklist[checklistKey][item] = checked;
-            
-            // Atualizar progresso
-            const card = document.getElementById(`empresa_card_${colaboradorId}`);
-            if (card) {
-                const items = [
-                    'arteTrofeu', 'arteTvCorporativa', 'impressaoTrofeu', 'entregaPizzariaTrofeu',
-                    'listagemPizzaria', 'escolhaSabor', 'postagemGrupoInterno', 'postagemInstagram',
-                    'postagemTvCorporativa', 'contatoPizzaria', 'passarContato', 'acompanharPedidos',
-                    'entregaConfirmada'
-                ];
-                const concluidos = items.filter(i => empresaChecklist[checklistKey][i]).length;
-                const completo = concluidos === items.length;
-                const progressoClass = completo ? 'completo' : '';
-                
-                const progressoEl = card.querySelector('.progresso-checklist');
-                if (progressoEl) {
-                    progressoEl.textContent = `${concluidos}/${items.length}`;
-                    progressoEl.className = `progresso-checklist ${progressoClass}`;
-                }
-                
-                // Atualizar título se completo
-                const tituloEl = card.querySelector('.card-header h3');
-                if (tituloEl) {
-                    if (completo && !tituloEl.textContent.includes('✓')) {
-                        tituloEl.textContent = tituloEl.textContent + ' ✓';
-                    } else if (!completo && tituloEl.textContent.includes('✓')) {
-                        tituloEl.textContent = tituloEl.textContent.replace(' ✓', '');
-                    }
-                }
-            }
-        }
-
         async function salvarChecklistEmpresa(colaboradorId) {
             const checklistKey = `empresa_${colaboradorId}`;
             const checklistData = empresaChecklist[checklistKey];
@@ -3226,7 +3357,6 @@ service cloud.firestore {
                 mostrarLoading();
                 try {
                     await db.collection('checklists').doc(checklistKey).set(checklistData);
-                    
                     mostrarToast('Checklist salvo com sucesso!');
                 } catch (error) {
                     console.error('Erro ao salvar checklist:', error);
@@ -3245,7 +3375,7 @@ service cloud.firestore {
             
             colaboradores.forEach(col => {
                 const checklistKey = `empresa_${col.id}`;
-                const checklist = empresaChecklist[checklistKey] || {};
+                const checklist = empresaChecklist[checklistKey] || { itens: [] };
                 const pedidoKey = `pedido_empresa_${col.id}`;
                 const pedido = pedidosPizzaEmpresa[pedidoKey] || {};
                 
@@ -3262,19 +3392,11 @@ service cloud.firestore {
                     conteudo += `Cidade: ${col.cidade || ''}\n`;
                     conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? 'COMPLETO' : 'PENDENTE'}\n`;
                     conteudo += `\nCHECKLIST:\n`;
-                    conteudo += `Arte troféu: ${checklist.arteTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Arte TV corporativa: ${checklist.arteTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Impressão troféu: ${checklist.impressaoTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Entrega pizzaria troféu: ${checklist.entregaPizzariaTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Listagem para pizzaria: ${checklist.listagemPizzaria ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Escolha do sabor: ${checklist.escolhaSabor ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Postagem grupo interno: ${checklist.postagemGrupoInterno ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Postagem Instagram: ${checklist.postagemInstagram ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Postagem TV corporativa: ${checklist.postagemTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Contato com pizzaria: ${checklist.contatoPizzaria ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Passar contato: ${checklist.passarContato ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Acompanhar pedidos: ${checklist.acompanharPedidos ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Entrega confirmada: ${checklist.entregaConfirmada ? 'Concluído' : 'Pendente'}\n`;
+                    
+                    checklist.itens.forEach(item => {
+                        conteudo += `${item.nome}: ${item.checked ? 'Concluído' : 'Pendente'}\n`;
+                    });
+                    
                     conteudo += `\nPEDIDO DE PIZZA:\n`;
                     conteudo += `Pizza: ${pizza ? pizza.nome + ' - ' + pizza.pizzaria : 'Não selecionada'}\n`;
                     conteudo += `Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
@@ -3368,7 +3490,7 @@ service cloud.firestore {
             Object.entries(gastosPorPizzaria)
                 .sort((a, b) => b[1] - a[1])
                 .forEach(([pizzaria, valor]) => {
-                    const percentual = (valor / totalGasto) * 100;
+                    const percentual = totalGasto > 0 ? (valor / totalGasto) * 100 : 0;
                     graficoHTML += `
                         <div class="chart-bar-container">
                             <div class="chart-bar-label">${pizzaria}</div>
