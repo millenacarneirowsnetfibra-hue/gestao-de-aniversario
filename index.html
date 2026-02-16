@@ -1402,6 +1402,13 @@
                 <div class="cards-list" id="vidaCardsList"></div>
             `;
 
+            // Set default filter to current month
+            const currentMonth = new Date().getMonth() + 1;
+            const mesFilter = document.getElementById('filtroMesVida');
+            if (mesFilter) {
+                mesFilter.value = currentMonth.toString();
+            }
+
             // Add event listeners to filters
             const filtroNome = document.getElementById('filtroNomeVida');
             const filtroMes = document.getElementById('filtroMesVida');
@@ -1457,6 +1464,9 @@
                     const card = createVidaCard(col, checklist);
                     container.appendChild(card);
                 }
+                
+                // Apply initial filter for current month
+                filterVida();
             } catch (error) {
                 console.error('Error loading vida cards:', error);
                 showToast('Erro ao carregar aniversariantes', 'error');
@@ -1532,12 +1542,6 @@
                             </button>
                         </div>
                     </div>
-                </div>
-                
-                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="exportChecklist('${colaborador.id}')">
-                        <i class="fas fa-download"></i> Exportar Checklist
-                    </button>
                 </div>
             `;
             
@@ -1666,6 +1670,13 @@
                 <div class="cards-list" id="empresaCardsList"></div>
             `;
 
+            // Set default filter to current month
+            const currentMonth = new Date().getMonth() + 1;
+            const mesFilter = document.getElementById('filtroMesEmpresa');
+            if (mesFilter) {
+                mesFilter.value = currentMonth.toString();
+            }
+
             // Add event listeners to filters
             const filtroNome = document.getElementById('filtroNomeEmpresa');
             const filtroMes = document.getElementById('filtroMesEmpresa');
@@ -1721,6 +1732,9 @@
                     const card = createEmpresaCard(col, checklist);
                     container.appendChild(card);
                 }
+                
+                // Apply initial filter for current month
+                filterEmpresa();
             } catch (error) {
                 console.error('Error loading empresa cards:', error);
                 showToast('Erro ao carregar aniversariantes', 'error');
@@ -1785,12 +1799,6 @@
                     <div class="pizza-order-form" id="pizzaOrder-${colaborador.id}">
                         ${renderPizzaOrderForm(colaborador.id)}
                     </div>
-                </div>
-                
-                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="exportChecklist('${colaborador.id}')">
-                        <i class="fas fa-download"></i> Exportar Checklist
-                    </button>
                 </div>
             `;
             
@@ -2786,37 +2794,6 @@
             } finally {
                 hideLoading();
             }
-        }
-
-        // Export Functions
-        function exportChecklist(colaboradorId) {
-            const card = document.querySelector(`[data-colaborador-id="${colaboradorId}"]`);
-            if (!card) return;
-            
-            const nome = card.querySelector('h4').textContent;
-            const checklistItems = card.querySelectorAll('.checklist-item');
-            
-            let content = `Checklist - ${nome}\n`;
-            content += `Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
-            content += `Hora: ${new Date().toLocaleTimeString('pt-BR')}\n`;
-            content += '='.repeat(40) + '\n\n';
-            
-            checklistItems.forEach(item => {
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                const text = item.querySelector('.item-text').textContent;
-                const status = checkbox.checked ? '[X]' : '[ ]';
-                content += `${status} ${text}\n`;
-            });
-            
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `checklist_${nome}_${new Date().toISOString().split('T')[0]}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            showToast('Checklist exportado com sucesso!', 'success');
         }
 
         // Pizza Functions
