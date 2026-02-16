@@ -965,7 +965,7 @@
             
             <div class="sidebar-nav">
                 <div class="nav-section-title">Principal</div>
-                <div class="nav-item" onclick="showSection('dashboard')">
+                <div class="nav-item active" onclick="showSection('dashboard')">
                     <span class="nav-text">Dashboard</span>
                 </div>
                 
@@ -973,7 +973,7 @@
                 <div class="nav-item" onclick="showSection('vida')">
                     <span class="nav-text">Aniversário de Vida</span>
                 </div>
-                <div class="nav-item active" onclick="showSection('empresa')">
+                <div class="nav-item" onclick="showSection('empresa')">
                     <span class="nav-text">Aniversário de Empresa</span>
                 </div>
                 
@@ -1020,7 +1020,7 @@
             <div class="filters-bar">
                 <div class="filter-group">
                     <label>Mês</label>
-                    <select id="monthFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa()">
+                    <select id="monthFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard()">
                         <option value="1">Janeiro 2026</option>
                         <option value="2" selected>Fevereiro 2026</option>
                         <option value="3">Março 2026</option>
@@ -1056,7 +1056,7 @@
             </div>
 
             <!-- Section Dashboard -->
-            <div id="dashboard-section" class="content-section">
+            <div id="dashboard-section" class="content-section active">
                 <div class="dashboard-cards">
                     <div class="card">
                         <div class="card-icon">📊</div>
@@ -1112,7 +1112,7 @@
             </div>
 
             <!-- Section Aniversário de Empresa -->
-            <div id="empresa-section" class="content-section active">
+            <div id="empresa-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
                         <h2>Aniversários de Empresa - Fevereiro 2026</h2>
@@ -1664,14 +1664,14 @@
             selectEmpresa.innerHTML = '<option value="">Selecione...</option>';
             selectDepartamento.innerHTML = '<option value="">Selecione...</option>';
             
-            empresas.forEach(emp => {
+            empresas.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(emp => {
                 const option = document.createElement('option');
                 option.value = emp.id;
                 option.textContent = emp.nome;
                 selectEmpresa.appendChild(option);
             });
             
-            departamentos.forEach(dept => {
+            departamentos.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept.id;
                 option.textContent = dept.nome;
@@ -2027,7 +2027,7 @@ service cloud.firestore {
                 return;
             }
             
-            empresas.forEach(emp => {
+            empresas.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(emp => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${emp.nome || ''}</td>
@@ -2049,7 +2049,7 @@ service cloud.firestore {
                 return;
             }
             
-            departamentos.forEach(dept => {
+            departamentos.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(dept => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${dept.nome || ''}</td>
@@ -2071,7 +2071,7 @@ service cloud.firestore {
                 return;
             }
             
-            pizzas.forEach(pizza => {
+            pizzas.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(pizza => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${pizza.nome || ''}</td>
@@ -3161,9 +3161,8 @@ service cloud.firestore {
                 atualizarFiltros();
                 updateDashboard();
                 
-                // Mostrar seção de empresa por padrão
-                showSection('empresa');
-                filtrarAniversariantesEmpresa();
+                // Mostrar dashboard por padrão
+                showSection('dashboard');
                 
                 mostrarToast('Dados carregados com sucesso!');
             } catch (error) {
