@@ -588,6 +588,9 @@
             font-size: 16px;
             color: #111827;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .card-header .data {
@@ -703,6 +706,11 @@
             flex: 1;
         }
 
+        .checklist-item label.riscado {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
         .checklist-item .remove-item {
             color: #dc2626;
             cursor: pointer;
@@ -748,141 +756,159 @@
             background: #1d4ed8;
         }
 
-        /* Pedido de Pizza */
-        .pedido-pizza {
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 12px 0;
-            border-left: 4px solid #2563eb;
-        }
-
-        .pedido-pizza-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .pedido-pizza-header h4 {
-            font-size: 14px;
-            color: #1f2937;
-        }
-
-        .pedido-pizza-content {
-            display: none;
-            margin-top: 12px;
-        }
-
-        .pedido-pizza-content.active {
-            display: block;
-        }
-
-        .pedido-pizza-resumo {
-            background: white;
-            border-radius: 6px;
-            padding: 10px;
-            margin-top: 8px;
+        /* Edição de item */
+        .edit-item-input {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid #2563eb;
+            border-radius: 4px;
             font-size: 12px;
-            border: 1px solid #e5e7eb;
+            margin-right: 5px;
         }
 
-        .pedido-pizza-resumo p {
-            margin: 4px 0;
-            color: #4b5563;
-        }
-
-        .pedido-pizza-resumo strong {
-            color: #1f2937;
-        }
-
-        .btn-toggle-pedido {
-            background: #2563eb;
+        .save-edit-btn {
+            background: #059669;
             color: white;
             border: none;
             padding: 4px 10px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 11px;
-            transition: background 0.2s;
-        }
-
-        .btn-toggle-pedido:hover:not(:disabled) {
-            background: #1d4ed8;
-        }
-
-        .btn-toggle-pedido.ver-menos {
-            background: #6b7280;
-        }
-
-        .pedido-form-group {
-            margin-bottom: 12px;
-        }
-
-        .pedido-form-group label {
-            display: block;
-            font-size: 12px;
             font-weight: 500;
-            color: #4b5563;
-            margin-bottom: 4px;
+            margin-right: 5px;
         }
 
-        .pedido-form-group select, .pedido-form-group input {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #e5e7eb;
+        .cancel-edit-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 4px 10px;
             border-radius: 4px;
-            font-size: 13px;
-        }
-
-        .borda-options {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .borda-option {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .borda-option input[type="radio"] {
-            width: auto;
-            accent-color: #2563eb;
-        }
-
-        .data-input-group input[type="text"] {
-            font-family: monospace;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
         }
 
         /* Postagem texto */
         .postagem-texto {
             margin: 12px 0;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
         }
         
-        .postagem-texto label {
-            display: block;
+        .postagem-texto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .postagem-texto-header label {
             font-size: 13px;
             font-weight: 500;
             color: #4b5563;
-            margin-bottom: 6px;
         }
         
-        .postagem-texto textarea {
+        .postagem-texto-acoes {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .postagem-texto-acoes button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #6b7280;
+        }
+        
+        .postagem-texto-acoes button:hover {
+            background: #e5e7eb;
+        }
+        
+        .postagem-texto-acoes button.editar:hover {
+            color: #2563eb;
+        }
+        
+        .postagem-texto-acoes button.excluir:hover {
+            color: #dc2626;
+        }
+        
+        .postagem-texto-conteudo {
+            font-size: 13px;
+            color: #1f2937;
+            line-height: 1.5;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .postagem-texto-conteudo.expandido {
+            max-height: none;
+        }
+        
+        .postagem-texto-conteudo.resumido {
+            max-height: 80px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .postagem-texto-conteudo.resumido::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, white);
+            pointer-events: none;
+        }
+        
+        .btn-ver-mais {
+            background: none;
+            border: none;
+            color: #2563eb;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 4px 0;
+            margin-top: 4px;
+            text-align: left;
+        }
+        
+        .btn-ver-mais:hover {
+            text-decoration: underline;
+        }
+        
+        .postagem-texto-editor {
+            display: none;
+        }
+        
+        .postagem-texto-editor.active {
+            display: block;
+        }
+        
+        .postagem-texto-editor textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #e5e7eb;
             border-radius: 6px;
             font-size: 13px;
             resize: vertical;
-            min-height: 60px;
+            min-height: 100px;
         }
         
-        .postagem-texto textarea:focus {
-            border-color: #2563eb;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        .postagem-texto-editor-acoes {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 8px;
         }
 
         /* Progresso checklist */
@@ -964,49 +990,7 @@
             gap: 20px;
         }
 
-        /* Resumo financeiro */
-        .resumo-financeiro {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .resumo-valor {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .resumo-label {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .pizzaria-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .pizzaria-row:last-child {
-            border-bottom: none;
-        }
-
-        .pizzaria-nome {
-            font-weight: 500;
-            color: #1f2937;
-        }
-
-        .pizzaria-valor {
-            font-weight: 600;
-            color: #059669;
-        }
-
-        /* Filtros Financeiro Aprimorados com botão Ver Mais/Menos */
+        /* Filtros Financeiro */
         .filtros-financeiro-container {
             margin-bottom: 24px;
         }
@@ -1787,6 +1771,15 @@
             { id: 'entregaConfirmada', nome: 'Entrega confirmada' }
         ];
 
+        // Itens padrão do checklist de vida
+        const itensPadraoChecklistVida = [
+            { id: 'arteInstagram', nome: 'Arte Instagram' },
+            { id: 'arteTV', nome: 'Arte TV' },
+            { id: 'postInstagram', nome: 'Post Instagram' },
+            { id: 'postIntranet', nome: 'Post Intranet' },
+            { id: 'postWhatsapp', nome: 'Post WhatsApp' }
+        ];
+
         // Data atual para referência
         const hoje = new Date();
         const anoAtual = hoje.getFullYear();
@@ -1951,8 +1944,8 @@
             if (!checklistState) return false;
             
             if (tipo === 'vida') {
-                const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
-                return items.every(item => checklistState[item]);
+                const itens = checklistState.itens || [];
+                return itens.length > 0 && itens.every(item => item.checked);
             } else {
                 // Para empresa, verificar todos os itens personalizados
                 const itens = checklistState.itens || [];
@@ -2666,16 +2659,21 @@
                 
                 // Recuperar estado salvo do checklist, se existir
                 const checklistKey = `checklist_${col.id}`;
-                let checklistState = aniversariosChecklist[checklistKey] || {
-                    colaboradorId: col.id,
-                    tipo: 'vida',
-                    arteInstagram: false,
-                    arteTV: false,
-                    postInstagram: false,
-                    postIntranet: false,
-                    postWhatsapp: false,
-                    texto: ''
-                };
+                let checklistState = aniversariosChecklist[checklistKey];
+                
+                if (!checklistState) {
+                    // Inicializar com itens padrão se não existir
+                    checklistState = {
+                        colaboradorId: col.id,
+                        tipo: 'vida',
+                        itens: itensPadraoChecklistVida.map(item => ({
+                            id: item.id,
+                            nome: item.nome,
+                            checked: false
+                        }))
+                    };
+                    aniversariosChecklist[checklistKey] = checklistState;
+                }
                 
                 const completo = checklistCompleto(checklistState, 'vida');
                 
@@ -2683,18 +2681,13 @@
                 card.className = `aniversariante-card ${jaPassou ? 'passado' : ''}`;
                 card.id = `card_${col.id}`;
                 
-                // Calcular progresso do checklist
-                const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
-                const concluidos = items.filter(item => checklistState[item]).length;
-                const progressoClass = completo ? 'completo' : '';
-                
-                // Definir classe da data
-                const dataClass = jaPassou ? 'data-passado' : 'data';
+                // Gerar HTML do checklist
+                const checklistHTML = gerarHTMLChecklistVida(checklistState, col.id);
                 
                 card.innerHTML = `
                     <div class="card-header">
                         <h3>${col.nome || ''} ${completo ? '✓' : ''}</h3>
-                        <span class="${dataClass}">${dataFormatada}</span>
+                        <span class="${jaPassou ? 'data-passado' : 'data'}">${dataFormatada}</span>
                     </div>
                     <div class="card-info">
                         <p><strong>Departamento:</strong> ${col.departamentoNome || ''}</p>
@@ -2703,40 +2696,33 @@
                     </div>
                     
                     <div class="checklist">
-                        <h4>
-                            Checklist
-                            <span class="progresso-checklist ${progressoClass}">${concluidos}/${items.length}</span>
-                        </h4>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="arteInstagram_${col.id}" ${checklistState.arteInstagram ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'arteInstagram', this.checked)">
-                            <label for="arteInstagram_${col.id}">Arte Instagram</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="arteTV_${col.id}" ${checklistState.arteTV ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'arteTV', this.checked)">
-                            <label for="arteTV_${col.id}">Arte TV</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="postInstagram_${col.id}" ${checklistState.postInstagram ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postInstagram', this.checked)">
-                            <label for="postInstagram_${col.id}">Post Instagram</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="postIntranet_${col.id}" ${checklistState.postIntranet ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postIntranet', this.checked)">
-                            <label for="postIntranet_${col.id}">Post Intranet</label>
-                        </div>
-                        
-                        <div class="checklist-item">
-                            <input type="checkbox" id="postWhatsapp_${col.id}" ${checklistState.postWhatsapp ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postWhatsapp', this.checked)">
-                            <label for="postWhatsapp_${col.id}">Post WhatsApp</label>
-                        </div>
+                        ${checklistHTML}
                     </div>
                     
                     <div class="postagem-texto">
-                        <label>Texto da postagem:</label>
-                        <textarea id="texto_${col.id}" placeholder="Digite aqui o texto que será publicado..." onchange="salvarTexto('${col.id}', this.value)">${checklistState.texto || ''}</textarea>
+                        <div class="postagem-texto-header">
+                            <label>Texto da postagem:</label>
+                            <div class="postagem-texto-acoes">
+                                <button class="editar" onclick="editarTexto('${col.id}')" title="Editar texto">✏️</button>
+                                <button class="excluir" onclick="excluirTexto('${col.id}')" title="Excluir texto">🗑️</button>
+                            </div>
+                        </div>
+                        
+                        <div id="texto_visualizacao_${col.id}" class="postagem-texto-conteudo resumido">
+                            ${checklistState.texto || 'Nenhum texto cadastrado.'}
+                        </div>
+                        
+                        <button id="btn_ver_mais_${col.id}" class="btn-ver-mais" onclick="toggleTexto('${col.id}')" ${!checklistState.texto ? 'style="display:none;"' : ''}>
+                            Ver mais
+                        </button>
+                        
+                        <div id="texto_editor_${col.id}" class="postagem-texto-editor">
+                            <textarea id="texto_${col.id}">${checklistState.texto || ''}</textarea>
+                            <div class="postagem-texto-editor-acoes">
+                                <button class="btn-success" onclick="salvarTexto('${col.id}')">Salvar</button>
+                                <button class="btn-danger" onclick="cancelarEdicaoTexto('${col.id}')">Cancelar</button>
+                            </div>
+                        </div>
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
@@ -2748,33 +2734,224 @@
             });
         }
 
-        async function atualizarChecklist(colaboradorId, item, checked) {
+        function gerarHTMLChecklistVida(checklistState, colaboradorId) {
+            const itens = checklistState?.itens || itensPadraoChecklistVida.map(item => ({
+                id: item.id,
+                nome: item.nome,
+                checked: false
+            }));
+            
+            const concluidos = itens.filter(item => item.checked).length;
+            const completo = itens.length > 0 && concluidos === itens.length;
+            const progressoClass = completo ? 'completo' : '';
+            
+            let html = `
+                <div class="checklist-header">
+                    <h4>
+                        Checklist
+                        <span class="progresso-checklist ${progressoClass}">${concluidos}/${itens.length}</span>
+                    </h4>
+                    <div class="checklist-actions">
+                        <button class="btn-success" style="padding: 2px 8px; font-size: 11px;" onclick="salvarChecklist('${colaboradorId}')">Salvar</button>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar itens do checklist
+            itens.forEach(item => {
+                const labelClass = item.checked ? 'riscado' : '';
+                html += `
+                    <div class="checklist-item" id="item_${item.id}_${colaboradorId}">
+                        <input type="checkbox" id="vida_${item.id}_${colaboradorId}" 
+                            ${item.checked ? 'checked' : ''} 
+                            onchange="atualizarItemChecklistVida('${colaboradorId}', '${item.id}', this.checked)">
+                        <label for="vida_${item.id}_${colaboradorId}" class="${labelClass}" id="label_${item.id}_${colaboradorId}">${item.nome}</label>
+                        <span class="remove-item" onclick="editarItemChecklistVida('${colaboradorId}', '${item.id}')" title="Editar item">✏️</span>
+                        <span class="remove-item" onclick="removerItemChecklistVida('${colaboradorId}', '${item.id}')" title="Remover item">✕</span>
+                    </div>
+                `;
+            });
+            
+            // Adicionar campo para novo item
+            html += `
+                <div class="add-checklist-item">
+                    <input type="text" id="novo_item_vida_${colaboradorId}" placeholder="Novo item do checklist...">
+                    <button onclick="adicionarItemChecklistVida('${colaboradorId}', document.getElementById('novo_item_vida_${colaboradorId}'))">Adicionar</button>
+                </div>
+            `;
+            
+            return html;
+        }
+
+        function editarItemChecklistVida(colaboradorId, itemId) {
+            const checklistKey = `checklist_${colaboradorId}`;
+            const itemDiv = document.getElementById(`item_${itemId}_${colaboradorId}`);
+            
+            if (!itemDiv) return;
+            
+            const checklistState = aniversariosChecklist[checklistKey];
+            const item = checklistState.itens.find(i => i.id === itemId);
+            
+            if (!item) return;
+            
+            // Salvar conteúdo original
+            const label = document.getElementById(`label_${itemId}_${colaboradorId}`);
+            const nomeOriginal = item.nome;
+            
+            // Criar campo de edição
+            itemDiv.innerHTML = `
+                <input type="text" id="edit_${itemId}_${colaboradorId}" class="edit-item-input" value="${item.nome}">
+                <button class="save-edit-btn" onclick="salvarEdicaoItemChecklistVida('${colaboradorId}', '${itemId}', this)">Salvar</button>
+                <button class="cancel-edit-btn" onclick="cancelarEdicaoItemChecklistVida('${colaboradorId}', '${itemId}', '${nomeOriginal}')">Cancelar</button>
+            `;
+        }
+
+        function salvarEdicaoItemChecklistVida(colaboradorId, itemId, btn) {
+            const input = document.getElementById(`edit_${itemId}_${colaboradorId}`);
+            const novoNome = input.value.trim();
+            
+            if (!novoNome) {
+                mostrarToast('O nome do item não pode estar vazio', 'error');
+                return;
+            }
+            
+            const checklistKey = `checklist_${colaboradorId}`;
+            const checklistState = aniversariosChecklist[checklistKey];
+            const item = checklistState.itens.find(i => i.id === itemId);
+            
+            if (item) {
+                item.nome = novoNome;
+                
+                // Recarregar o card
+                const card = document.getElementById(`card_${colaboradorId}`);
+                if (card) {
+                    const checklistDiv = card.querySelector('.checklist');
+                    if (checklistDiv) {
+                        checklistDiv.innerHTML = gerarHTMLChecklistVida(checklistState, colaboradorId);
+                    }
+                }
+                
+                // Salvar automaticamente
+                salvarChecklist(colaboradorId);
+            }
+        }
+
+        function cancelarEdicaoItemChecklistVida(colaboradorId, itemId, nomeOriginal) {
+            const checklistKey = `checklist_${colaboradorId}`;
+            const checklistState = aniversariosChecklist[checklistKey];
+            
+            // Recarregar o card
+            const card = document.getElementById(`card_${colaboradorId}`);
+            if (card) {
+                const checklistDiv = card.querySelector('.checklist');
+                if (checklistDiv) {
+                    checklistDiv.innerHTML = gerarHTMLChecklistVida(checklistState, colaboradorId);
+                }
+            }
+        }
+
+        function adicionarItemChecklistVida(colaboradorId, input) {
+            if (!input.value.trim()) return;
+            
             const checklistKey = `checklist_${colaboradorId}`;
             if (!aniversariosChecklist[checklistKey]) {
                 aniversariosChecklist[checklistKey] = {
                     colaboradorId: colaboradorId,
                     tipo: 'vida',
-                    arteInstagram: false,
-                    arteTV: false,
-                    postInstagram: false,
-                    postIntranet: false,
-                    postWhatsapp: false,
-                    texto: ''
+                    itens: itensPadraoChecklistVida.map(item => ({
+                        id: item.id,
+                        nome: item.nome,
+                        checked: false
+                    }))
                 };
             }
-            aniversariosChecklist[checklistKey][item] = checked;
             
-            // Atualizar progresso
+            // Gerar ID único para o novo item
+            const novoId = 'item_vida_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Adicionar novo item
+            aniversariosChecklist[checklistKey].itens.push({
+                id: novoId,
+                nome: input.value.trim(),
+                checked: false
+            });
+            
+            // Limpar input
+            input.value = '';
+            
+            // Recarregar o card
             const card = document.getElementById(`card_${colaboradorId}`);
             if (card) {
-                const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
-                const concluidos = items.filter(i => aniversariosChecklist[checklistKey][i]).length;
-                const completo = concluidos === items.length;
+                const checklistDiv = card.querySelector('.checklist');
+                if (checklistDiv) {
+                    checklistDiv.innerHTML = gerarHTMLChecklistVida(aniversariosChecklist[checklistKey], colaboradorId);
+                }
+            }
+            
+            // Salvar automaticamente
+            salvarChecklist(colaboradorId);
+        }
+
+        function removerItemChecklistVida(colaboradorId, itemId) {
+            if (!confirm('Tem certeza que deseja remover este item do checklist?')) return;
+            
+            const checklistKey = `checklist_${colaboradorId}`;
+            if (aniversariosChecklist[checklistKey] && aniversariosChecklist[checklistKey].itens) {
+                // Filtrar para remover o item
+                aniversariosChecklist[checklistKey].itens = aniversariosChecklist[checklistKey].itens.filter(item => item.id !== itemId);
+                
+                // Recarregar o card
+                const card = document.getElementById(`card_${colaboradorId}`);
+                if (card) {
+                    const checklistDiv = card.querySelector('.checklist');
+                    if (checklistDiv) {
+                        checklistDiv.innerHTML = gerarHTMLChecklistVida(aniversariosChecklist[checklistKey], colaboradorId);
+                    }
+                    
+                    // Atualizar progresso
+                    atualizarProgressoVida(colaboradorId);
+                }
+                
+                // Salvar automaticamente
+                salvarChecklist(colaboradorId);
+            }
+        }
+
+        function atualizarItemChecklistVida(colaboradorId, itemId, checked) {
+            const checklistKey = `checklist_${colaboradorId}`;
+            if (aniversariosChecklist[checklistKey] && aniversariosChecklist[checklistKey].itens) {
+                const item = aniversariosChecklist[checklistKey].itens.find(i => i.id === itemId);
+                if (item) {
+                    item.checked = checked;
+                    
+                    // Atualizar estilo da label
+                    const label = document.getElementById(`label_${itemId}_${colaboradorId}`);
+                    if (label) {
+                        label.className = checked ? 'riscado' : '';
+                    }
+                    
+                    // Atualizar progresso
+                    atualizarProgressoVida(colaboradorId);
+                }
+            }
+        }
+
+        function atualizarProgressoVida(colaboradorId) {
+            const card = document.getElementById(`card_${colaboradorId}`);
+            if (!card) return;
+            
+            const checklistKey = `checklist_${colaboradorId}`;
+            const checklistState = aniversariosChecklist[checklistKey];
+            
+            if (checklistState && checklistState.itens) {
+                const itens = checklistState.itens;
+                const concluidos = itens.filter(item => item.checked).length;
+                const completo = itens.length > 0 && concluidos === itens.length;
                 const progressoClass = completo ? 'completo' : '';
                 
                 const progressoEl = card.querySelector('.progresso-checklist');
                 if (progressoEl) {
-                    progressoEl.textContent = `${concluidos}/${items.length}`;
+                    progressoEl.textContent = `${concluidos}/${itens.length}`;
                     progressoEl.className = `progresso-checklist ${progressoClass}`;
                 }
                 
@@ -2790,15 +2967,83 @@
             }
         }
 
-        function salvarTexto(colaboradorId, texto) {
+        function editarTexto(colaboradorId) {
+            document.getElementById(`texto_visualizacao_${colaboradorId}`).style.display = 'none';
+            document.getElementById(`btn_ver_mais_${colaboradorId}`).style.display = 'none';
+            document.getElementById(`texto_editor_${colaboradorId}`).classList.add('active');
+        }
+
+        function excluirTexto(colaboradorId) {
+            if (!confirm('Tem certeza que deseja excluir o texto da postagem?')) return;
+            
+            const checklistKey = `checklist_${colaboradorId}`;
+            if (aniversariosChecklist[checklistKey]) {
+                aniversariosChecklist[checklistKey].texto = '';
+                
+                document.getElementById(`texto_visualizacao_${colaboradorId}`).textContent = 'Nenhum texto cadastrado.';
+                document.getElementById(`texto_${colaboradorId}`).value = '';
+                
+                document.getElementById(`texto_visualizacao_${colaboradorId}`).style.display = 'block';
+                document.getElementById(`btn_ver_mais_${colaboradorId}`).style.display = 'none';
+                document.getElementById(`texto_editor_${colaboradorId}`).classList.remove('active');
+                
+                // Salvar automaticamente
+                salvarChecklist(colaboradorId);
+            }
+        }
+
+        function salvarTexto(colaboradorId) {
+            const texto = document.getElementById(`texto_${colaboradorId}`).value;
+            
             const checklistKey = `checklist_${colaboradorId}`;
             if (!aniversariosChecklist[checklistKey]) {
                 aniversariosChecklist[checklistKey] = {
                     colaboradorId: colaboradorId,
-                    tipo: 'vida'
+                    tipo: 'vida',
+                    itens: itensPadraoChecklistVida.map(item => ({
+                        id: item.id,
+                        nome: item.nome,
+                        checked: false
+                    }))
                 };
             }
             aniversariosChecklist[checklistKey].texto = texto;
+            
+            // Atualizar visualização
+            const visualizacao = document.getElementById(`texto_visualizacao_${colaboradorId}`);
+            visualizacao.textContent = texto || 'Nenhum texto cadastrado.';
+            
+            document.getElementById(`texto_visualizacao_${colaboradorId}`).style.display = 'block';
+            document.getElementById(`btn_ver_mais_${colaboradorId}`).style.display = texto ? 'block' : 'none';
+            document.getElementById(`texto_editor_${colaboradorId}`).classList.remove('active');
+            
+            // Salvar automaticamente
+            salvarChecklist(colaboradorId);
+        }
+
+        function cancelarEdicaoTexto(colaboradorId) {
+            const checklistKey = `checklist_${colaboradorId}`;
+            const texto = aniversariosChecklist[checklistKey]?.texto || '';
+            
+            document.getElementById(`texto_${colaboradorId}`).value = texto;
+            document.getElementById(`texto_visualizacao_${colaboradorId}`).style.display = 'block';
+            document.getElementById(`btn_ver_mais_${colaboradorId}`).style.display = texto ? 'block' : 'none';
+            document.getElementById(`texto_editor_${colaboradorId}`).classList.remove('active');
+        }
+
+        function toggleTexto(colaboradorId) {
+            const visualizacao = document.getElementById(`texto_visualizacao_${colaboradorId}`);
+            const btn = document.getElementById(`btn_ver_mais_${colaboradorId}`);
+            
+            if (visualizacao.classList.contains('resumido')) {
+                visualizacao.classList.remove('resumido');
+                visualizacao.classList.add('expandido');
+                btn.textContent = 'Ver menos';
+            } else {
+                visualizacao.classList.add('resumido');
+                visualizacao.classList.remove('expandido');
+                btn.textContent = 'Ver mais';
+            }
         }
 
         async function salvarChecklist(colaboradorId) {
@@ -2811,19 +3056,6 @@
             _savingChecklist = true;
             
             try {
-                // Salvar texto atual
-                const textoEl = document.getElementById(`texto_${colaboradorId}`);
-                if (textoEl) {
-                    const checklistKey = `checklist_${colaboradorId}`;
-                    if (!aniversariosChecklist[checklistKey]) {
-                        aniversariosChecklist[checklistKey] = {
-                            colaboradorId: colaboradorId,
-                            tipo: 'vida'
-                        };
-                    }
-                    aniversariosChecklist[checklistKey].texto = textoEl.value;
-                }
-                
                 const checklistKey = `checklist_${colaboradorId}`;
                 const checklistData = aniversariosChecklist[checklistKey];
                 
@@ -2851,7 +3083,7 @@
             
             colaboradores.forEach(col => {
                 const checklistKey = `checklist_${col.id}`;
-                const checklist = aniversariosChecklist[checklistKey] || {};
+                const checklist = aniversariosChecklist[checklistKey] || { itens: [] };
                 
                 if (col.dataNascimento) {
                     const dataNasc = new Date(col.dataNascimento);
@@ -2865,11 +3097,11 @@
                     conteudo += `Cidade: ${col.cidade || ''}\n`;
                     conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? 'COMPLETO' : 'PENDENTE'}\n`;
                     conteudo += `\nCHECKLIST:\n`;
-                    conteudo += `Arte Instagram: ${checklist.arteInstagram ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Arte TV: ${checklist.arteTV ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Post Instagram: ${checklist.postInstagram ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Post Intranet: ${checklist.postIntranet ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `Post WhatsApp: ${checklist.postWhatsapp ? 'Concluído' : 'Pendente'}\n`;
+                    
+                    checklist.itens.forEach(item => {
+                        conteudo += `${item.nome}: ${item.checked ? 'Concluído' : 'Pendente'}\n`;
+                    });
+                    
                     conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n\n`;
                 }
             });
@@ -2986,7 +3218,6 @@
             // Recarregar o card
             const card = document.getElementById(`empresa_card_${colaboradorId}`);
             if (card) {
-                // Atualizar apenas a seção do checklist
                 const checklistDiv = card.querySelector('.checklist');
                 if (checklistDiv) {
                     checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
@@ -3008,7 +3239,6 @@
                 // Recarregar o card
                 const card = document.getElementById(`empresa_card_${colaboradorId}`);
                 if (card) {
-                    // Atualizar apenas a seção do checklist
                     const checklistDiv = card.querySelector('.checklist');
                     if (checklistDiv) {
                         checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
