@@ -228,7 +228,7 @@
             }
         }
 
-        /* Filtros */
+        /* Filtros Globais */
         .filters-bar {
             background: white;
             padding: 20px;
@@ -1070,14 +1070,65 @@
             color: #059669;
         }
 
-        /* Filtros Financeiro Aprimorados */
+        /* Filtros Financeiro Aprimorados com botão Ver Mais/Menos */
+        .filtros-financeiro-container {
+            margin-bottom: 24px;
+        }
+
+        .btn-toggle-filtros {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            width: fit-content;
+            margin-bottom: 12px;
+        }
+
+        .btn-toggle-filtros:hover {
+            background: #f8fafc;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-toggle-filtros .seta {
+            transition: transform 0.3s ease;
+            font-size: 16px;
+        }
+
+        .btn-toggle-filtros .seta.rotacionada {
+            transform: rotate(180deg);
+        }
+
         .filtros-financeiro {
             background: linear-gradient(135deg, #f8fafc, #f1f5f9);
             padding: 24px;
             border-radius: 16px;
-            margin-bottom: 24px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 0;
+        }
+
+        .filtros-financeiro.filtros-colapsado {
+            max-height: 0;
+            opacity: 0;
+            padding: 0 24px;
+            margin-top: 0;
+            margin-bottom: 0;
+            border-width: 0;
         }
 
         .filtros-grid {
@@ -1420,46 +1471,55 @@
                         <h2>Controle Financeiro - Pizzas</h2>
                     </div>
 
-                    <!-- Filtros do Financeiro Aprimorados -->
-                    <div class="filtros-financeiro">
-                        <div class="filtros-grid">
-                            <div class="filtro-periodo">
-                                <label>📅 Período Inicial</label>
-                                <div class="periodo-input-group">
-                                    <div class="periodo-input">
-                                        <span class="input-icon">📆</span>
-                                        <input type="text" id="mesInicial" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="01">
-                                    </div>
-                                    <span class="periodo-separator">/</span>
-                                    <div class="periodo-input">
-                                        <span class="input-icon">📅</span>
-                                        <input type="text" id="anoInicial" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
+                    <!-- Botão Ver Mais/Menos para os filtros -->
+                    <div class="filtros-financeiro-container">
+                        <button class="btn-toggle-filtros" onclick="toggleFiltrosFinanceiro()" id="btnToggleFiltros">
+                            <span>⚙️</span>
+                            Filtros Avançados
+                            <span class="seta" id="setaFiltros">▼</span>
+                        </button>
+
+                        <!-- Filtros do Financeiro (inicialmente visíveis) -->
+                        <div id="filtrosFinanceiro" class="filtros-financeiro">
+                            <div class="filtros-grid">
+                                <div class="filtro-periodo">
+                                    <label>📅 Período Inicial</label>
+                                    <div class="periodo-input-group">
+                                        <div class="periodo-input">
+                                            <span class="input-icon">📆</span>
+                                            <input type="text" id="mesInicial" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="01">
+                                        </div>
+                                        <span class="periodo-separator">/</span>
+                                        <div class="periodo-input">
+                                            <span class="input-icon">📅</span>
+                                            <input type="text" id="anoInicial" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="filtro-periodo">
-                                <label>📅 Período Final</label>
-                                <div class="periodo-input-group">
-                                    <div class="periodo-input">
-                                        <span class="input-icon">📆</span>
-                                        <input type="text" id="mesFinal" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="12">
-                                    </div>
-                                    <span class="periodo-separator">/</span>
-                                    <div class="periodo-input">
-                                        <span class="input-icon">📅</span>
-                                        <input type="text" id="anoFinal" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
+                                <div class="filtro-periodo">
+                                    <label>📅 Período Final</label>
+                                    <div class="periodo-input-group">
+                                        <div class="periodo-input">
+                                            <span class="input-icon">📆</span>
+                                            <input type="text" id="mesFinal" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="12">
+                                        </div>
+                                        <span class="periodo-separator">/</span>
+                                        <div class="periodo-input">
+                                            <span class="input-icon">📅</span>
+                                            <input type="text" id="anoFinal" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="acoes-filtro">
-                                <button class="btn-aplicar-filtro" onclick="aplicarFiltroPeriodo()">
-                                    <span>🔍</span> Aplicar Filtro
-                                </button>
-                                <button class="btn-limpar-filtro" onclick="limparFiltroPeriodo()">
-                                    <span>🗑️</span> Limpar
-                                </button>
+                                <div class="acoes-filtro">
+                                    <button class="btn-aplicar-filtro" onclick="aplicarFiltroPeriodo()">
+                                        <span>🔍</span> Aplicar Filtro
+                                    </button>
+                                    <button class="btn-limpar-filtro" onclick="limparFiltroPeriodo()">
+                                        <span>🗑️</span> Limpar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1805,6 +1865,9 @@
             ativo: false
         };
 
+        // Variável para controle do estado dos filtros
+        let filtrosVisiveis = true;
+
         // Flags de controle para evitar loops
         let _savingChecklist = false;
         let _savingEmpresaChecklist = false;
@@ -1856,6 +1919,25 @@
             setTimeout(() => {
                 toast.classList.remove('active');
             }, 3000);
+        }
+
+        // Função para alternar visibilidade dos filtros
+        function toggleFiltrosFinanceiro() {
+            const filtros = document.getElementById('filtrosFinanceiro');
+            const seta = document.getElementById('setaFiltros');
+            const btn = document.getElementById('btnToggleFiltros');
+            
+            if (filtrosVisiveis) {
+                filtros.classList.add('filtros-colapsado');
+                seta.classList.add('rotacionada');
+                btn.innerHTML = '<span>⚙️</span> Mostrar Filtros <span class="seta" id="setaFiltros">▼</span>';
+            } else {
+                filtros.classList.remove('filtros-colapsado');
+                seta.classList.remove('rotacionada');
+                btn.innerHTML = '<span>⚙️</span> Filtros Avançados <span class="seta" id="setaFiltros">▼</span>';
+            }
+            
+            filtrosVisiveis = !filtrosVisiveis;
         }
 
         // Função para validar mês
