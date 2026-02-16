@@ -920,85 +920,6 @@
             font-family: monospace;
         }
 
-        /* Upload de foto */
-        .upload-foto {
-            margin: 12px 0;
-        }
-
-        .upload-foto label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: #4b5563;
-            margin-bottom: 6px;
-        }
-
-        .upload-area {
-            border: 2px dashed #d1d5db;
-            border-radius: 6px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #f9fafb;
-        }
-
-        .upload-area:hover {
-            border-color: #2563eb;
-            background: #f3f4f6;
-        }
-
-        .upload-area input[type="file"] {
-            display: none;
-        }
-
-        .upload-area .upload-icon {
-            font-size: 24px;
-            color: #9ca3af;
-            margin-bottom: 6px;
-        }
-
-        .upload-area .upload-text {
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .upload-area .upload-text strong {
-            color: #2563eb;
-        }
-
-        .preview-foto {
-            margin-top: 8px;
-            max-width: 100%;
-            max-height: 120px;
-            border-radius: 6px;
-            display: none;
-        }
-
-        .preview-foto.active {
-            display: block;
-        }
-
-        .upload-progress {
-            margin-top: 8px;
-            height: 4px;
-            background: #e5e7eb;
-            border-radius: 2px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .upload-progress.active {
-            display: block;
-        }
-
-        .upload-progress-bar {
-            height: 100%;
-            background: #2563eb;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
         /* Progresso checklist */
         .progresso-checklist {
             display: inline-block;
@@ -1239,19 +1160,30 @@
             <div class="filters-bar">
                 <div class="filter-group">
                     <label>Mês</label>
-                    <select id="monthFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard()">
-                        <option value="1">Janeiro 2026</option>
-                        <option value="2" selected>Fevereiro 2026</option>
-                        <option value="3">Março 2026</option>
-                        <option value="4">Abril 2026</option>
-                        <option value="5">Maio 2026</option>
-                        <option value="6">Junho 2026</option>
-                        <option value="7">Julho 2026</option>
-                        <option value="8">Agosto 2026</option>
-                        <option value="9">Setembro 2026</option>
-                        <option value="10">Outubro 2026</option>
-                        <option value="11">Novembro 2026</option>
-                        <option value="12">Dezembro 2026</option>
+                    <select id="monthFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard(); atualizarFinanceiro()">
+                        <option value="all">Todos</option>
+                        <option value="1">Janeiro</option>
+                        <option value="2" selected>Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Ano</label>
+                    <select id="yearFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard(); atualizarFinanceiro()">
+                        <option value="all">Todos</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                        <option value="2027">2027</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -1354,33 +1286,6 @@
                         <h2>Controle Financeiro - Pizzas</h2>
                     </div>
 
-                    <!-- Filtros do Financeiro -->
-                    <div class="filtros-financeiro">
-                        <div class="filtro-financeiro">
-                            <select id="filtroMesFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
-                                <option value="1">Janeiro 2026</option>
-                                <option value="2" selected>Fevereiro 2026</option>
-                                <option value="3">Março 2026</option>
-                                <option value="4">Abril 2026</option>
-                                <option value="5">Maio 2026</option>
-                                <option value="6">Junho 2026</option>
-                                <option value="7">Julho 2026</option>
-                                <option value="8">Agosto 2026</option>
-                                <option value="9">Setembro 2026</option>
-                                <option value="10">Outubro 2026</option>
-                                <option value="11">Novembro 2026</option>
-                                <option value="12">Dezembro 2026</option>
-                            </select>
-                        </div>
-                        <div class="filtro-financeiro">
-                            <select id="filtroAnoFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026" selected>2026</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <!-- Cards de Resumo -->
                     <div class="dashboard-cards">
                         <div class="card">
@@ -1419,7 +1324,7 @@
                     <div class="chart-pizza-grid">
                         <!-- Gráfico de Evolução Mensal -->
                         <div class="chart-container">
-                            <div class="chart-title">Evolução Mensal de Gastos - 2026</div>
+                            <div class="chart-title">Evolução Mensal de Gastos</div>
                             <div id="graficoEvolucao"></div>
                         </div>
 
@@ -2468,17 +2373,32 @@
         // Funções para Aniversário de Vida
         function filtrarAniversariantesVida() {
             const mesSelecionado = document.getElementById('monthFilter').value;
+            const anoSelecionado = document.getElementById('yearFilter').value;
             const setorSelecionado = document.getElementById('sectorFilter').value;
             const cidadeSelecionada = document.getElementById('cityFilter').value;
             const mostrarPassados = document.getElementById('mostrarPassados').checked;
             
-            // Filtrar colaboradores ativos que fazem aniversário no mês selecionado
+            // Filtrar colaboradores ativos
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataNascimento) return false;
-                
-                const mesNasc = new Date(col.dataNascimento).getMonth() + 1;
-                return mesNasc == mesSelecionado;
+                return true;
             });
+            
+            // Aplicar filtro de mês
+            if (mesSelecionado !== 'all') {
+                aniversariantes = aniversariantes.filter(col => {
+                    const mesNasc = new Date(col.dataNascimento).getMonth() + 1;
+                    return mesNasc == mesSelecionado;
+                });
+            }
+            
+            // Aplicar filtro de ano
+            if (anoSelecionado !== 'all') {
+                aniversariantes = aniversariantes.filter(col => {
+                    const anoNasc = new Date(col.dataNascimento).getFullYear();
+                    return anoNasc == anoSelecionado;
+                });
+            }
             
             // Aplicar filtros adicionais
             if (setorSelecionado !== 'all') {
@@ -2528,7 +2448,11 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#vida-section .section-header h2');
             if (titulo) {
-                titulo.textContent = `Aniversários de Vida - ${meses[mesSelecionado - 1]} 2026`;
+                if (mesSelecionado === 'all') {
+                    titulo.textContent = `Aniversários de Vida - Todos os meses`;
+                } else {
+                    titulo.textContent = `Aniversários de Vida - ${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
+                }
             }
         }
 
@@ -2563,8 +2487,7 @@
                     postInstagram: false,
                     postIntranet: false,
                     postWhatsapp: false,
-                    texto: '',
-                    fotoUrl: ''
+                    texto: ''
                 };
                 
                 const completo = checklistCompleto(checklistState, 'vida');
@@ -2626,22 +2549,7 @@
                     
                     <div class="postagem-texto">
                         <label>Texto da postagem:</label>
-                        <textarea id="texto_${col.id}" placeholder="Digite aqui o texto que será publicado junto com a foto..." onchange="salvarTexto('${col.id}', this.value)">${checklistState.texto || ''}</textarea>
-                    </div>
-                    
-                    <div class="upload-foto">
-                        <label>Foto do aniversariante:</label>
-                        <div class="upload-area" onclick="document.getElementById('file_${col.id}').click()">
-                            <div class="upload-icon">📷</div>
-                            <div class="upload-text">
-                                <strong>Clique para upload</strong> ou arraste a imagem
-                            </div>
-                            <input type="file" id="file_${col.id}" accept="image/*" onchange="fazerUploadFoto(this, '${col.id}', 'vida')">
-                        </div>
-                        <div id="progress_${col.id}" class="upload-progress">
-                            <div class="upload-progress-bar"></div>
-                        </div>
-                        ${checklistState.fotoUrl ? `<img id="preview_${col.id}" class="preview-foto active" src="${checklistState.fotoUrl}" alt="Preview">` : `<img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">`}
+                        <textarea id="texto_${col.id}" placeholder="Digite aqui o texto que será publicado..." onchange="salvarTexto('${col.id}', this.value)">${checklistState.texto || ''}</textarea>
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
@@ -2664,8 +2572,7 @@
                     postInstagram: false,
                     postIntranet: false,
                     postWhatsapp: false,
-                    texto: '',
-                    fotoUrl: ''
+                    texto: ''
                 };
             }
             aniversariosChecklist[checklistKey][item] = checked;
@@ -2705,164 +2612,6 @@
                 };
             }
             aniversariosChecklist[checklistKey].texto = texto;
-        }
-
-        async function fazerUploadFoto(input, colaboradorId, tipo) {
-            if (!input.files || !input.files[0]) {
-                return;
-            }
-
-            const file = input.files[0];
-            
-            // Validar tipo de arquivo (incluindo PNG)
-            if (!file.type.startsWith('image/')) {
-                mostrarToast('Por favor, selecione apenas arquivos de imagem', 'error');
-                input.value = '';
-                return;
-            }
-
-            // Validar tamanho (máximo 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                mostrarToast('A imagem deve ter no máximo 5MB', 'error');
-                input.value = '';
-                return;
-            }
-
-            // Mostrar loading
-            mostrarLoading();
-            
-            // Mostrar barra de progresso
-            const progressBar = document.getElementById(`progress_${colaboradorId}`);
-            if (progressBar) {
-                progressBar.classList.add('active');
-                const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                if (progressBarInner) {
-                    progressBarInner.style.width = '0%';
-                }
-            }
-            
-            try {
-                // Criar nome único para o arquivo
-                const extensao = file.name.split('.').pop() || 'png';
-                const fileName = `${colaboradorId}_${Date.now()}.${extensao}`;
-                const filePath = `${tipo}/${fileName}`;
-                
-                console.log('Fazendo upload para:', filePath);
-                
-                const storageRef = storage.ref().child(filePath);
-                
-                // Upload do arquivo
-                const uploadTask = storageRef.put(file);
-                
-                // Monitorar progresso
-                uploadTask.on('state_changed',
-                    (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        if (progressBar) {
-                            const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                            if (progressBarInner) {
-                                progressBarInner.style.width = progress + '%';
-                            }
-                        }
-                    },
-                    (error) => {
-                        console.error('Erro no upload:', error);
-                        mostrarToast('Erro ao fazer upload: ' + error.message, 'error');
-                        if (progressBar) {
-                            progressBar.classList.remove('active');
-                        }
-                        esconderLoading();
-                    },
-                    async () => {
-                        // Upload concluído
-                        try {
-                            const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
-                            console.log('URL obtida:', downloadUrl);
-                            
-                            // Salvar URL no estado apropriado
-                            if (tipo === 'vida') {
-                                const checklistKey = `checklist_${colaboradorId}`;
-                                if (!aniversariosChecklist[checklistKey]) {
-                                    aniversariosChecklist[checklistKey] = {
-                                        colaboradorId: colaboradorId,
-                                        tipo: 'vida',
-                                        arteInstagram: false,
-                                        arteTV: false,
-                                        postInstagram: false,
-                                        postIntranet: false,
-                                        postWhatsapp: false,
-                                        texto: ''
-                                    };
-                                }
-                                aniversariosChecklist[checklistKey].fotoUrl = downloadUrl;
-                                
-                                // Salvar no Firebase (sem causar loop)
-                                await db.collection('checklists').doc(checklistKey).set(
-                                    aniversariosChecklist[checklistKey], 
-                                    { merge: true }
-                                );
-                            } else {
-                                const checklistKey = `empresa_${colaboradorId}`;
-                                if (!empresaChecklist[checklistKey]) {
-                                    empresaChecklist[checklistKey] = {
-                                        colaboradorId: colaboradorId,
-                                        tipo: 'empresa',
-                                        itens: itensPadraoChecklistEmpresa.map(item => ({
-                                            id: item.id,
-                                            nome: item.nome,
-                                            checked: false
-                                        })),
-                                        fotoUrl: ''
-                                    };
-                                }
-                                empresaChecklist[checklistKey].fotoUrl = downloadUrl;
-                                
-                                // Salvar no Firebase (sem causar loop)
-                                await db.collection('checklists').doc(checklistKey).set(
-                                    empresaChecklist[checklistKey],
-                                    { merge: true }
-                                );
-                            }
-                            
-                            // Mostrar preview
-                            const preview = document.getElementById(`preview_${colaboradorId}`);
-                            if (preview) {
-                                preview.src = downloadUrl;
-                                preview.classList.add('active');
-                                preview.style.display = 'block';
-                            }
-                            
-                            // Esconder barra de progresso
-                            if (progressBar) {
-                                progressBar.classList.remove('active');
-                                const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                                if (progressBarInner) {
-                                    progressBarInner.style.width = '0%';
-                                }
-                            }
-                            
-                            // Limpar o input
-                            input.value = '';
-                            
-                            mostrarToast('Foto enviada com sucesso!', 'success');
-                        } catch (error) {
-                            console.error('Erro ao processar upload:', error);
-                            mostrarToast('Erro ao processar upload: ' + error.message, 'error');
-                        } finally {
-                            esconderLoading();
-                        }
-                    }
-                );
-            } catch (error) {
-                console.error('Erro ao iniciar upload:', error);
-                mostrarToast('Erro ao iniciar upload: ' + error.message, 'error');
-                
-                if (progressBar) {
-                    progressBar.classList.remove('active');
-                }
-                esconderLoading();
-                input.value = '';
-            }
         }
 
         async function salvarChecklist(colaboradorId) {
@@ -2910,9 +2659,11 @@
 
         function exportarChecklistVida() {
             const mesSelecionado = document.getElementById('monthFilter').value;
+            const anoSelecionado = document.getElementById('yearFilter').value;
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${meses[mesSelecionado - 1]} 2026\n\n`;
+            let tituloMes = mesSelecionado === 'all' ? 'Todos os meses' : `${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${tituloMes}\n\n`;
             
             colaboradores.forEach(col => {
                 const checklistKey = `checklist_${col.id}`;
@@ -2935,8 +2686,7 @@
                     conteudo += `Post Instagram: ${checklist.postInstagram ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `Post Intranet: ${checklist.postIntranet ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `Post WhatsApp: ${checklist.postWhatsapp ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n`;
-                    conteudo += `FOTO: ${checklist.fotoUrl ? 'Anexada' : 'Não anexada'}\n\n`;
+                    conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n\n`;
                 }
             });
             
@@ -2945,7 +2695,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_vida_${meses[mesSelecionado - 1]}_2026.txt`;
+            a.download = `aniversariantes_vida_${tituloMes.replace(/ /g, '_')}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
@@ -2953,17 +2703,32 @@
         // Funções para Aniversário de Empresa
         function filtrarAniversariantesEmpresa() {
             const mesSelecionado = document.getElementById('monthFilter').value;
+            const anoSelecionado = document.getElementById('yearFilter').value;
             const setorSelecionado = document.getElementById('sectorFilter').value;
             const cidadeSelecionada = document.getElementById('cityFilter').value;
             const mostrarPassados = document.getElementById('mostrarPassados').checked;
             
-            // Filtrar colaboradores ativos que fazem aniversário de empresa no mês selecionado
+            // Filtrar colaboradores ativos
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataAdmissao) return false;
-                
-                const mesAdm = new Date(col.dataAdmissao).getMonth() + 1;
-                return mesAdm == mesSelecionado;
+                return true;
             });
+            
+            // Aplicar filtro de mês
+            if (mesSelecionado !== 'all') {
+                aniversariantes = aniversariantes.filter(col => {
+                    const mesAdm = new Date(col.dataAdmissao).getMonth() + 1;
+                    return mesAdm == mesSelecionado;
+                });
+            }
+            
+            // Aplicar filtro de ano
+            if (anoSelecionado !== 'all') {
+                aniversariantes = aniversariantes.filter(col => {
+                    const anoAdm = new Date(col.dataAdmissao).getFullYear();
+                    return anoAdm == anoSelecionado;
+                });
+            }
             
             // Aplicar filtros adicionais
             if (setorSelecionado !== 'all') {
@@ -3013,7 +2778,11 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#empresa-section .section-header h2');
             if (titulo) {
-                titulo.textContent = `Aniversários de Empresa - ${meses[mesSelecionado - 1]} 2026`;
+                if (mesSelecionado === 'all') {
+                    titulo.textContent = `Aniversários de Empresa - Todos os meses`;
+                } else {
+                    titulo.textContent = `Aniversários de Empresa - ${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
+                }
             }
         }
 
@@ -3045,8 +2814,7 @@
                         id: item.id,
                         nome: item.nome,
                         checked: false
-                    })),
-                    fotoUrl: ''
+                    }))
                 };
             }
             
@@ -3231,8 +2999,7 @@
                             id: item.id,
                             nome: item.nome,
                             checked: false
-                        })),
-                        fotoUrl: ''
+                        }))
                     };
                     empresaChecklist[checklistKey] = checklistState;
                 }
@@ -3378,21 +3145,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="upload-foto">
-                        <label>Foto do aniversariante:</label>
-                        <div class="upload-area" onclick="document.getElementById('empresa_file_${col.id}').click()">
-                            <div class="upload-icon">📷</div>
-                            <div class="upload-text">
-                                <strong>Clique para upload</strong> ou arraste a imagem
-                            </div>
-                            <input type="file" id="empresa_file_${col.id}" accept="image/*" onchange="fazerUploadFoto(this, '${col.id}', 'empresa')">
-                        </div>
-                        <div id="progress_${col.id}" class="upload-progress">
-                            <div class="upload-progress-bar"></div>
-                        </div>
-                        ${checklistState.fotoUrl ? `<img id="preview_${col.id}" class="preview-foto active" src="${checklistState.fotoUrl}" alt="Preview">` : `<img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">`}
-                    </div>
                 `;
                 
                 container.appendChild(card);
@@ -3503,9 +3255,11 @@
 
         function exportarChecklistEmpresa() {
             const mesSelecionado = document.getElementById('monthFilter').value;
+            const anoSelecionado = document.getElementById('yearFilter').value;
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${meses[mesSelecionado - 1]} 2026\n\n`;
+            let tituloMes = mesSelecionado === 'all' ? 'Todos os meses' : `${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${tituloMes}\n\n`;
             
             colaboradores.forEach(col => {
                 const checklistKey = `empresa_${col.id}`;
@@ -3538,8 +3292,7 @@
                     conteudo += `Cidade: ${pedido.local || col.cidade || ''}\n`;
                     conteudo += `Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
                     conteudo += `Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
-                    conteudo += `Observações: ${pedido.observacoes || 'Nenhuma'}\n`;
-                    conteudo += `\nFOTO: ${checklist.fotoUrl ? 'Anexada' : 'Não anexada'}\n\n`;
+                    conteudo += `Observações: ${pedido.observacoes || 'Nenhuma'}\n\n`;
                 }
             });
             
@@ -3548,15 +3301,15 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_empresa_${meses[mesSelecionado - 1]}_2026.txt`;
+            a.download = `aniversariantes_empresa_${tituloMes.replace(/ /g, '_')}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
 
         // Funções do Controle Financeiro
         function atualizarFinanceiro() {
-            const mesSelecionado = parseInt(document.getElementById('filtroMesFinanceiro').value);
-            const anoSelecionado = parseInt(document.getElementById('filtroAnoFinanceiro').value);
+            const mesSelecionado = document.getElementById('monthFilter').value;
+            const anoSelecionado = document.getElementById('yearFilter').value;
             
             // Filtrar pedidos do mês/ano selecionado
             const pedidosFiltrados = [];
@@ -3577,7 +3330,18 @@
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        if (mesPedido === mesSelecionado && anoPedido === anoSelecionado) {
+                        // Aplicar filtros
+                        let incluir = true;
+                        
+                        if (mesSelecionado !== 'all' && mesPedido !== parseInt(mesSelecionado)) {
+                            incluir = false;
+                        }
+                        
+                        if (anoSelecionado !== 'all' && anoPedido !== parseInt(anoSelecionado)) {
+                            incluir = false;
+                        }
+                        
+                        if (incluir) {
                             // Adicionar aos pedidos filtrados
                             pedidosFiltrados.push({
                                 ...pedido,
@@ -3659,7 +3423,7 @@
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        if (anoPedido === anoSelecionado) {
+                        if (anoSelecionado === 'all' || anoPedido === parseInt(anoSelecionado)) {
                             evolucaoMensal[mesPedido] = (evolucaoMensal[mesPedido] || 0) + pizza.valor;
                         }
                     }
@@ -3791,17 +3555,38 @@
 
         function updateDashboard() {
             const mesSelecionado = document.getElementById('monthFilter').value;
+            const anoSelecionado = document.getElementById('yearFilter').value;
             
-            const aniversariantesVida = colaboradores.filter(c => {
+            let aniversariantesVida = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataNascimento) return false;
-                const mesNasc = new Date(c.dataNascimento).getMonth() + 1;
-                return mesNasc == mesSelecionado;
+                
+                if (mesSelecionado !== 'all') {
+                    const mesNasc = new Date(c.dataNascimento).getMonth() + 1;
+                    if (mesNasc != mesSelecionado) return false;
+                }
+                
+                if (anoSelecionado !== 'all') {
+                    const anoNasc = new Date(c.dataNascimento).getFullYear();
+                    if (anoNasc != anoSelecionado) return false;
+                }
+                
+                return true;
             });
             
-            const aniversariantesEmpresa = colaboradores.filter(c => {
+            let aniversariantesEmpresa = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataAdmissao) return false;
-                const mesAdm = new Date(c.dataAdmissao).getMonth() + 1;
-                return mesAdm == mesSelecionado;
+                
+                if (mesSelecionado !== 'all') {
+                    const mesAdm = new Date(c.dataAdmissao).getMonth() + 1;
+                    if (mesAdm != mesSelecionado) return false;
+                }
+                
+                if (anoSelecionado !== 'all') {
+                    const anoAdm = new Date(c.dataAdmissao).getFullYear();
+                    if (anoAdm != anoSelecionado) return false;
+                }
+                
+                return true;
             });
             
             const foraRegiao = colaboradores.filter(c => 
