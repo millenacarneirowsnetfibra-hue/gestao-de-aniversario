@@ -920,6 +920,35 @@
             font-family: monospace;
         }
 
+        /* Postagem texto */
+        .postagem-texto {
+            margin: 12px 0;
+        }
+        
+        .postagem-texto label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+        
+        .postagem-texto textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .postagem-texto textarea:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
         /* Progresso checklist */
         .progresso-checklist {
             display: inline-block;
@@ -1052,35 +1081,6 @@
             flex: 1;
             min-width: 200px;
         }
-        
-        /* Postagem texto */
-        .postagem-texto {
-            margin: 12px 0;
-        }
-        
-        .postagem-texto label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: #4b5563;
-            margin-bottom: 6px;
-        }
-        
-        .postagem-texto textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 13px;
-            resize: vertical;
-            min-height: 60px;
-        }
-        
-        .postagem-texto textarea:focus {
-            border-color: #2563eb;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-        }
     </style>
 </head>
 <body>
@@ -1160,30 +1160,19 @@
             <div class="filters-bar">
                 <div class="filter-group">
                     <label>Mês</label>
-                    <select id="monthFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard(); atualizarFinanceiro()">
-                        <option value="all">Todos</option>
-                        <option value="1">Janeiro</option>
-                        <option value="2" selected>Fevereiro</option>
-                        <option value="3">Março</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Maio</option>
-                        <option value="6">Junho</option>
-                        <option value="7">Julho</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Setembro</option>
-                        <option value="10">Outubro</option>
-                        <option value="11">Novembro</option>
-                        <option value="12">Dezembro</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Ano</label>
-                    <select id="yearFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard(); atualizarFinanceiro()">
-                        <option value="all">Todos</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                        <option value="2026" selected>2026</option>
-                        <option value="2027">2027</option>
+                    <select id="monthFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard()">
+                        <option value="1">Janeiro 2026</option>
+                        <option value="2" selected>Fevereiro 2026</option>
+                        <option value="3">Março 2026</option>
+                        <option value="4">Abril 2026</option>
+                        <option value="5">Maio 2026</option>
+                        <option value="6">Junho 2026</option>
+                        <option value="7">Julho 2026</option>
+                        <option value="8">Agosto 2026</option>
+                        <option value="9">Setembro 2026</option>
+                        <option value="10">Outubro 2026</option>
+                        <option value="11">Novembro 2026</option>
+                        <option value="12">Dezembro 2026</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -1286,6 +1275,33 @@
                         <h2>Controle Financeiro - Pizzas</h2>
                     </div>
 
+                    <!-- Filtros do Financeiro -->
+                    <div class="filtros-financeiro">
+                        <div class="filtro-financeiro">
+                            <select id="filtroMesFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
+                                <option value="1">Janeiro 2026</option>
+                                <option value="2" selected>Fevereiro 2026</option>
+                                <option value="3">Março 2026</option>
+                                <option value="4">Abril 2026</option>
+                                <option value="5">Maio 2026</option>
+                                <option value="6">Junho 2026</option>
+                                <option value="7">Julho 2026</option>
+                                <option value="8">Agosto 2026</option>
+                                <option value="9">Setembro 2026</option>
+                                <option value="10">Outubro 2026</option>
+                                <option value="11">Novembro 2026</option>
+                                <option value="12">Dezembro 2026</option>
+                            </select>
+                        </div>
+                        <div class="filtro-financeiro">
+                            <select id="filtroAnoFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Cards de Resumo -->
                     <div class="dashboard-cards">
                         <div class="card">
@@ -1324,7 +1340,7 @@
                     <div class="chart-pizza-grid">
                         <!-- Gráfico de Evolução Mensal -->
                         <div class="chart-container">
-                            <div class="chart-title">Evolução Mensal de Gastos</div>
+                            <div class="chart-title">Evolução Mensal de Gastos - 2026</div>
                             <div id="graficoEvolucao"></div>
                         </div>
 
@@ -2373,32 +2389,17 @@
         // Funções para Aniversário de Vida
         function filtrarAniversariantesVida() {
             const mesSelecionado = document.getElementById('monthFilter').value;
-            const anoSelecionado = document.getElementById('yearFilter').value;
             const setorSelecionado = document.getElementById('sectorFilter').value;
             const cidadeSelecionada = document.getElementById('cityFilter').value;
             const mostrarPassados = document.getElementById('mostrarPassados').checked;
             
-            // Filtrar colaboradores ativos
+            // Filtrar colaboradores ativos que fazem aniversário no mês selecionado
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataNascimento) return false;
-                return true;
+                
+                const mesNasc = new Date(col.dataNascimento).getMonth() + 1;
+                return mesNasc == mesSelecionado;
             });
-            
-            // Aplicar filtro de mês
-            if (mesSelecionado !== 'all') {
-                aniversariantes = aniversariantes.filter(col => {
-                    const mesNasc = new Date(col.dataNascimento).getMonth() + 1;
-                    return mesNasc == mesSelecionado;
-                });
-            }
-            
-            // Aplicar filtro de ano
-            if (anoSelecionado !== 'all') {
-                aniversariantes = aniversariantes.filter(col => {
-                    const anoNasc = new Date(col.dataNascimento).getFullYear();
-                    return anoNasc == anoSelecionado;
-                });
-            }
             
             // Aplicar filtros adicionais
             if (setorSelecionado !== 'all') {
@@ -2448,11 +2449,7 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#vida-section .section-header h2');
             if (titulo) {
-                if (mesSelecionado === 'all') {
-                    titulo.textContent = `Aniversários de Vida - Todos os meses`;
-                } else {
-                    titulo.textContent = `Aniversários de Vida - ${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
-                }
+                titulo.textContent = `Aniversários de Vida - ${meses[mesSelecionado - 1]} 2026`;
             }
         }
 
@@ -2659,11 +2656,9 @@
 
         function exportarChecklistVida() {
             const mesSelecionado = document.getElementById('monthFilter').value;
-            const anoSelecionado = document.getElementById('yearFilter').value;
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let tituloMes = mesSelecionado === 'all' ? 'Todos os meses' : `${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${tituloMes}\n\n`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${meses[mesSelecionado - 1]} 2026\n\n`;
             
             colaboradores.forEach(col => {
                 const checklistKey = `checklist_${col.id}`;
@@ -2695,7 +2690,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_vida_${tituloMes.replace(/ /g, '_')}.txt`;
+            a.download = `aniversariantes_vida_${meses[mesSelecionado - 1]}_2026.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
@@ -2703,32 +2698,17 @@
         // Funções para Aniversário de Empresa
         function filtrarAniversariantesEmpresa() {
             const mesSelecionado = document.getElementById('monthFilter').value;
-            const anoSelecionado = document.getElementById('yearFilter').value;
             const setorSelecionado = document.getElementById('sectorFilter').value;
             const cidadeSelecionada = document.getElementById('cityFilter').value;
             const mostrarPassados = document.getElementById('mostrarPassados').checked;
             
-            // Filtrar colaboradores ativos
+            // Filtrar colaboradores ativos que fazem aniversário de empresa no mês selecionado
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataAdmissao) return false;
-                return true;
+                
+                const mesAdm = new Date(col.dataAdmissao).getMonth() + 1;
+                return mesAdm == mesSelecionado;
             });
-            
-            // Aplicar filtro de mês
-            if (mesSelecionado !== 'all') {
-                aniversariantes = aniversariantes.filter(col => {
-                    const mesAdm = new Date(col.dataAdmissao).getMonth() + 1;
-                    return mesAdm == mesSelecionado;
-                });
-            }
-            
-            // Aplicar filtro de ano
-            if (anoSelecionado !== 'all') {
-                aniversariantes = aniversariantes.filter(col => {
-                    const anoAdm = new Date(col.dataAdmissao).getFullYear();
-                    return anoAdm == anoSelecionado;
-                });
-            }
             
             // Aplicar filtros adicionais
             if (setorSelecionado !== 'all') {
@@ -2778,11 +2758,7 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#empresa-section .section-header h2');
             if (titulo) {
-                if (mesSelecionado === 'all') {
-                    titulo.textContent = `Aniversários de Empresa - Todos os meses`;
-                } else {
-                    titulo.textContent = `Aniversários de Empresa - ${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
-                }
+                titulo.textContent = `Aniversários de Empresa - ${meses[mesSelecionado - 1]} 2026`;
             }
         }
 
@@ -3255,11 +3231,9 @@
 
         function exportarChecklistEmpresa() {
             const mesSelecionado = document.getElementById('monthFilter').value;
-            const anoSelecionado = document.getElementById('yearFilter').value;
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let tituloMes = mesSelecionado === 'all' ? 'Todos os meses' : `${meses[mesSelecionado - 1]} ${anoSelecionado !== 'all' ? anoSelecionado : ''}`;
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${tituloMes}\n\n`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${meses[mesSelecionado - 1]} 2026\n\n`;
             
             colaboradores.forEach(col => {
                 const checklistKey = `empresa_${col.id}`;
@@ -3301,15 +3275,15 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_empresa_${tituloMes.replace(/ /g, '_')}.txt`;
+            a.download = `aniversariantes_empresa_${meses[mesSelecionado - 1]}_2026.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
 
         // Funções do Controle Financeiro
         function atualizarFinanceiro() {
-            const mesSelecionado = document.getElementById('monthFilter').value;
-            const anoSelecionado = document.getElementById('yearFilter').value;
+            const mesSelecionado = parseInt(document.getElementById('filtroMesFinanceiro').value);
+            const anoSelecionado = parseInt(document.getElementById('filtroAnoFinanceiro').value);
             
             // Filtrar pedidos do mês/ano selecionado
             const pedidosFiltrados = [];
@@ -3330,18 +3304,7 @@
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        // Aplicar filtros
-                        let incluir = true;
-                        
-                        if (mesSelecionado !== 'all' && mesPedido !== parseInt(mesSelecionado)) {
-                            incluir = false;
-                        }
-                        
-                        if (anoSelecionado !== 'all' && anoPedido !== parseInt(anoSelecionado)) {
-                            incluir = false;
-                        }
-                        
-                        if (incluir) {
+                        if (mesPedido === mesSelecionado && anoPedido === anoSelecionado) {
                             // Adicionar aos pedidos filtrados
                             pedidosFiltrados.push({
                                 ...pedido,
@@ -3423,7 +3386,7 @@
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        if (anoSelecionado === 'all' || anoPedido === parseInt(anoSelecionado)) {
+                        if (anoPedido === anoSelecionado) {
                             evolucaoMensal[mesPedido] = (evolucaoMensal[mesPedido] || 0) + pizza.valor;
                         }
                     }
@@ -3555,38 +3518,17 @@
 
         function updateDashboard() {
             const mesSelecionado = document.getElementById('monthFilter').value;
-            const anoSelecionado = document.getElementById('yearFilter').value;
             
-            let aniversariantesVida = colaboradores.filter(c => {
+            const aniversariantesVida = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataNascimento) return false;
-                
-                if (mesSelecionado !== 'all') {
-                    const mesNasc = new Date(c.dataNascimento).getMonth() + 1;
-                    if (mesNasc != mesSelecionado) return false;
-                }
-                
-                if (anoSelecionado !== 'all') {
-                    const anoNasc = new Date(c.dataNascimento).getFullYear();
-                    if (anoNasc != anoSelecionado) return false;
-                }
-                
-                return true;
+                const mesNasc = new Date(c.dataNascimento).getMonth() + 1;
+                return mesNasc == mesSelecionado;
             });
             
-            let aniversariantesEmpresa = colaboradores.filter(c => {
+            const aniversariantesEmpresa = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataAdmissao) return false;
-                
-                if (mesSelecionado !== 'all') {
-                    const mesAdm = new Date(c.dataAdmissao).getMonth() + 1;
-                    if (mesAdm != mesSelecionado) return false;
-                }
-                
-                if (anoSelecionado !== 'all') {
-                    const anoAdm = new Date(c.dataAdmissao).getFullYear();
-                    if (anoAdm != anoSelecionado) return false;
-                }
-                
-                return true;
+                const mesAdm = new Date(c.dataAdmissao).getMonth() + 1;
+                return mesAdm == mesSelecionado;
             });
             
             const foraRegiao = colaboradores.filter(c => 
