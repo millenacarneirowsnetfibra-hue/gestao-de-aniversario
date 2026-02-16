@@ -34,6 +34,10 @@
             --gray-100: #f1f5f9;
             --gray-200: #e2e8f0;
             --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
@@ -367,6 +371,22 @@
             padding: 20px;
             box-shadow: var(--shadow);
             transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .person-card.past-birthday {
+            background-color: var(--gray-200);
+            opacity: 0.8;
+        }
+
+        .person-card.past-birthday .person-info h4,
+        .person-card.past-birthday .person-info p {
+            color: var(--gray-600);
+        }
+
+        .person-card.past-birthday .city-badge {
+            background-color: var(--gray-400);
+            color: var(--gray-700);
         }
 
         .person-card:hover {
@@ -414,6 +434,15 @@
         .city-badge.mongagua {
             background: #fef3c7;
             color: #92400e;
+        }
+
+        .date-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: var(--primary);
+            color: white;
         }
 
         /* Checklist */
@@ -474,12 +503,20 @@
             cursor: pointer;
         }
 
-        .checklist-item input[type="text"] {
+        .checklist-item .item-text {
             flex: 1;
             padding: 6px 10px;
             border: 1px solid var(--gray-200);
             border-radius: 4px;
             font-size: 0.9rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .checklist-item .item-text.checked {
+            text-decoration: line-through;
+            color: var(--gray-500);
+            background-color: var(--gray-100);
         }
 
         .checklist-item-actions {
@@ -1035,12 +1072,33 @@
         function formatDateBR(date) {
             if (!date) return '';
             const d = new Date(date);
-            return d.toLocaleDateString('pt-BR');
+            // Ajusta para o fuso horário local para evitar problemas de data
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${day}/${month}/${year}`;
+        }
+
+        function formatDateShortBR(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${day}/${month}`;
         }
 
         function parseDateBR(dateStr) {
+            if (!dateStr) return null;
             const [day, month, year] = dateStr.split('/');
-            return new Date(year, month - 1, day);
+            // Cria a data no fuso horário local sem UTC conversion
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        }
+
+        function parseDateISO(dateStr) {
+            if (!dateStr) return null;
+            // Para datas no formato ISO (YYYY-MM-DD) do input date
+            const [year, month, day] = dateStr.split('-');
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
 
         function validateDateBR(dateStr) {
@@ -1048,7 +1106,7 @@
             if (!regex.test(dateStr)) return false;
             
             const [_, day, month, year] = dateStr.match(regex);
-            const date = new Date(year, month - 1, day);
+            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
             
             return date.getDate() === parseInt(day) &&
                    date.getMonth() === parseInt(month) - 1 &&
@@ -1066,6 +1124,18 @@
                 }
                 e.target.value = value;
             });
+        }
+
+        function isPastBirthday(birthDate) {
+            if (!birthDate) return false;
+            const hoje = new Date();
+            const dataNascimento = new Date(birthDate);
+            
+            // Cria data do aniversário deste ano
+            const aniversarioEsteAno = new Date(hoje.getFullYear(), dataNascimento.getMonth(), dataNascimento.getDate());
+            
+            // Se o aniversário já passou este ano
+            return aniversarioEsteAno < hoje;
         }
 
         // Navigation
@@ -1134,13 +1204,13 @@
                 const currentMonth = new Date().getMonth() + 1;
                 const aniversariantesVida = colaboradores.filter(col => {
                     if (!col.dataNascimento) return false;
-                    const nascimento = new Date(col.dataNascimento);
+                    const nascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
                     return nascimento.getMonth() + 1 === currentMonth;
                 }).length;
                 
                 const aniversariantesEmpresa = colaboradores.filter(col => {
                     if (!col.dataAdmissao) return false;
-                    const admissao = new Date(col.dataAdmissao);
+                    const admissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
                     return admissao.getMonth() + 1 === currentMonth;
                 }).length;
                 
@@ -1305,10 +1375,17 @@
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
             
-            const dataNascimento = colaborador.dataNascimento ? new Date(colaborador.dataNascimento) : new Date();
+            const dataNascimento = parseDateISO(colaborador.dataNascimento) || new Date(colaborador.dataNascimento);
             const dataFormatada = formatDateBR(dataNascimento);
+            const dataCurta = formatDateShortBR(dataNascimento);
             
             const isOutside = !colaborador.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(colaborador.cidade);
+            
+            // Verifica se o aniversário já passou
+            const pastBirthday = isPastBirthday(dataNascimento);
+            if (pastBirthday) {
+                card.classList.add('past-birthday');
+            }
             
             card.innerHTML = `
                 <div class="person-card-header">
@@ -1319,8 +1396,8 @@
                         <p><i class="fas fa-map-marker-alt"></i> ${colaborador.cidade || 'Não informada'}</p>
                         <p><i class="fas fa-birthday-cake"></i> ${dataFormatada}</p>
                     </div>
-                    <span class="city-badge ${isOutside ? 'outside' : ''}">
-                        ${isOutside ? 'Fora da Região' : 'Região'}
+                    <span class="date-badge">
+                        ${dataCurta}
                     </span>
                 </div>
                 
@@ -1386,10 +1463,11 @@
             
             let html = '';
             itens.forEach((item, index) => {
+                const itemId = item.id || index;
                 html += `
-                    <div class="checklist-item" data-item-id="${item.id || index}">
+                    <div class="checklist-item" data-item-id="${itemId}">
                         <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleChecklistItem('${colaboradorId}', ${index})">
-                        <input type="text" value="${item.nome}" onchange="updateChecklistItemName('${colaboradorId}', ${index}, this.value)">
+                        <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}">${item.nome}</span>
                         <div class="checklist-item-actions">
                             <button onclick="removeChecklistItem('${colaboradorId}', ${index})">
                                 <i class="fas fa-trash"></i>
@@ -1545,7 +1623,7 @@
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
             
-            const dataAdmissao = colaborador.dataAdmissao ? new Date(colaborador.dataAdmissao) : new Date();
+            const dataAdmissao = parseDateISO(colaborador.dataAdmissao) || new Date(colaborador.dataAdmissao);
             const dataFormatada = formatDateBR(dataAdmissao);
             const anosEmpresa = new Date().getFullYear() - dataAdmissao.getFullYear();
             
@@ -2064,10 +2142,13 @@
                     const row = document.createElement('tr');
                     if (isOutside) row.classList.add('outside-region');
                     
+                    const dataNascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
+                    const dataAdmissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
+                    
                     row.innerHTML = `
                         <td>${col.nome || '-'}</td>
-                        <td>${col.dataNascimento ? formatDateBR(col.dataNascimento) : '-'}</td>
-                        <td>${col.dataAdmissao ? formatDateBR(col.dataAdmissao) : '-'}</td>
+                        <td>${dataNascimento ? formatDateBR(dataNascimento) : '-'}</td>
+                        <td>${dataAdmissao ? formatDateBR(dataAdmissao) : '-'}</td>
                         <td>${col.cidade || '-'}</td>
                         <td>${col.empresaNome || '-'}</td>
                         <td>${col.departamentoNome || '-'}</td>
@@ -2333,6 +2414,16 @@
                     progressBar.style.width = `${progress}%`;
                 }
                 
+                // Update item text style
+                const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+                if (itemText) {
+                    if (itens[index].checked) {
+                        itemText.classList.add('checked');
+                    } else {
+                        itemText.classList.remove('checked');
+                    }
+                }
+                
                 showToast('Checklist atualizado com sucesso!', 'success');
             } catch (error) {
                 console.error('Error updating checklist:', error);
@@ -2568,7 +2659,7 @@
             
             checklistItems.forEach(item => {
                 const checkbox = item.querySelector('input[type="checkbox"]');
-                const text = item.querySelector('input[type="text"]').value;
+                const text = item.querySelector('.item-text').textContent;
                 const status = checkbox.checked ? '[X]' : '[ ]';
                 content += `${status} ${text}\n`;
             });
