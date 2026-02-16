@@ -510,6 +510,7 @@
             border-radius: 4px;
             font-size: 0.9rem;
             transition: all 0.2s ease;
+            cursor: text;
             position: relative;
         }
 
@@ -536,6 +537,13 @@
 
         .checklist-item-actions button:hover {
             background: var(--gray-100);
+        }
+
+        .checklist-item-actions button.edit:hover {
+            color: var(--primary);
+        }
+
+        .checklist-item-actions button.delete:hover {
             color: var(--danger);
         }
 
@@ -1123,6 +1131,20 @@
             });
         }
 
+        function calculateAge(birthDate) {
+            if (!birthDate) return 0;
+            const hoje = new Date();
+            const nascimento = new Date(birthDate);
+            let idade = hoje.getFullYear() - nascimento.getFullYear();
+            const mes = hoje.getMonth() - nascimento.getMonth();
+            
+            if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+                idade--;
+            }
+            
+            return idade;
+        }
+
         function getNextBirthday(birthDate) {
             if (!birthDate) return null;
             const hoje = new Date();
@@ -1451,6 +1473,7 @@
             const dataNascimento = parseDateISO(colaborador.dataNascimento) || new Date(colaborador.dataNascimento);
             const dataFormatada = formatDateBR(dataNascimento);
             const dataCurta = formatDateShortBR(dataNascimento);
+            const idade = calculateAge(dataNascimento);
             
             const isOutside = !colaborador.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(colaborador.cidade);
             
@@ -1464,10 +1487,7 @@
                 <div class="person-card-header">
                     <div class="person-info">
                         <h4>${colaborador.nome || 'Sem nome'}</h4>
-                        <p><i class="fas fa-building"></i> ${colaborador.empresaNome || 'Sem empresa'}</p>
-                        <p><i class="fas fa-sitemap"></i> ${colaborador.departamentoNome || 'Sem departamento'}</p>
-                        <p><i class="fas fa-map-marker-alt"></i> ${colaborador.cidade || 'Não informada'}</p>
-                        <p><i class="fas fa-birthday-cake"></i> ${dataFormatada}</p>
+                        <p><i class="fas fa-birthday-cake"></i> ${dataFormatada} (${idade} anos)</p>
                     </div>
                     <span class="date-badge">
                         ${dataCurta}
@@ -1540,9 +1560,12 @@
                 html += `
                     <div class="checklist-item" data-item-id="${itemId}">
                         <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleChecklistItem('${colaboradorId}', ${index})">
-                        <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}">${item.nome}</span>
+                        <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}" ondblclick="editChecklistItemName('${colaboradorId}', ${index})">${item.nome}</span>
                         <div class="checklist-item-actions">
-                            <button onclick="removeChecklistItem('${colaboradorId}', ${index})">
+                            <button class="edit" onclick="editChecklistItemName('${colaboradorId}', ${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete" onclick="removeChecklistItem('${colaboradorId}', ${index})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -2578,6 +2601,16 @@
             }
         }
 
+        function editChecklistItemName(colaboradorId, index) {
+            const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+            const currentName = itemText.textContent;
+            const newName = prompt('Editar item:', currentName);
+            
+            if (newName && newName.trim() !== '') {
+                updateChecklistItemName(colaboradorId, index, newName.trim());
+            }
+        }
+
         async function updateChecklistItemName(colaboradorId, index, newName) {
             if (!newName.trim()) return;
             
@@ -2594,6 +2627,12 @@
                         itens,
                         dataAtualizacao: new Date()
                     });
+                    
+                    // Update the displayed text
+                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+                    if (itemText) {
+                        itemText.textContent = newName;
+                    }
                     
                     showToast('Item atualizado com sucesso!', 'success');
                 }
