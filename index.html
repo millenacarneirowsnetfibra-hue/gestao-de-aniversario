@@ -1504,12 +1504,12 @@
                             <div class="filtros-grid">
                                 <div class="filtro-grupo">
                                     <label>Nome do Colaborador</label>
-                                    <input type="text" id="filtroNomeVida" placeholder="Digite o nome...">
+                                    <input type="text" id="filtroNomeVida" placeholder="Digite o nome..." oninput="aplicarFiltrosVidaAutomatico()">
                                 </div>
 
                                 <div class="filtro-grupo">
                                     <label>Mês</label>
-                                    <select id="filtroMesVida">
+                                    <select id="filtroMesVida" onchange="aplicarFiltrosVidaAutomatico()">
                                         <option value="1">Janeiro</option>
                                         <option value="2" selected>Fevereiro</option>
                                         <option value="3">Março</option>
@@ -1527,31 +1527,28 @@
 
                                 <div class="filtro-grupo">
                                     <label>Ano</label>
-                                    <input type="number" id="filtroAnoVida" min="2000" max="2100" value="2026">
+                                    <input type="number" id="filtroAnoVida" min="2000" max="2100" value="2026" oninput="aplicarFiltrosVidaAutomatico()">
                                 </div>
 
                                 <div class="filtro-grupo">
                                     <label>Status</label>
                                     <div class="radio-group">
                                         <div class="radio-option">
-                                            <input type="radio" name="statusVida" id="todosVida" value="todos" checked>
+                                            <input type="radio" name="statusVida" id="todosVida" value="todos" checked onchange="aplicarFiltrosVidaAutomatico()">
                                             <label for="todosVida">Todos</label>
                                         </div>
                                         <div class="radio-option">
-                                            <input type="radio" name="statusVida" id="proximosVida" value="proximos">
+                                            <input type="radio" name="statusVida" id="proximosVida" value="proximos" onchange="aplicarFiltrosVidaAutomatico()">
                                             <label for="proximosVida">Próximos</label>
                                         </div>
                                         <div class="radio-option">
-                                            <input type="radio" name="statusVida" id="passadosVida" value="passados">
+                                            <input type="radio" name="statusVida" id="passadosVida" value="passados" onchange="aplicarFiltrosVidaAutomatico()">
                                             <label for="passadosVida">Passados</label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="acoes-filtro">
-                                    <button class="btn-aplicar" onclick="aplicarFiltrosVida()">
-                                        <span>🔍</span> Aplicar Filtros
-                                    </button>
                                     <button class="btn-limpar" onclick="limparFiltrosVida()">
                                         <span>🗑️</span> Limpar
                                     </button>
@@ -1589,12 +1586,12 @@
                             <div class="filtros-grid">
                                 <div class="filtro-grupo">
                                     <label>Nome do Colaborador</label>
-                                    <input type="text" id="filtroNomeEmpresa" placeholder="Digite o nome...">
+                                    <input type="text" id="filtroNomeEmpresa" placeholder="Digite o nome..." oninput="aplicarFiltrosEmpresaAutomatico()">
                                 </div>
 
                                 <div class="filtro-grupo">
                                     <label>Mês</label>
-                                    <select id="filtroMesEmpresa">
+                                    <select id="filtroMesEmpresa" onchange="aplicarFiltrosEmpresaAutomatico()">
                                         <option value="1">Janeiro</option>
                                         <option value="2" selected>Fevereiro</option>
                                         <option value="3">Março</option>
@@ -1612,31 +1609,28 @@
 
                                 <div class="filtro-grupo">
                                     <label>Ano</label>
-                                    <input type="number" id="filtroAnoEmpresa" min="2000" max="2100" value="2026">
+                                    <input type="number" id="filtroAnoEmpresa" min="2000" max="2100" value="2026" oninput="aplicarFiltrosEmpresaAutomatico()">
                                 </div>
 
                                 <div class="filtro-grupo">
                                     <label>Status</label>
                                     <div class="radio-group">
                                         <div class="radio-option">
-                                            <input type="radio" name="statusEmpresa" id="todosEmpresa" value="todos" checked>
+                                            <input type="radio" name="statusEmpresa" id="todosEmpresa" value="todos" checked onchange="aplicarFiltrosEmpresaAutomatico()">
                                             <label for="todosEmpresa">Todos</label>
                                         </div>
                                         <div class="radio-option">
-                                            <input type="radio" name="statusEmpresa" id="proximosEmpresa" value="proximos">
+                                            <input type="radio" name="statusEmpresa" id="proximosEmpresa" value="proximos" onchange="aplicarFiltrosEmpresaAutomatico()">
                                             <label for="proximosEmpresa">Próximos</label>
                                         </div>
                                         <div class="radio-option">
-                                            <input type="radio" name="statusEmpresa" id="passadosEmpresa" value="passados">
+                                            <input type="radio" name="statusEmpresa" id="passadosEmpresa" value="passados" onchange="aplicarFiltrosEmpresaAutomatico()">
                                             <label for="passadosEmpresa">Passados</label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="acoes-filtro">
-                                    <button class="btn-aplicar" onclick="aplicarFiltrosEmpresa()">
-                                        <span>🔍</span> Aplicar Filtros
-                                    </button>
                                     <button class="btn-limpar" onclick="limparFiltrosEmpresa()">
                                         <span>🗑️</span> Limpar
                                     </button>
@@ -2186,8 +2180,8 @@
             input.value = valor;
         }
 
-        // Funções para aplicar filtros
-        function aplicarFiltrosVida() {
+        // Funções para aplicar filtros automaticamente
+        function aplicarFiltrosVidaAutomatico() {
             filtrosVida.nome = document.getElementById('filtroNomeVida').value;
             filtrosVida.mes = parseInt(document.getElementById('filtroMesVida').value);
             filtrosVida.ano = parseInt(document.getElementById('filtroAnoVida').value);
@@ -2207,6 +2201,28 @@
             }
             
             filtrarAniversariantesVida();
+        }
+
+        function aplicarFiltrosEmpresaAutomatico() {
+            filtrosEmpresa.nome = document.getElementById('filtroNomeEmpresa').value;
+            filtrosEmpresa.mes = parseInt(document.getElementById('filtroMesEmpresa').value);
+            filtrosEmpresa.ano = parseInt(document.getElementById('filtroAnoEmpresa').value);
+            
+            const radios = document.getElementsByName('statusEmpresa');
+            for (let radio of radios) {
+                if (radio.checked) {
+                    filtrosEmpresa.status = radio.value;
+                    break;
+                }
+            }
+            
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const titulo = document.querySelector('#empresa-section .section-header h2');
+            if (titulo) {
+                titulo.textContent = `Aniversários de Empresa - ${meses[filtrosEmpresa.mes - 1]} ${filtrosEmpresa.ano}`;
+            }
+            
+            filtrarAniversariantesEmpresa();
         }
 
         function limparFiltrosVida() {
@@ -2229,28 +2245,6 @@
             }
             
             filtrarAniversariantesVida();
-        }
-
-        function aplicarFiltrosEmpresa() {
-            filtrosEmpresa.nome = document.getElementById('filtroNomeEmpresa').value;
-            filtrosEmpresa.mes = parseInt(document.getElementById('filtroMesEmpresa').value);
-            filtrosEmpresa.ano = parseInt(document.getElementById('filtroAnoEmpresa').value);
-            
-            const radios = document.getElementsByName('statusEmpresa');
-            for (let radio of radios) {
-                if (radio.checked) {
-                    filtrosEmpresa.status = radio.value;
-                    break;
-                }
-            }
-            
-            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            const titulo = document.querySelector('#empresa-section .section-header h2');
-            if (titulo) {
-                titulo.textContent = `Aniversários de Empresa - ${meses[filtrosEmpresa.mes - 1]} ${filtrosEmpresa.ano}`;
-            }
-            
-            filtrarAniversariantesEmpresa();
         }
 
         function limparFiltrosEmpresa() {
@@ -2351,7 +2345,7 @@
         }
 
         // Função para verificar se checklist está completo
-        function checklistCompleto(checklistState, tipo) {
+        function checklistCompleto(checklistState) {
             if (!checklistState) return false;
             
             const itens = checklistState.itens || [];
@@ -2969,7 +2963,7 @@
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataNascimento) return false;
                 
-                const dataNasc = new Date(col.dataNascimento);
+                const dataNasc = new Date(col.dataNascimento + 'T12:00:00');
                 const mesNasc = dataNasc.getMonth() + 1;
                 return mesNasc == filtrosVida.mes;
             });
@@ -2985,10 +2979,14 @@
             const passados = [];
             
             aniversariantes.forEach(col => {
-                const dataNasc = new Date(col.dataNascimento);
+                const dataNasc = new Date(col.dataNascimento + 'T12:00:00');
                 const dataAniversario = new Date(filtrosVida.ano, dataNasc.getMonth(), dataNasc.getDate());
                 
-                if (dataAniversario < hoje) {
+                const hojeComparacao = new Date(hoje);
+                hojeComparacao.setHours(0,0,0,0);
+                dataAniversario.setHours(0,0,0,0);
+                
+                if (dataAniversario < hojeComparacao) {
                     passados.push(col);
                 } else {
                     proximos.push(col);
@@ -2996,14 +2994,14 @@
             });
             
             proximos.sort((a, b) => {
-                const diaA = new Date(a.dataNascimento).getDate();
-                const diaB = new Date(b.dataNascimento).getDate();
+                const diaA = new Date(a.dataNascimento + 'T12:00:00').getDate();
+                const diaB = new Date(b.dataNascimento + 'T12:00:00').getDate();
                 return diaA - diaB;
             });
             
             passados.sort((a, b) => {
-                const diaA = new Date(a.dataNascimento).getDate();
-                const diaB = new Date(b.dataNascimento).getDate();
+                const diaA = new Date(a.dataNascimento + 'T12:00:00').getDate();
+                const diaB = new Date(b.dataNascimento + 'T12:00:00').getDate();
                 return diaB - diaA;
             });
             
@@ -3032,9 +3030,13 @@
             container.innerHTML = '';
             
             aniversariantes.forEach(col => {
-                const dataNasc = new Date(col.dataNascimento);
+                const dataNasc = new Date(col.dataNascimento + 'T12:00:00');
                 const dataAniversario = new Date(filtrosVida.ano, dataNasc.getMonth(), dataNasc.getDate());
-                const jaPassou = dataAniversario < hoje;
+                dataAniversario.setHours(0,0,0,0);
+                
+                const hojeComparacao = new Date(hoje);
+                hojeComparacao.setHours(0,0,0,0);
+                const jaPassou = dataAniversario < hojeComparacao;
                 
                 const dia = dataNasc.getDate().toString().padStart(2, '0');
                 const mes = (dataNasc.getMonth() + 1).toString().padStart(2, '0');
@@ -3056,7 +3058,7 @@
                     aniversariosChecklist[checklistKey] = checklistState;
                 }
                 
-                const completo = checklistCompleto(checklistState, 'vida');
+                const completo = checklistCompleto(checklistState);
                 
                 const card = document.createElement('div');
                 card.className = `aniversariante-card ${jaPassou ? 'passado' : ''}`;
@@ -3144,7 +3146,7 @@
                         <input type="checkbox" id="vida_${item.id}_${colaboradorId}" 
                             ${item.checked ? 'checked' : ''} 
                             onchange="atualizarItemChecklistVida('${colaboradorId}', '${item.id}', this.checked)">
-                        <label for="vida_${item.id}_${colaboradorId}" id="label_${item.id}_${colaboradorId}" class="${labelClass}">${item.nome}</label>
+                        <label for="vida_${item.id}_${colaboradorId}" id="label_${item.id}_${colaboradorId}" class="${labelClass}" style="text-decoration: ${item.checked ? 'line-through' : 'none'}; color: ${item.checked ? '#9ca3af' : '#4b5563'}" onclick="marcarItemChecklistVida('${colaboradorId}', '${item.id}')">${item.nome}</label>
                         <div class="item-actions">
                             <button class="item-action-btn edit" onclick="editarItemChecklistVida('${colaboradorId}', '${item.id}')">Editar</button>
                             <button class="item-action-btn delete" onclick="removerItemChecklistVida('${colaboradorId}', '${item.id}')">Excluir</button>
@@ -3172,11 +3174,20 @@
                     
                     const label = document.getElementById(`label_${itemId}_${colaboradorId}`);
                     if (label) {
-                        label.className = checked ? 'riscado' : '';
+                        label.style.textDecoration = checked ? 'line-through' : 'none';
+                        label.style.color = checked ? '#9ca3af' : '#4b5563';
                     }
                     
                     atualizarProgressoVida(colaboradorId);
                 }
+            }
+        }
+
+        function marcarItemChecklistVida(colaboradorId, itemId) {
+            const checkbox = document.getElementById(`vida_${itemId}_${colaboradorId}`);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                atualizarItemChecklistVida(colaboradorId, itemId, checkbox.checked);
             }
         }
 
@@ -3444,7 +3455,7 @@
             let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${meses[filtrosVida.mes - 1]} ${filtrosVida.ano}\n\n`;
             
             colaboradores.forEach(col => {
-                const dataNasc = new Date(col.dataNascimento);
+                const dataNasc = new Date(col.dataNascimento + 'T12:00:00');
                 if (dataNasc.getMonth() + 1 !== filtrosVida.mes) return;
                 
                 const checklistKey = `checklist_${col.id}`;
@@ -3458,7 +3469,7 @@
                 conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
                 conteudo += `Empresa: ${col.empresaNome || ''}\n`;
                 conteudo += `Cidade: ${col.cidade || ''}\n`;
-                conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? 'COMPLETO' : 'PENDENTE'}\n`;
+                conteudo += `Status: ${checklistCompleto(checklist) ? 'COMPLETO' : 'PENDENTE'}\n`;
                 conteudo += `\nCHECKLIST:\n`;
                 
                 checklist.itens.forEach(item => {
@@ -3482,7 +3493,7 @@
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataAdmissao) return false;
                 
-                const dataAdm = new Date(col.dataAdmissao);
+                const dataAdm = new Date(col.dataAdmissao + 'T12:00:00');
                 const mesAdm = dataAdm.getMonth() + 1;
                 return mesAdm == filtrosEmpresa.mes;
             });
@@ -3498,10 +3509,14 @@
             const passados = [];
             
             aniversariantes.forEach(col => {
-                const dataAdm = new Date(col.dataAdmissao);
+                const dataAdm = new Date(col.dataAdmissao + 'T12:00:00');
                 const dataAniversario = new Date(filtrosEmpresa.ano, dataAdm.getMonth(), dataAdm.getDate());
                 
-                if (dataAniversario < hoje) {
+                const hojeComparacao = new Date(hoje);
+                hojeComparacao.setHours(0,0,0,0);
+                dataAniversario.setHours(0,0,0,0);
+                
+                if (dataAniversario < hojeComparacao) {
                     passados.push(col);
                 } else {
                     proximos.push(col);
@@ -3509,14 +3524,14 @@
             });
             
             proximos.sort((a, b) => {
-                const diaA = new Date(a.dataAdmissao).getDate();
-                const diaB = new Date(b.dataAdmissao).getDate();
+                const diaA = new Date(a.dataAdmissao + 'T12:00:00').getDate();
+                const diaB = new Date(b.dataAdmissao + 'T12:00:00').getDate();
                 return diaA - diaB;
             });
             
             passados.sort((a, b) => {
-                const diaA = new Date(a.dataAdmissao).getDate();
-                const diaB = new Date(b.dataAdmissao).getDate();
+                const diaA = new Date(a.dataAdmissao + 'T12:00:00').getDate();
+                const diaB = new Date(b.dataAdmissao + 'T12:00:00').getDate();
                 return diaB - diaA;
             });
             
@@ -3545,9 +3560,13 @@
             container.innerHTML = '';
             
             aniversariantes.forEach(col => {
-                const dataAdm = new Date(col.dataAdmissao);
+                const dataAdm = new Date(col.dataAdmissao + 'T12:00:00');
                 const dataAniversario = new Date(filtrosEmpresa.ano, dataAdm.getMonth(), dataAdm.getDate());
-                const jaPassou = dataAniversario < hoje;
+                dataAniversario.setHours(0,0,0,0);
+                
+                const hojeComparacao = new Date(hoje);
+                hojeComparacao.setHours(0,0,0,0);
+                const jaPassou = dataAniversario < hojeComparacao;
                 
                 const dia = dataAdm.getDate().toString().padStart(2, '0');
                 const mes = (dataAdm.getMonth() + 1).toString().padStart(2, '0');
@@ -3571,7 +3590,7 @@
                     empresaChecklist[checklistKey] = checklistState;
                 }
                 
-                const completo = checklistCompleto(checklistState, 'empresa');
+                const completo = checklistCompleto(checklistState);
                 
                 const pedidoKey = `pedido_empresa_${col.id}`;
                 let pedidoState = pedidosPizzaEmpresa[pedidoKey] || {
@@ -3740,7 +3759,7 @@
                         <input type="checkbox" id="empresa_${item.id}_${colaboradorId}" 
                             ${item.checked ? 'checked' : ''} 
                             onchange="atualizarItemChecklistEmpresa('${colaboradorId}', '${item.id}', this.checked)">
-                        <label for="empresa_${item.id}_${colaboradorId}" id="empresa_label_${item.id}_${colaboradorId}" class="${labelClass}">${item.nome}</label>
+                        <label for="empresa_${item.id}_${colaboradorId}" id="empresa_label_${item.id}_${colaboradorId}" class="${labelClass}" style="text-decoration: ${item.checked ? 'line-through' : 'none'}; color: ${item.checked ? '#9ca3af' : '#4b5563'}" onclick="marcarItemChecklistEmpresa('${colaboradorId}', '${item.id}')">${item.nome}</label>
                         <div class="item-actions">
                             <button class="item-action-btn edit" onclick="editarItemChecklistEmpresa('${colaboradorId}', '${item.id}')">Editar</button>
                             <button class="item-action-btn delete" onclick="removerItemChecklistEmpresa('${colaboradorId}', '${item.id}')">Excluir</button>
@@ -3757,6 +3776,14 @@
             `;
             
             return html;
+        }
+
+        function marcarItemChecklistEmpresa(colaboradorId, itemId) {
+            const checkbox = document.getElementById(`empresa_${itemId}_${colaboradorId}`);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                atualizarItemChecklistEmpresa(colaboradorId, itemId, checkbox.checked);
+            }
         }
 
         function editarItemChecklistEmpresa(colaboradorId, itemId) {
@@ -3889,7 +3916,8 @@
                     
                     const label = document.getElementById(`empresa_label_${itemId}_${colaboradorId}`);
                     if (label) {
-                        label.className = checked ? 'riscado' : '';
+                        label.style.textDecoration = checked ? 'line-through' : 'none';
+                        label.style.color = checked ? '#9ca3af' : '#4b5563';
                     }
                     
                     atualizarProgressoEmpresa(colaboradorId);
@@ -4045,7 +4073,7 @@
             let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${meses[filtrosEmpresa.mes - 1]} ${filtrosEmpresa.ano}\n\n`;
             
             colaboradores.forEach(col => {
-                const dataAdm = new Date(col.dataAdmissao);
+                const dataAdm = new Date(col.dataAdmissao + 'T12:00:00');
                 if (dataAdm.getMonth() + 1 !== filtrosEmpresa.mes) return;
                 
                 const checklistKey = `empresa_${col.id}`;
@@ -4062,7 +4090,7 @@
                 conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
                 conteudo += `Empresa: ${col.empresaNome || ''}\n`;
                 conteudo += `Cidade: ${col.cidade || ''}\n`;
-                conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? 'COMPLETO' : 'PENDENTE'}\n`;
+                conteudo += `Status: ${checklistCompleto(checklist) ? 'COMPLETO' : 'PENDENTE'}\n`;
                 conteudo += `\nCHECKLIST:\n`;
                 
                 checklist.itens.forEach(item => {
@@ -4349,14 +4377,14 @@
         function updateDashboard() {
             const aniversariantesVida = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataNascimento) return false;
-                const dataNasc = new Date(c.dataNascimento);
+                const dataNasc = new Date(c.dataNascimento + 'T12:00:00');
                 const mesNasc = dataNasc.getMonth() + 1;
                 return mesNasc == mesPadrao;
             });
             
             const aniversariantesEmpresa = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataAdmissao) return false;
-                const dataAdm = new Date(c.dataAdmissao);
+                const dataAdm = new Date(c.dataAdmissao + 'T12:00:00');
                 const mesAdm = dataAdm.getMonth() + 1;
                 return mesAdm == mesPadrao;
             });
