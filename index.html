@@ -2489,7 +2489,7 @@ service cloud.firestore {
                     postIntranet: false,
                     postWhatsapp: false,
                     texto: '',
-                    fotoNome: ''
+                    fotoUrl: ''
                 };
                 
                 const completo = checklistCompleto(checklistState, 'vida');
@@ -2561,9 +2561,9 @@ service cloud.firestore {
                             <div class="upload-text">
                                 <strong>Clique para upload</strong> ou arraste a imagem
                             </div>
-                            <input type="file" id="file_${col.id}" accept="image/*" onchange="previewFoto(this, '${col.id}')">
+                            <input type="file" id="file_${col.id}" accept="image/*" onchange="fazerUploadFoto(this, '${col.id}', 'vida')">
                         </div>
-                        <img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">
+                        ${checklistState.fotoUrl ? `<img id="preview_${col.id}" class="preview-foto active" src="${checklistState.fotoUrl}" alt="Preview">` : `<img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">`}
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
@@ -2622,17 +2622,30 @@ service cloud.firestore {
             aniversariosChecklist[checklistKey].texto = texto;
         }
 
-        function previewFoto(input, colaboradorId) {
+        async function fazerUploadFoto(input, colaboradorId, tipo) {
             if (input.files && input.files[0]) {
-                const reader = new FileReader();
+                const file = input.files[0];
+                const filePath = `${tipo}/${colaboradorId}/${Date.now()}_${file.name}`;
+                const storageRef = storage.ref().child(filePath);
                 
-                reader.onload = function(e) {
+                mostrarLoading();
+                
+                try {
+                    // Upload da foto para o Storage
+                    const snapshot = await storageRef.put(file);
+                    
+                    // Pegar URL da foto
+                    const downloadUrl = await snapshot.ref.getDownloadURL();
+                    
+                    // Mostrar preview
                     const preview = document.getElementById(`preview_${colaboradorId}`);
                     if (preview) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                        
-                        // Salvar apenas o nome da foto no estado, não o base64
+                        preview.src = downloadUrl;
+                        preview.classList.add('active');
+                    }
+                    
+                    // Salvar URL no estado
+                    if (tipo === 'vida') {
                         const checklistKey = `checklist_${colaboradorId}`;
                         if (!aniversariosChecklist[checklistKey]) {
                             aniversariosChecklist[checklistKey] = {
@@ -2640,11 +2653,25 @@ service cloud.firestore {
                                 tipo: 'vida'
                             };
                         }
-                        aniversariosChecklist[checklistKey].fotoNome = input.files[0].name;
+                        aniversariosChecklist[checklistKey].fotoUrl = downloadUrl;
+                    } else {
+                        const checklistKey = `empresa_${colaboradorId}`;
+                        if (!empresaChecklist[checklistKey]) {
+                            empresaChecklist[checklistKey] = {
+                                colaboradorId: colaboradorId,
+                                tipo: 'empresa'
+                            };
+                        }
+                        empresaChecklist[checklistKey].fotoUrl = downloadUrl;
                     }
+                    
+                    mostrarToast('Foto enviada com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao fazer upload da foto:', error);
+                    mostrarToast('Erro ao enviar foto: ' + error.message, 'error');
+                } finally {
+                    esconderLoading();
                 }
-                
-                reader.readAsDataURL(input.files[0]);
             }
         }
 
@@ -2661,11 +2688,7 @@ service cloud.firestore {
             if (checklistData) {
                 mostrarLoading();
                 try {
-                    // Remover a fotoPreview antes de salvar (já que não salvamos mais)
-                    const dataToSave = { ...checklistData };
-                    delete dataToSave.fotoPreview;
-                    
-                    await db.collection('checklists').doc(checklistKey).set(dataToSave);
+                    await db.collection('checklists').doc(checklistKey).set(checklistData);
                     mostrarToast('Checklist salvo com sucesso!');
                 } catch (error) {
                     console.error('Erro ao salvar checklist:', error);
@@ -2704,7 +2727,7 @@ service cloud.firestore {
                     conteudo += `Post Intranet: ${checklist.postIntranet ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `Post WhatsApp: ${checklist.postWhatsapp ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n`;
-                    conteudo += `FOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
+                    conteudo += `FOTO: ${checklist.fotoUrl ? 'Anexada' : 'Não anexada'}\n\n`;
                 }
             });
             
@@ -2841,7 +2864,7 @@ service cloud.firestore {
                     passarContato: false,
                     acompanharPedidos: false,
                     entregaConfirmada: false,
-                    fotoNome: ''
+                    fotoUrl: ''
                 };
                 
                 const completo = checklistCompleto(checklistState, 'empresa');
@@ -2890,6 +2913,7 @@ service cloud.firestore {
                     pedidoResumoHTML = `
                         <div class="pedido-pizza-resumo">
                             <p><strong>Pizza:</strong> ${pizzaSelecionada ? pizzaSelecionada.nome : 'Selecionada'}</p>
+                            <p><strong>Pizzaria:</strong> ${pizzaSelecionada ? pizzaSelecionada.pizzaria : ''}</p>
                             <p><strong>Data:</strong> ${pedidoState.dataEntregaBR || pedidoState.dataEntrega || 'Não definida'} ${pedidoState.horarioEntrega ? 'às ' + pedidoState.horarioEntrega : ''}</p>
                             <p><strong>Local:</strong> ${pedidoState.local || col.cidade || ''}</p>
                             ${pedidoState.enderecoCompleto ? `<p><strong>Endereço:</strong> ${pedidoState.enderecoCompleto}</p>` : ''}
@@ -2999,7 +3023,7 @@ service cloud.firestore {
                                 <label>Escolha a pizza:</label>
                                 <select id="pizza_select_${col.id}" onchange="salvarPedidoPizza('${col.id}', 'pizzaId', this.value)">
                                     <option value="">Selecione...</option>
-                                    ${pizzas.map(p => `<option value="${p.id}" ${pedidoState.pizzaId == p.id ? 'selected' : ''}>${p.nome} - ${p.descricao}</option>`).join('')}
+                                    ${pizzas.map(p => `<option value="${p.id}" ${pedidoState.pizzaId == p.id ? 'selected' : ''}>${p.nome} - ${p.pizzaria}</option>`).join('')}
                                 </select>
                             </div>
                             
@@ -3067,9 +3091,9 @@ service cloud.firestore {
                             <div class="upload-text">
                                 <strong>Clique para upload</strong> ou arraste a imagem
                             </div>
-                            <input type="file" id="empresa_file_${col.id}" accept="image/*" onchange="previewFotoEmpresa(this, '${col.id}')">
+                            <input type="file" id="empresa_file_${col.id}" accept="image/*" onchange="fazerUploadFoto(this, '${col.id}', 'empresa')">
                         </div>
-                        <img id="empresa_preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">
+                        ${checklistState.fotoUrl ? `<img id="preview_${col.id}" class="preview-foto active" src="${checklistState.fotoUrl}" alt="Preview">` : `<img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">`}
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
@@ -3194,32 +3218,6 @@ service cloud.firestore {
             }
         }
 
-        function previewFotoEmpresa(input, colaboradorId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const preview = document.getElementById(`empresa_preview_${colaboradorId}`);
-                    if (preview) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                        
-                        // Salvar apenas o nome da foto no estado, não o base64
-                        const checklistKey = `empresa_${colaboradorId}`;
-                        if (!empresaChecklist[checklistKey]) {
-                            empresaChecklist[checklistKey] = {
-                                colaboradorId: colaboradorId,
-                                tipo: 'empresa'
-                            };
-                        }
-                        empresaChecklist[checklistKey].fotoNome = input.files[0].name;
-                    }
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
         async function salvarChecklistEmpresa(colaboradorId) {
             const checklistKey = `empresa_${colaboradorId}`;
             const checklistData = empresaChecklist[checklistKey];
@@ -3227,11 +3225,7 @@ service cloud.firestore {
             if (checklistData) {
                 mostrarLoading();
                 try {
-                    // Remover a fotoPreview antes de salvar (já que não salvamos mais)
-                    const dataToSave = { ...checklistData };
-                    delete dataToSave.fotoPreview;
-                    
-                    await db.collection('checklists').doc(checklistKey).set(dataToSave);
+                    await db.collection('checklists').doc(checklistKey).set(checklistData);
                     
                     mostrarToast('Checklist salvo com sucesso!');
                 } catch (error) {
@@ -3282,14 +3276,14 @@ service cloud.firestore {
                     conteudo += `Acompanhar pedidos: ${checklist.acompanharPedidos ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `Entrega confirmada: ${checklist.entregaConfirmada ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `\nPEDIDO DE PIZZA:\n`;
-                    conteudo += `Pizza: ${pizza ? pizza.nome + ' - ' + pizza.descricao : 'Não selecionada'}\n`;
+                    conteudo += `Pizza: ${pizza ? pizza.nome + ' - ' + pizza.pizzaria : 'Não selecionada'}\n`;
                     conteudo += `Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
                     conteudo += `Horário: ${pedido.horarioEntrega || 'Não definido'}\n`;
                     conteudo += `Cidade: ${pedido.local || col.cidade || ''}\n`;
                     conteudo += `Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
                     conteudo += `Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
                     conteudo += `Observações: ${pedido.observacoes || 'Nenhuma'}\n`;
-                    conteudo += `\nFOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
+                    conteudo += `\nFOTO: ${checklist.fotoUrl ? 'Anexada' : 'Não anexada'}\n\n`;
                 }
             });
             
