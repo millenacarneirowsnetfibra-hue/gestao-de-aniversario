@@ -1072,7 +1072,6 @@
         function formatDateBR(date) {
             if (!date) return '';
             const d = new Date(date);
-            // Ajusta para o fuso horário local para evitar problemas de data
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
@@ -1090,13 +1089,11 @@
         function parseDateBR(dateStr) {
             if (!dateStr) return null;
             const [day, month, year] = dateStr.split('/');
-            // Cria a data no fuso horário local sem UTC conversion
             return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
 
         function parseDateISO(dateStr) {
             if (!dateStr) return null;
-            // Para datas no formato ISO (YYYY-MM-DD) do input date
             const [year, month, day] = dateStr.split('-');
             return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
@@ -1124,6 +1121,66 @@
                 }
                 e.target.value = value;
             });
+        }
+
+        function getNextBirthday(birthDate) {
+            if (!birthDate) return null;
+            const hoje = new Date();
+            const dataNascimento = new Date(birthDate);
+            
+            // Cria data do aniversário deste ano
+            const aniversarioEsteAno = new Date(hoje.getFullYear(), dataNascimento.getMonth(), dataNascimento.getDate());
+            
+            // Se o aniversário já passou este ano, pega o do próximo ano
+            if (aniversarioEsteAno < hoje) {
+                return new Date(hoje.getFullYear() + 1, dataNascimento.getMonth(), dataNascimento.getDate());
+            }
+            
+            return aniversarioEsteAno;
+        }
+
+        function getDaysUntilNextBirthday(birthDate) {
+            if (!birthDate) return Infinity;
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            const proximoAniversario = getNextBirthday(birthDate);
+            if (!proximoAniversario) return Infinity;
+            
+            const diffTime = proximoAniversario - hoje;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return diffDays;
+        }
+
+        function getNextCompanyAnniversary(admissionDate) {
+            if (!admissionDate) return null;
+            const hoje = new Date();
+            const dataAdmissao = new Date(admissionDate);
+            
+            // Cria data do aniversário de empresa deste ano
+            const aniversarioEsteAno = new Date(hoje.getFullYear(), dataAdmissao.getMonth(), dataAdmissao.getDate());
+            
+            // Se o aniversário já passou este ano, pega o do próximo ano
+            if (aniversarioEsteAno < hoje) {
+                return new Date(hoje.getFullYear() + 1, dataAdmissao.getMonth(), dataAdmissao.getDate());
+            }
+            
+            return aniversarioEsteAno;
+        }
+
+        function getDaysUntilNextCompanyAnniversary(admissionDate) {
+            if (!admissionDate) return Infinity;
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            const proximoAniversario = getNextCompanyAnniversary(admissionDate);
+            if (!proximoAniversario) return Infinity;
+            
+            const diffTime = proximoAniversario - hoje;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return diffDays;
         }
 
         function isPastBirthday(birthDate) {
@@ -1346,9 +1403,25 @@
                 const snapshot = await db.collection('colaboradores').get();
                 const colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                // Ordenar: primeiro os mais próximos, depois os que já passaram
+                const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
+                    const diasA = getDaysUntilNextBirthday(a.dataNascimento);
+                    const diasB = getDaysUntilNextBirthday(b.dataNascimento);
+                    
+                    // Se um já passou (dias negativos) e o outro não
+                    const aPassou = isPastBirthday(a.dataNascimento);
+                    const bPassou = isPastBirthday(b.dataNascimento);
+                    
+                    if (aPassou && !bPassou) return 1; // a vai para o final
+                    if (!aPassou && bPassou) return -1; // b vai para o final
+                    
+                    // Ambos não passaram ou ambos passaram - ordena por dias
+                    return diasA - diasB;
+                });
+                
                 container.innerHTML = '';
                 
-                for (const col of colaboradores) {
+                for (const col of colaboradoresOrdenados) {
                     const checklistSnapshot = await db.collection('checklists')
                         .where('colaboradorId', '==', col.id)
                         .where('tipo', '==', 'vida')
@@ -1594,9 +1667,25 @@
                 const snapshot = await db.collection('colaboradores').get();
                 const colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                // Ordenar: primeiro os mais próximos, depois os que já passaram
+                const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
+                    const diasA = getDaysUntilNextCompanyAnniversary(a.dataAdmissao);
+                    const diasB = getDaysUntilNextCompanyAnniversary(b.dataAdmissao);
+                    
+                    // Se um já passou (dias negativos) e o outro não
+                    const aPassou = isPastBirthday(a.dataAdmissao);
+                    const bPassou = isPastBirthday(b.dataAdmissao);
+                    
+                    if (aPassou && !bPassou) return 1; // a vai para o final
+                    if (!aPassou && bPassou) return -1; // b vai para o final
+                    
+                    // Ambos não passaram ou ambos passaram - ordena por dias
+                    return diasA - diasB;
+                });
+                
                 container.innerHTML = '';
                 
-                for (const col of colaboradores) {
+                for (const col of colaboradoresOrdenados) {
                     const checklistSnapshot = await db.collection('checklists')
                         .where('colaboradorId', '==', col.id)
                         .where('tipo', '==', 'empresa')
@@ -1629,6 +1718,12 @@
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
             const isOutside = !colaborador.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(colaborador.cidade);
+            
+            // Verifica se o aniversário já passou
+            const pastBirthday = isPastBirthday(dataAdmissao);
+            if (pastBirthday) {
+                card.classList.add('past-birthday');
+            }
             
             card.innerHTML = `
                 <div class="person-card-header">
