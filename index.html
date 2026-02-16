@@ -1550,70 +1550,85 @@
         // Funções para carregar dados do Firebase
         async function carregarEmpresas() {
             try {
+                console.log('Carregando empresas...');
                 const snapshot = await db.collection('empresas').get();
-                empresas = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                empresas = snapshot.docs.map(doc => {
+                    console.log('Empresa encontrada:', doc.id, doc.data());
+                    return {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                });
+                console.log('Total de empresas carregadas:', empresas.length);
                 atualizarTabelaEmpresas();
                 return empresas;
             } catch (error) {
-                console.error('Erro ao carregar empresas:', error);
-                mostrarToast('Erro ao carregar empresas', 'error');
+                console.error('Erro detalhado ao carregar empresas:', error);
+                mostrarToast('Erro ao carregar empresas: ' + error.message, 'error');
                 return [];
             }
         }
 
         async function carregarDepartamentos() {
             try {
+                console.log('Carregando departamentos...');
                 const snapshot = await db.collection('departamentos').get();
-                departamentos = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                departamentos = snapshot.docs.map(doc => {
+                    console.log('Departamento encontrado:', doc.id, doc.data());
+                    return {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                });
+                console.log('Total de departamentos carregados:', departamentos.length);
                 atualizarTabelaDepartamentos();
                 return departamentos;
             } catch (error) {
-                console.error('Erro ao carregar departamentos:', error);
-                mostrarToast('Erro ao carregar departamentos', 'error');
+                console.error('Erro detalhado ao carregar departamentos:', error);
+                mostrarToast('Erro ao carregar departamentos: ' + error.message, 'error');
                 return [];
             }
         }
 
         async function carregarPizzas() {
             try {
+                console.log('Carregando pizzas...');
                 const snapshot = await db.collection('pizzas').get();
                 pizzas = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
+                console.log('Total de pizzas carregadas:', pizzas.length);
                 atualizarTabelaPizzas();
                 return pizzas;
             } catch (error) {
-                console.error('Erro ao carregar pizzas:', error);
-                mostrarToast('Erro ao carregar pizzas', 'error');
+                console.error('Erro detalhado ao carregar pizzas:', error);
+                mostrarToast('Erro ao carregar pizzas: ' + error.message, 'error');
                 return [];
             }
         }
 
         async function carregarColaboradores() {
             try {
+                console.log('Carregando colaboradores...');
                 const snapshot = await db.collection('colaboradores').get();
                 colaboradores = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
+                console.log('Total de colaboradores carregados:', colaboradores.length);
                 atualizarTabelaColaboradores();
                 return colaboradores;
             } catch (error) {
-                console.error('Erro ao carregar colaboradores:', error);
-                mostrarToast('Erro ao carregar colaboradores', 'error');
+                console.error('Erro detalhado ao carregar colaboradores:', error);
+                mostrarToast('Erro ao carregar colaboradores: ' + error.message, 'error');
                 return [];
             }
         }
 
         async function carregarChecklists() {
             try {
+                console.log('Carregando checklists...');
                 const snapshot = await db.collection('checklists').get();
                 snapshot.docs.forEach(doc => {
                     const data = doc.data();
@@ -1623,6 +1638,7 @@
                         empresaChecklist[doc.id] = data;
                     }
                 });
+                console.log('Checklists carregados:', Object.keys(aniversariosChecklist).length + Object.keys(empresaChecklist).length);
             } catch (error) {
                 console.error('Erro ao carregar checklists:', error);
             }
@@ -1630,10 +1646,12 @@
 
         async function carregarPedidos() {
             try {
+                console.log('Carregando pedidos...');
                 const snapshot = await db.collection('pedidos').get();
                 snapshot.docs.forEach(doc => {
                     pedidosPizzaEmpresa[doc.id] = doc.data();
                 });
+                console.log('Pedidos carregados:', Object.keys(pedidosPizzaEmpresa).length);
             } catch (error) {
                 console.error('Erro ao carregar pedidos:', error);
             }
@@ -1706,6 +1724,9 @@
             selectEmpresa.innerHTML = '<option value="">Selecione...</option>';
             selectDepartamento.innerHTML = '<option value="">Selecione...</option>';
             
+            console.log('Carregando selects com empresas:', empresas);
+            console.log('Carregando selects com departamentos:', departamentos);
+            
             empresas.forEach(emp => {
                 const option = document.createElement('option');
                 option.value = emp.id;
@@ -1738,18 +1759,22 @@
                     dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
+                console.log('Empresa salva com ID:', docRef.id);
+                
                 await carregarEmpresas();
+                
                 esconderFormularioEmpresa();
                 mostrarToast('Empresa cadastrada com sucesso!');
             } catch (error) {
-                console.error('Erro ao salvar empresa:', error);
-                mostrarToast('Erro ao salvar empresa', 'error');
+                console.error('Erro detalhado ao salvar empresa:', error);
+                mostrarToast('Erro ao salvar empresa: ' + error.message, 'error');
             } finally {
                 esconderLoading();
             }
         }
 
         async function editarEmpresa(id) {
+            console.log('Editando empresa ID:', id);
             const empresa = empresas.find(e => e.id === id);
             if (empresa) {
                 const novoNome = prompt('Editar nome da empresa:', empresa.nome);
@@ -1762,16 +1787,20 @@
                         await carregarEmpresas();
                         mostrarToast('Empresa atualizada com sucesso!');
                     } catch (error) {
-                        console.error('Erro ao editar empresa:', error);
-                        mostrarToast('Erro ao editar empresa', 'error');
+                        console.error('Erro detalhado ao editar empresa:', error);
+                        mostrarToast('Erro ao editar empresa: ' + error.message, 'error');
                     } finally {
                         esconderLoading();
                     }
                 }
+            } else {
+                console.error('Empresa não encontrada com ID:', id);
+                mostrarToast('Empresa não encontrada', 'error');
             }
         }
 
         async function excluirEmpresa(id) {
+            console.log('Excluindo empresa ID:', id);
             if (confirm('Tem certeza que deseja excluir esta empresa?')) {
                 mostrarLoading();
                 try {
@@ -1779,8 +1808,8 @@
                     await carregarEmpresas();
                     mostrarToast('Empresa excluída com sucesso!');
                 } catch (error) {
-                    console.error('Erro ao excluir empresa:', error);
-                    mostrarToast('Erro ao excluir empresa', 'error');
+                    console.error('Erro detalhado ao excluir empresa:', error);
+                    mostrarToast('Erro ao excluir empresa: ' + error.message, 'error');
                 } finally {
                     esconderLoading();
                 }
@@ -1804,18 +1833,22 @@
                     dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
+                console.log('Departamento salvo com ID:', docRef.id);
+                
                 await carregarDepartamentos();
+                
                 esconderFormularioDepartamento();
                 mostrarToast('Departamento cadastrado com sucesso!');
             } catch (error) {
-                console.error('Erro ao salvar departamento:', error);
-                mostrarToast('Erro ao salvar departamento', 'error');
+                console.error('Erro detalhado ao salvar departamento:', error);
+                mostrarToast('Erro ao salvar departamento: ' + error.message, 'error');
             } finally {
                 esconderLoading();
             }
         }
 
         async function editarDepartamento(id) {
+            console.log('Editando departamento ID:', id);
             const dept = departamentos.find(d => d.id === id);
             if (dept) {
                 const novoNome = prompt('Editar nome do departamento:', dept.nome);
@@ -1828,16 +1861,20 @@
                         await carregarDepartamentos();
                         mostrarToast('Departamento atualizado com sucesso!');
                     } catch (error) {
-                        console.error('Erro ao editar departamento:', error);
-                        mostrarToast('Erro ao editar departamento', 'error');
+                        console.error('Erro detalhado ao editar departamento:', error);
+                        mostrarToast('Erro ao editar departamento: ' + error.message, 'error');
                     } finally {
                         esconderLoading();
                     }
                 }
+            } else {
+                console.error('Departamento não encontrado com ID:', id);
+                mostrarToast('Departamento não encontrado', 'error');
             }
         }
 
         async function excluirDepartamento(id) {
+            console.log('Excluindo departamento ID:', id);
             if (confirm('Tem certeza que deseja excluir este departamento?')) {
                 mostrarLoading();
                 try {
@@ -1845,8 +1882,8 @@
                     await carregarDepartamentos();
                     mostrarToast('Departamento excluído com sucesso!');
                 } catch (error) {
-                    console.error('Erro ao excluir departamento:', error);
-                    mostrarToast('Erro ao excluir departamento', 'error');
+                    console.error('Erro detalhado ao excluir departamento:', error);
+                    mostrarToast('Erro ao excluir departamento: ' + error.message, 'error');
                 } finally {
                     esconderLoading();
                 }
@@ -1876,18 +1913,21 @@
                     dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
+                console.log('Pizza salva com ID:', docRef.id);
+                
                 await carregarPizzas();
                 esconderFormularioPizza();
                 mostrarToast('Pizza cadastrada com sucesso!');
             } catch (error) {
-                console.error('Erro ao salvar pizza:', error);
-                mostrarToast('Erro ao salvar pizza', 'error');
+                console.error('Erro detalhado ao salvar pizza:', error);
+                mostrarToast('Erro ao salvar pizza: ' + error.message, 'error');
             } finally {
                 esconderLoading();
             }
         }
 
         async function editarPizza(id) {
+            console.log('Editando pizza ID:', id);
             const pizza = pizzas.find(p => p.id === id);
             if (pizza) {
                 const novoNome = prompt('Editar nome da pizza:', pizza.nome);
@@ -1900,16 +1940,20 @@
                         await carregarPizzas();
                         mostrarToast('Pizza atualizada com sucesso!');
                     } catch (error) {
-                        console.error('Erro ao editar pizza:', error);
-                        mostrarToast('Erro ao editar pizza', 'error');
+                        console.error('Erro detalhado ao editar pizza:', error);
+                        mostrarToast('Erro ao editar pizza: ' + error.message, 'error');
                     } finally {
                         esconderLoading();
                     }
                 }
+            } else {
+                console.error('Pizza não encontrada com ID:', id);
+                mostrarToast('Pizza não encontrada', 'error');
             }
         }
 
         async function excluirPizza(id) {
+            console.log('Excluindo pizza ID:', id);
             if (confirm('Tem certeza que deseja excluir esta pizza?')) {
                 mostrarLoading();
                 try {
@@ -1917,8 +1961,8 @@
                     await carregarPizzas();
                     mostrarToast('Pizza excluída com sucesso!');
                 } catch (error) {
-                    console.error('Erro ao excluir pizza:', error);
-                    mostrarToast('Erro ao excluir pizza', 'error');
+                    console.error('Erro detalhado ao excluir pizza:', error);
+                    mostrarToast('Erro ao excluir pizza: ' + error.message, 'error');
                 } finally {
                     esconderLoading();
                 }
@@ -1935,13 +1979,23 @@
             const empId = document.getElementById('empresaColaborador').value;
             const status = document.getElementById('statusColaborador').value;
             
+            console.log('Salvando colaborador:', { nome, dataNasc, dataAdm, cidade, deptId, empId, status });
+            
             if (!nome || !dataNasc || !dataAdm || !cidade || !deptId || !empId) {
                 mostrarToast('Por favor, preencha todos os campos obrigatórios', 'error');
                 return;
             }
             
-            const departamento = departamentos.find(d => d.id == deptId);
-            const empresa = empresas.find(e => e.id == empId);
+            const departamento = departamentos.find(d => d.id === deptId);
+            const empresa = empresas.find(e => e.id === empId);
+            
+            console.log('Departamento encontrado:', departamento);
+            console.log('Empresa encontrada:', empresa);
+            
+            if (!departamento || !empresa) {
+                mostrarToast('Departamento ou empresa inválidos', 'error');
+                return;
+            }
             
             mostrarLoading();
             
@@ -1952,12 +2006,14 @@
                     dataAdmissao: dataAdm,
                     cidade: cidade,
                     departamentoId: deptId,
-                    departamentoNome: departamento ? departamento.nome : '',
+                    departamentoNome: departamento.nome,
                     empresaId: empId,
-                    empresaNome: empresa ? empresa.nome : '',
+                    empresaNome: empresa.nome,
                     status: status,
                     dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                
+                console.log('Colaborador salvo com ID:', docRef.id);
                 
                 await carregarColaboradores();
                 esconderFormularioColaborador();
@@ -1969,19 +2025,19 @@
                 filtrarAniversariantesEmpresa();
                 updateDashboard();
             } catch (error) {
-                console.error('Erro ao salvar colaborador:', error);
-                mostrarToast('Erro ao salvar colaborador', 'error');
+                console.error('Erro detalhado ao salvar colaborador:', error);
+                mostrarToast('Erro ao salvar colaborador: ' + error.message, 'error');
             } finally {
                 esconderLoading();
             }
         }
 
         async function editarColaborador(id) {
-            // Implementar edição posteriormente
             mostrarToast('Função de edição será implementada em breve!', 'info');
         }
 
         async function excluirColaborador(id) {
+            console.log('Excluindo colaborador ID:', id);
             if (confirm('Tem certeza que deseja excluir este colaborador?')) {
                 mostrarLoading();
                 try {
@@ -1993,8 +2049,8 @@
                     updateDashboard();
                     mostrarToast('Colaborador excluído com sucesso!');
                 } catch (error) {
-                    console.error('Erro ao excluir colaborador:', error);
-                    mostrarToast('Erro ao excluir colaborador', 'error');
+                    console.error('Erro detalhado ao excluir colaborador:', error);
+                    mostrarToast('Erro ao excluir colaborador: ' + error.message, 'error');
                 } finally {
                     esconderLoading();
                 }
@@ -2014,7 +2070,7 @@
             empresas.forEach(emp => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${emp.nome}</td>
+                    <td>${emp.nome || ''}</td>
                     <td>
                         <button class="action-btn edit" onclick="editarEmpresa('${emp.id}')">✏️</button>
                         <button class="action-btn delete" onclick="excluirEmpresa('${emp.id}')">🗑️</button>
@@ -2036,7 +2092,7 @@
             departamentos.forEach(dept => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${dept.nome}</td>
+                    <td>${dept.nome || ''}</td>
                     <td>
                         <button class="action-btn edit" onclick="editarDepartamento('${dept.id}')">✏️</button>
                         <button class="action-btn delete" onclick="excluirDepartamento('${dept.id}')">🗑️</button>
@@ -2058,9 +2114,9 @@
             pizzas.forEach(pizza => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${pizza.nome}</td>
+                    <td>${pizza.nome || ''}</td>
                     <td>${pizza.descricao || '-'}</td>
-                    <td>${pizza.pizzaria}</td>
+                    <td>${pizza.pizzaria || ''}</td>
                     <td>R$ ${pizza.valor ? pizza.valor.toFixed(2) : '0,00'}</td>
                     <td>
                         <button class="action-btn edit" onclick="editarPizza('${pizza.id}')">✏️</button>
@@ -2410,7 +2466,7 @@
                     mostrarToast('Checklist salvo com sucesso!');
                 } catch (error) {
                     console.error('Erro ao salvar checklist:', error);
-                    mostrarToast('Erro ao salvar checklist', 'error');
+                    mostrarToast('Erro ao salvar checklist: ' + error.message, 'error');
                 } finally {
                     esconderLoading();
                 }
@@ -2459,8 +2515,7 @@
             window.URL.revokeObjectURL(url);
         }
 
-        // NOVAS FUNÇÕES PARA ANIVERSÁRIO DE EMPRESA
-
+        // Funções para Aniversário de Empresa
         function filtrarAniversariantesEmpresa() {
             const mesSelecionado = document.getElementById('monthFilter').value;
             const setorSelecionado = document.getElementById('sectorFilter').value;
@@ -2886,7 +2941,7 @@
                     mostrarToast('Pedido salvo com sucesso!');
                 } catch (error) {
                     console.error('Erro ao salvar pedido:', error);
-                    mostrarToast('Erro ao salvar pedido', 'error');
+                    mostrarToast('Erro ao salvar pedido: ' + error.message, 'error');
                 } finally {
                     esconderLoading();
                 }
@@ -2982,7 +3037,7 @@
                     mostrarToast('Checklist de empresa salvo com sucesso!');
                 } catch (error) {
                     console.error('Erro ao salvar checklist:', error);
-                    mostrarToast('Erro ao salvar checklist', 'error');
+                    mostrarToast('Erro ao salvar checklist: ' + error.message, 'error');
                 } finally {
                     esconderLoading();
                 }
