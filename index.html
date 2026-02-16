@@ -1279,22 +1279,24 @@
                     <div class="filtros-financeiro">
                         <div class="filtro-financeiro">
                             <select id="filtroMesFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
-                                <option value="1">Janeiro 2026</option>
-                                <option value="2" selected>Fevereiro 2026</option>
-                                <option value="3">Março 2026</option>
-                                <option value="4">Abril 2026</option>
-                                <option value="5">Maio 2026</option>
-                                <option value="6">Junho 2026</option>
-                                <option value="7">Julho 2026</option>
-                                <option value="8">Agosto 2026</option>
-                                <option value="9">Setembro 2026</option>
-                                <option value="10">Outubro 2026</option>
-                                <option value="11">Novembro 2026</option>
-                                <option value="12">Dezembro 2026</option>
+                                <option value="todos">Todos os meses</option>
+                                <option value="1">Janeiro</option>
+                                <option value="2" selected>Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
                             </select>
                         </div>
                         <div class="filtro-financeiro">
                             <select id="filtroAnoFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
+                                <option value="todos">Todos os anos</option>
                                 <option value="2024">2024</option>
                                 <option value="2025">2025</option>
                                 <option value="2026" selected>2026</option>
@@ -1340,7 +1342,7 @@
                     <div class="chart-pizza-grid">
                         <!-- Gráfico de Evolução Mensal -->
                         <div class="chart-container">
-                            <div class="chart-title">Evolução Mensal de Gastos - 2026</div>
+                            <div class="chart-title">Evolução Mensal de Gastos</div>
                             <div id="graficoEvolucao"></div>
                         </div>
 
@@ -3282,8 +3284,8 @@
 
         // Funções do Controle Financeiro
         function atualizarFinanceiro() {
-            const mesSelecionado = parseInt(document.getElementById('filtroMesFinanceiro').value);
-            const anoSelecionado = parseInt(document.getElementById('filtroAnoFinanceiro').value);
+            const mesSelecionado = document.getElementById('filtroMesFinanceiro').value;
+            const anoSelecionado = document.getElementById('filtroAnoFinanceiro').value;
             
             // Filtrar pedidos do mês/ano selecionado
             const pedidosFiltrados = [];
@@ -3298,30 +3300,52 @@
                 if (!pizza) return;
                 
                 // Verificar data
+                let incluirPedido = true;
+                
                 if (pedido.dataEntregaBR) {
                     const partes = pedido.dataEntregaBR.split('/');
                     if (partes.length === 3) {
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        if (mesPedido === mesSelecionado && anoPedido === anoSelecionado) {
-                            // Adicionar aos pedidos filtrados
-                            pedidosFiltrados.push({
-                                ...pedido,
-                                pizzaNome: pizza.nome,
-                                pizzaria: pizza.pizzaria,
-                                valor: pizza.valor,
-                                colaboradorNome: colaboradores.find(c => c.id === pedido.colaboradorId)?.nome || 'Desconhecido'
-                            });
-                            
-                            // Calcular gastos por pizzaria
-                            const pizzariaNome = pizza.pizzaria;
-                            gastosPorPizzaria[pizzariaNome] = (gastosPorPizzaria[pizzariaNome] || 0) + pizza.valor;
-                            
-                            // Contar pizzas
-                            pizzasCount[pizza.nome] = (pizzasCount[pizza.nome] || 0) + 1;
+                        // Aplicar filtro de mês
+                        if (mesSelecionado !== 'todos') {
+                            if (mesPedido !== parseInt(mesSelecionado)) {
+                                incluirPedido = false;
+                            }
                         }
+                        
+                        // Aplicar filtro de ano
+                        if (anoSelecionado !== 'todos') {
+                            if (anoPedido !== parseInt(anoSelecionado)) {
+                                incluirPedido = false;
+                            }
+                        }
+                    } else {
+                        // Data inválida - não incluir
+                        incluirPedido = false;
                     }
+                } else {
+                    // Sem data definida - não incluir nos filtros
+                    incluirPedido = false;
+                }
+                
+                if (incluirPedido) {
+                    // Adicionar aos pedidos filtrados
+                    pedidosFiltrados.push({
+                        ...pedido,
+                        pizzaNome: pizza.nome,
+                        pizzaria: pizza.pizzaria,
+                        valor: pizza.valor,
+                        colaboradorNome: colaboradores.find(c => c.id === pedido.colaboradorId)?.nome || 'Desconhecido'
+                    });
+                    
+                    // Calcular gastos por pizzaria
+                    const pizzariaNome = pizza.pizzaria;
+                    gastosPorPizzaria[pizzariaNome] = (gastosPorPizzaria[pizzariaNome] || 0) + pizza.valor;
+                    
+                    // Contar pizzas
+                    pizzasCount[pizza.nome] = (pizzasCount[pizza.nome] || 0) + 1;
                 }
             });
             
@@ -3383,10 +3407,11 @@
                 if (pedido.dataEntregaBR) {
                     const partes = pedido.dataEntregaBR.split('/');
                     if (partes.length === 3) {
-                        const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        if (anoPedido === anoSelecionado) {
+                        // Se não há filtro de ano ou o ano corresponde
+                        if (anoSelecionado === 'todos' || anoPedido === parseInt(anoSelecionado)) {
+                            const mesPedido = parseInt(partes[1]);
                             evolucaoMensal[mesPedido] = (evolucaoMensal[mesPedido] || 0) + pizza.valor;
                         }
                     }
@@ -3412,7 +3437,7 @@
             });
             
             if (evolucaoHTML === '') {
-                evolucaoHTML = '<div class="empty-message">Nenhum dado para o ano selecionado</div>';
+                evolucaoHTML = '<div class="empty-message">Nenhum dado para o período selecionado</div>';
             }
             document.getElementById('graficoEvolucao').innerHTML = evolucaoHTML;
             
