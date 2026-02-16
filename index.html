@@ -1131,6 +1131,35 @@
             flex: 1;
             min-width: 200px;
         }
+        
+        /* Postagem texto */
+        .postagem-texto {
+            margin: 12px 0;
+        }
+        
+        .postagem-texto label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+        
+        .postagem-texto textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .postagem-texto textarea:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
     </style>
 </head>
 <body>
@@ -1684,6 +1713,11 @@
         let empresaChecklist = {};
         let pedidosPizzaEmpresa = {};
 
+        // Flags de controle para evitar loops
+        let _savingChecklist = false;
+        let _savingEmpresaChecklist = false;
+        let _initialized = false;
+
         // Itens padrão do checklist de empresa
         const itensPadraoChecklistEmpresa = [
             { id: 'arteTrofeu', nome: 'Arte troféu' },
@@ -1763,7 +1797,7 @@
 
         // Função para verificar se checklist está completo
         function checklistCompleto(checklistState, tipo) {
-            if (!checklistState || !checklistState.itens) return false;
+            if (!checklistState) return false;
             
             if (tipo === 'vida') {
                 const items = ['arteInstagram', 'arteTV', 'postInstagram', 'postIntranet', 'postWhatsapp'];
@@ -1771,7 +1805,7 @@
             } else {
                 // Para empresa, verificar todos os itens personalizados
                 const itens = checklistState.itens || [];
-                return itens.every(item => item.checked);
+                return itens.length > 0 && itens.every(item => item.checked);
             }
         }
 
@@ -2522,6 +2556,8 @@
                 // Recuperar estado salvo do checklist, se existir
                 const checklistKey = `checklist_${col.id}`;
                 let checklistState = aniversariosChecklist[checklistKey] || {
+                    colaboradorId: col.id,
+                    tipo: 'vida',
                     arteInstagram: false,
                     arteTV: false,
                     postInstagram: false,
@@ -2622,7 +2658,14 @@
             if (!aniversariosChecklist[checklistKey]) {
                 aniversariosChecklist[checklistKey] = {
                     colaboradorId: colaboradorId,
-                    tipo: 'vida'
+                    tipo: 'vida',
+                    arteInstagram: false,
+                    arteTV: false,
+                    postInstagram: false,
+                    postIntranet: false,
+                    postWhatsapp: false,
+                    texto: '',
+                    fotoUrl: ''
                 };
             }
             aniversariosChecklist[checklistKey][item] = checked;
@@ -2671,38 +2714,49 @@
 
             const file = input.files[0];
             
-            // Validar tipo de arquivo
+            // Validar tipo de arquivo (incluindo PNG)
             if (!file.type.startsWith('image/')) {
                 mostrarToast('Por favor, selecione apenas arquivos de imagem', 'error');
-                input.value = ''; // Limpar o input
+                input.value = '';
                 return;
             }
 
             // Validar tamanho (máximo 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 mostrarToast('A imagem deve ter no máximo 5MB', 'error');
-                input.value = ''; // Limpar o input
+                input.value = '';
                 return;
             }
 
-            const filePath = `${tipo}/${colaboradorId}/${Date.now()}_${file.name}`;
-            const storageRef = storage.ref().child(filePath);
+            // Mostrar loading
+            mostrarLoading();
             
             // Mostrar barra de progresso
             const progressBar = document.getElementById(`progress_${colaboradorId}`);
             if (progressBar) {
                 progressBar.classList.add('active');
+                const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                if (progressBarInner) {
+                    progressBarInner.style.width = '0%';
+                }
             }
             
-            mostrarLoading();
-            
             try {
-                // Upload da foto para o Storage com monitoramento de progresso
+                // Criar nome único para o arquivo
+                const extensao = file.name.split('.').pop() || 'png';
+                const fileName = `${colaboradorId}_${Date.now()}.${extensao}`;
+                const filePath = `${tipo}/${fileName}`;
+                
+                console.log('Fazendo upload para:', filePath);
+                
+                const storageRef = storage.ref().child(filePath);
+                
+                // Upload do arquivo
                 const uploadTask = storageRef.put(file);
                 
+                // Monitorar progresso
                 uploadTask.on('state_changed',
                     (snapshot) => {
-                        // Progresso do upload
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         if (progressBar) {
                             const progressBarInner = progressBar.querySelector('.upload-progress-bar');
@@ -2712,47 +2766,41 @@
                         }
                     },
                     (error) => {
-                        // Erro durante o upload
                         console.error('Erro no upload:', error);
-                        mostrarToast('Erro ao fazer upload da foto: ' + error.message, 'error');
-                        
-                        // Esconder barra de progresso
+                        mostrarToast('Erro ao fazer upload: ' + error.message, 'error');
                         if (progressBar) {
                             progressBar.classList.remove('active');
-                            const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                            if (progressBarInner) {
-                                progressBarInner.style.width = '0%';
-                            }
                         }
-                        
-                        // Limpar o input
-                        input.value = '';
+                        esconderLoading();
                     },
                     async () => {
-                        // Upload completo
+                        // Upload concluído
                         try {
                             const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
+                            console.log('URL obtida:', downloadUrl);
                             
-                            // Mostrar preview
-                            const preview = document.getElementById(`preview_${colaboradorId}`);
-                            if (preview) {
-                                preview.src = downloadUrl;
-                                preview.classList.add('active');
-                            }
-                            
-                            // Salvar URL no estado
+                            // Salvar URL no estado apropriado
                             if (tipo === 'vida') {
                                 const checklistKey = `checklist_${colaboradorId}`;
                                 if (!aniversariosChecklist[checklistKey]) {
                                     aniversariosChecklist[checklistKey] = {
                                         colaboradorId: colaboradorId,
-                                        tipo: 'vida'
+                                        tipo: 'vida',
+                                        arteInstagram: false,
+                                        arteTV: false,
+                                        postInstagram: false,
+                                        postIntranet: false,
+                                        postWhatsapp: false,
+                                        texto: ''
                                     };
                                 }
                                 aniversariosChecklist[checklistKey].fotoUrl = downloadUrl;
                                 
-                                // Salvar automaticamente no Firebase
-                                await db.collection('checklists').doc(checklistKey).set(aniversariosChecklist[checklistKey]);
+                                // Salvar no Firebase (sem causar loop)
+                                await db.collection('checklists').doc(checklistKey).set(
+                                    aniversariosChecklist[checklistKey], 
+                                    { merge: true }
+                                );
                             } else {
                                 const checklistKey = `empresa_${colaboradorId}`;
                                 if (!empresaChecklist[checklistKey]) {
@@ -2763,13 +2811,25 @@
                                             id: item.id,
                                             nome: item.nome,
                                             checked: false
-                                        }))
+                                        })),
+                                        fotoUrl: ''
                                     };
                                 }
                                 empresaChecklist[checklistKey].fotoUrl = downloadUrl;
                                 
-                                // Salvar automaticamente no Firebase
-                                await db.collection('checklists').doc(checklistKey).set(empresaChecklist[checklistKey]);
+                                // Salvar no Firebase (sem causar loop)
+                                await db.collection('checklists').doc(checklistKey).set(
+                                    empresaChecklist[checklistKey],
+                                    { merge: true }
+                                );
+                            }
+                            
+                            // Mostrar preview
+                            const preview = document.getElementById(`preview_${colaboradorId}`);
+                            if (preview) {
+                                preview.src = downloadUrl;
+                                preview.classList.add('active');
+                                preview.style.display = 'block';
                             }
                             
                             // Esconder barra de progresso
@@ -2781,14 +2841,15 @@
                                 }
                             }
                             
-                            mostrarToast('Foto enviada com sucesso!');
+                            // Limpar o input
+                            input.value = '';
+                            
+                            mostrarToast('Foto enviada com sucesso!', 'success');
                         } catch (error) {
                             console.error('Erro ao processar upload:', error);
                             mostrarToast('Erro ao processar upload: ' + error.message, 'error');
                         } finally {
                             esconderLoading();
-                            // Limpar o input para permitir novo upload do mesmo arquivo
-                            input.value = '';
                         }
                     }
                 );
@@ -2796,41 +2857,54 @@
                 console.error('Erro ao iniciar upload:', error);
                 mostrarToast('Erro ao iniciar upload: ' + error.message, 'error');
                 
-                // Esconder barra de progresso em caso de erro
                 if (progressBar) {
                     progressBar.classList.remove('active');
-                    const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                    if (progressBarInner) {
-                        progressBarInner.style.width = '0%';
-                    }
                 }
-                
                 esconderLoading();
                 input.value = '';
             }
         }
 
         async function salvarChecklist(colaboradorId) {
-            // Salvar texto atual
-            const textoEl = document.getElementById(`texto_${colaboradorId}`);
-            if (textoEl) {
-                salvarTexto(colaboradorId, textoEl.value);
+            // Verificar se já está salvando
+            if (_savingChecklist) {
+                console.log('Já está salvando, ignorando...');
+                return;
             }
             
-            const checklistKey = `checklist_${colaboradorId}`;
-            const checklistData = aniversariosChecklist[checklistKey];
+            _savingChecklist = true;
             
-            if (checklistData) {
-                mostrarLoading();
-                try {
-                    await db.collection('checklists').doc(checklistKey).set(checklistData);
-                    mostrarToast('Checklist salvo com sucesso!');
-                } catch (error) {
-                    console.error('Erro ao salvar checklist:', error);
-                    mostrarToast('Erro ao salvar checklist: ' + error.message, 'error');
-                } finally {
-                    esconderLoading();
+            try {
+                // Salvar texto atual
+                const textoEl = document.getElementById(`texto_${colaboradorId}`);
+                if (textoEl) {
+                    const checklistKey = `checklist_${colaboradorId}`;
+                    if (!aniversariosChecklist[checklistKey]) {
+                        aniversariosChecklist[checklistKey] = {
+                            colaboradorId: colaboradorId,
+                            tipo: 'vida'
+                        };
+                    }
+                    aniversariosChecklist[checklistKey].texto = textoEl.value;
                 }
+                
+                const checklistKey = `checklist_${colaboradorId}`;
+                const checklistData = aniversariosChecklist[checklistKey];
+                
+                if (checklistData) {
+                    mostrarLoading();
+                    try {
+                        await db.collection('checklists').doc(checklistKey).set(checklistData, { merge: true });
+                        mostrarToast('Checklist salvo com sucesso!', 'success');
+                    } catch (error) {
+                        console.error('Erro ao salvar checklist:', error);
+                        mostrarToast('Erro ao salvar checklist: ' + error.message, 'error');
+                    } finally {
+                        esconderLoading();
+                    }
+                }
+            } finally {
+                _savingChecklist = false;
             }
         }
 
@@ -2971,7 +3045,8 @@
                         id: item.id,
                         nome: item.nome,
                         checked: false
-                    }))
+                    })),
+                    fotoUrl: ''
                 };
             }
             
@@ -3084,9 +3159,6 @@
                     
                     // Atualizar progresso
                     atualizarProgressoEmpresa(colaboradorId);
-                    
-                    // Salvar automaticamente
-                    salvarChecklistEmpresa(colaboradorId);
                 }
             }
         }
@@ -3400,20 +3472,32 @@
         }
 
         async function salvarChecklistEmpresa(colaboradorId) {
-            const checklistKey = `empresa_${colaboradorId}`;
-            const checklistData = empresaChecklist[checklistKey];
+            // Verificar se já está salvando
+            if (_savingEmpresaChecklist) {
+                console.log('Já está salvando checklist empresa, ignorando...');
+                return;
+            }
             
-            if (checklistData) {
-                mostrarLoading();
-                try {
-                    await db.collection('checklists').doc(checklistKey).set(checklistData);
-                    mostrarToast('Checklist salvo com sucesso!');
-                } catch (error) {
-                    console.error('Erro ao salvar checklist:', error);
-                    mostrarToast('Erro ao salvar checklist: ' + error.message, 'error');
-                } finally {
-                    esconderLoading();
+            _savingEmpresaChecklist = true;
+            
+            try {
+                const checklistKey = `empresa_${colaboradorId}`;
+                const checklistData = empresaChecklist[checklistKey];
+                
+                if (checklistData) {
+                    mostrarLoading();
+                    try {
+                        await db.collection('checklists').doc(checklistKey).set(checklistData, { merge: true });
+                        mostrarToast('Checklist salvo com sucesso!', 'success');
+                    } catch (error) {
+                        console.error('Erro ao salvar checklist:', error);
+                        mostrarToast('Erro ao salvar checklist: ' + error.message, 'error');
+                    } finally {
+                        esconderLoading();
+                    }
                 }
+            } finally {
+                _savingEmpresaChecklist = false;
             }
         }
 
@@ -3740,18 +3824,47 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar se já inicializou
+            if (_initialized) {
+                console.log('Sistema já inicializado, ignorando...');
+                return;
+            }
+            
+            _initialized = true;
             mostrarLoading();
             
             try {
-                // Carregar todos os dados do Firebase
+                console.log('Iniciando carregamento dos dados...');
+                
+                // Carregar dados em paralelo
                 await Promise.all([
-                    carregarEmpresas(),
-                    carregarDepartamentos(),
-                    carregarPizzas(),
-                    carregarColaboradores(),
-                    carregarChecklists(),
-                    carregarPedidos()
+                    carregarEmpresas().catch(err => {
+                        console.error('Erro ao carregar empresas:', err);
+                        return [];
+                    }),
+                    carregarDepartamentos().catch(err => {
+                        console.error('Erro ao carregar departamentos:', err);
+                        return [];
+                    }),
+                    carregarPizzas().catch(err => {
+                        console.error('Erro ao carregar pizzas:', err);
+                        return [];
+                    }),
+                    carregarColaboradores().catch(err => {
+                        console.error('Erro ao carregar colaboradores:', err);
+                        return [];
+                    }),
+                    carregarChecklists().catch(err => {
+                        console.error('Erro ao carregar checklists:', err);
+                        return {};
+                    }),
+                    carregarPedidos().catch(err => {
+                        console.error('Erro ao carregar pedidos:', err);
+                        return {};
+                    })
                 ]);
+                
+                console.log('Todos os dados carregados!');
                 
                 // Atualizar interface
                 atualizarFiltros();
@@ -3760,10 +3873,10 @@
                 // Mostrar dashboard por padrão
                 showSection('dashboard');
                 
-                mostrarToast('Dados carregados com sucesso!');
+                mostrarToast('Dados carregados com sucesso!', 'success');
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
-                mostrarToast('Erro ao carregar dados do servidor', 'error');
+                mostrarToast('Erro ao carregar dados do servidor: ' + error.message, 'error');
             } finally {
                 esconderLoading();
             }
