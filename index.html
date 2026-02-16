@@ -228,70 +228,6 @@
             }
         }
 
-        /* Filtros Globais */
-        .filters-bar {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 24px;
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 160px;
-        }
-
-        .filter-group label {
-            font-size: 11px;
-            color: #6b7280;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .filter-group select, .filter-group input {
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 13px;
-            outline: none;
-            transition: all 0.2s;
-            background: white;
-        }
-
-        .filter-group select:focus, .filter-group input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-        }
-
-        .status-filter {
-            display: flex;
-            align-items: center;
-            margin-left: auto;
-        }
-
-        .status-filter label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #4b5563;
-            cursor: pointer;
-        }
-
-        .status-filter input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            accent-color: #2563eb;
-        }
-
         /* Cards de Dashboard */
         .dashboard-cards {
             display: grid;
@@ -1352,45 +1288,6 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Filtros Globais -->
-            <div class="filters-bar">
-                <div class="filter-group">
-                    <label>Mês</label>
-                    <select id="monthFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa(); updateDashboard()">
-                        <option value="1">Janeiro 2026</option>
-                        <option value="2" selected>Fevereiro 2026</option>
-                        <option value="3">Março 2026</option>
-                        <option value="4">Abril 2026</option>
-                        <option value="5">Maio 2026</option>
-                        <option value="6">Junho 2026</option>
-                        <option value="7">Julho 2026</option>
-                        <option value="8">Agosto 2026</option>
-                        <option value="9">Setembro 2026</option>
-                        <option value="10">Outubro 2026</option>
-                        <option value="11">Novembro 2026</option>
-                        <option value="12">Dezembro 2026</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Setor</label>
-                    <select id="sectorFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa()">
-                        <option value="all">Todos</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Cidade</label>
-                    <select id="cityFilter" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa()">
-                        <option value="all">Todas</option>
-                    </select>
-                </div>
-                <div class="status-filter">
-                    <label>
-                        <input type="checkbox" id="mostrarPassados" onchange="filtrarAniversariantesVida(); filtrarAniversariantesEmpresa()">
-                        Mostrar aniversariantes passados
-                    </label>
-                </div>
-            </div>
-
             <!-- Section Dashboard -->
             <div id="dashboard-section" class="content-section active">
                 <div class="dashboard-cards">
@@ -1895,6 +1792,10 @@
         const anoAtual = hoje.getFullYear();
         const mesAtual = hoje.getMonth() + 1;
         const diaAtual = hoje.getDate();
+
+        // Mês padrão (Fevereiro 2026)
+        const mesPadrao = 2;
+        const anoPadrao = 2026;
 
         // Funções de utilidade
         function mostrarLoading() {
@@ -2547,11 +2448,10 @@
                 esconderFormularioColaborador();
                 mostrarToast('Colaborador cadastrado com sucesso!');
                 
-                // Atualiza os filtros
-                atualizarFiltros();
+                // Atualiza os dashboards
+                updateDashboard();
                 filtrarAniversariantesVida();
                 filtrarAniversariantesEmpresa();
-                updateDashboard();
             } catch (error) {
                 console.error('Erro detalhado ao salvar colaborador:', error);
                 mostrarToast('Erro ao salvar colaborador: ' + error.message, 'error');
@@ -2571,10 +2471,9 @@
                 try {
                     await db.collection('colaboradores').doc(id).delete();
                     await carregarColaboradores();
-                    atualizarFiltros();
+                    updateDashboard();
                     filtrarAniversariantesVida();
                     filtrarAniversariantesEmpresa();
-                    updateDashboard();
                     mostrarToast('Colaborador excluído com sucesso!');
                 } catch (error) {
                     console.error('Erro detalhado ao excluir colaborador:', error);
@@ -2690,63 +2589,25 @@
             });
         }
 
-        function atualizarFiltros() {
-            const setores = [...new Set(colaboradores.map(c => c.departamentoNome).filter(Boolean))];
-            const cidades = [...new Set(colaboradores.map(c => c.cidade).filter(Boolean))];
-            
-            const sectorFilter = document.getElementById('sectorFilter');
-            const cityFilter = document.getElementById('cityFilter');
-            
-            sectorFilter.innerHTML = '<option value="all">Todos</option>';
-            cityFilter.innerHTML = '<option value="all">Todas</option>';
-            
-            setores.sort().forEach(s => {
-                const option = document.createElement('option');
-                option.value = s;
-                option.textContent = s;
-                sectorFilter.appendChild(option);
-            });
-            
-            cidades.sort().forEach(c => {
-                const option = document.createElement('option');
-                option.value = c;
-                option.textContent = c;
-                cityFilter.appendChild(option);
-            });
-        }
-
         // Funções para Aniversário de Vida
         function filtrarAniversariantesVida() {
-            const mesSelecionado = document.getElementById('monthFilter').value;
-            const setorSelecionado = document.getElementById('sectorFilter').value;
-            const cidadeSelecionada = document.getElementById('cityFilter').value;
-            const mostrarPassados = document.getElementById('mostrarPassados').checked;
-            
-            // Filtrar colaboradores ativos que fazem aniversário no mês selecionado
+            // Filtrar colaboradores ativos que fazem aniversário no mês de Fevereiro 2026
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataNascimento) return false;
                 
-                const mesNasc = new Date(col.dataNascimento).getMonth() + 1;
-                return mesNasc == mesSelecionado;
+                const dataNasc = new Date(col.dataNascimento);
+                const mesNasc = dataNasc.getMonth() + 1;
+                return mesNasc == mesPadrao;
             });
             
-            // Aplicar filtros adicionais
-            if (setorSelecionado !== 'all') {
-                aniversariantes = aniversariantes.filter(col => col.departamentoNome === setorSelecionado);
-            }
-            
-            if (cidadeSelecionada !== 'all') {
-                aniversariantes = aniversariantes.filter(col => col.cidade === cidadeSelecionada);
-            }
-            
-            // Separar em duas listas: próximos e passados
+            // Separar em duas listas: próximos e passados (considerando ano 2026)
             const proximos = [];
             const passados = [];
             
             aniversariantes.forEach(col => {
                 const dataNasc = new Date(col.dataNascimento);
-                // Criar data do aniversário deste ano
-                const dataAniversario = new Date(anoAtual, dataNasc.getMonth(), dataNasc.getDate());
+                // Criar data do aniversário em 2026
+                const dataAniversario = new Date(anoPadrao, dataNasc.getMonth(), dataNasc.getDate());
                 
                 if (dataAniversario < hoje) {
                     passados.push(col);
@@ -2769,8 +2630,8 @@
                 return diaB - diaA;
             });
             
-            // Combinar listas baseado no filtro
-            let resultado = mostrarPassados ? [...proximos, ...passados] : proximos;
+            // Mostrar apenas os próximos por padrão (não mostrar passados)
+            let resultado = proximos;
             
             exibirAniversariantes(resultado);
             
@@ -2778,7 +2639,7 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#vida-section .section-header h2');
             if (titulo) {
-                titulo.textContent = `Aniversários de Vida - ${meses[mesSelecionado - 1]} 2026`;
+                titulo.textContent = `Aniversários de Vida - ${meses[mesPadrao - 1]} ${anoPadrao}`;
             }
         }
 
@@ -2796,7 +2657,7 @@
             
             aniversariantes.forEach(col => {
                 const dataNasc = new Date(col.dataNascimento);
-                const dataAniversario = new Date(anoAtual, dataNasc.getMonth(), dataNasc.getDate());
+                const dataAniversario = new Date(anoPadrao, dataNasc.getMonth(), dataNasc.getDate());
                 const jaPassou = dataAniversario < hoje;
                 
                 const dia = dataNasc.getDate().toString().padStart(2, '0');
@@ -2984,10 +2845,9 @@
         }
 
         function exportarChecklistVida() {
-            const mesSelecionado = document.getElementById('monthFilter').value;
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${meses[mesSelecionado - 1]} 2026\n\n`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${meses[mesPadrao - 1]} ${anoPadrao}\n\n`;
             
             colaboradores.forEach(col => {
                 const checklistKey = `checklist_${col.id}`;
@@ -3019,43 +2879,30 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_vida_${meses[mesSelecionado - 1]}_2026.txt`;
+            a.download = `aniversariantes_vida_${meses[mesPadrao - 1]}_${anoPadrao}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
 
         // Funções para Aniversário de Empresa
         function filtrarAniversariantesEmpresa() {
-            const mesSelecionado = document.getElementById('monthFilter').value;
-            const setorSelecionado = document.getElementById('sectorFilter').value;
-            const cidadeSelecionada = document.getElementById('cityFilter').value;
-            const mostrarPassados = document.getElementById('mostrarPassados').checked;
-            
-            // Filtrar colaboradores ativos que fazem aniversário de empresa no mês selecionado
+            // Filtrar colaboradores ativos que fazem aniversário de empresa no mês de Fevereiro 2026
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataAdmissao) return false;
                 
-                const mesAdm = new Date(col.dataAdmissao).getMonth() + 1;
-                return mesAdm == mesSelecionado;
+                const dataAdm = new Date(col.dataAdmissao);
+                const mesAdm = dataAdm.getMonth() + 1;
+                return mesAdm == mesPadrao;
             });
             
-            // Aplicar filtros adicionais
-            if (setorSelecionado !== 'all') {
-                aniversariantes = aniversariantes.filter(col => col.departamentoNome === setorSelecionado);
-            }
-            
-            if (cidadeSelecionada !== 'all') {
-                aniversariantes = aniversariantes.filter(col => col.cidade === cidadeSelecionada);
-            }
-            
-            // Separar em duas listas: próximos e passados
+            // Separar em duas listas: próximos e passados (considerando ano 2026)
             const proximos = [];
             const passados = [];
             
             aniversariantes.forEach(col => {
                 const dataAdm = new Date(col.dataAdmissao);
-                // Criar data do aniversário deste ano
-                const dataAniversario = new Date(anoAtual, dataAdm.getMonth(), dataAdm.getDate());
+                // Criar data do aniversário em 2026
+                const dataAniversario = new Date(anoPadrao, dataAdm.getMonth(), dataAdm.getDate());
                 
                 if (dataAniversario < hoje) {
                     passados.push(col);
@@ -3078,8 +2925,8 @@
                 return diaB - diaA;
             });
             
-            // Combinar listas baseado no filtro
-            let resultado = mostrarPassados ? [...proximos, ...passados] : proximos;
+            // Mostrar apenas os próximos por padrão (não mostrar passados)
+            let resultado = proximos;
             
             exibirAniversariantesEmpresa(resultado);
             
@@ -3087,7 +2934,7 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#empresa-section .section-header h2');
             if (titulo) {
-                titulo.textContent = `Aniversários de Empresa - ${meses[mesSelecionado - 1]} 2026`;
+                titulo.textContent = `Aniversários de Empresa - ${meses[mesPadrao - 1]} ${anoPadrao}`;
             }
         }
 
@@ -3281,7 +3128,7 @@
             
             aniversariantes.forEach(col => {
                 const dataAdm = new Date(col.dataAdmissao);
-                const dataAniversario = new Date(anoAtual, dataAdm.getMonth(), dataAdm.getDate());
+                const dataAniversario = new Date(anoPadrao, dataAdm.getMonth(), dataAdm.getDate());
                 const jaPassou = dataAniversario < hoje;
                 
                 const dia = dataAdm.getDate().toString().padStart(2, '0');
@@ -3289,7 +3136,7 @@
                 const dataFormatada = `${dia}/${mes}`;
                 
                 // Calcular anos de empresa
-                const anosEmpresa = anoAtual - dataAdm.getFullYear();
+                const anosEmpresa = anoPadrao - dataAdm.getFullYear();
                 
                 // Recuperar estado salvo do checklist de empresa, se existir
                 const checklistKey = `empresa_${col.id}`;
@@ -3559,10 +3406,9 @@
         }
 
         function exportarChecklistEmpresa() {
-            const mesSelecionado = document.getElementById('monthFilter').value;
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${meses[mesSelecionado - 1]} 2026\n\n`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${meses[mesPadrao - 1]} ${anoPadrao}\n\n`;
             
             colaboradores.forEach(col => {
                 const checklistKey = `empresa_${col.id}`;
@@ -3604,7 +3450,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_empresa_${meses[mesSelecionado - 1]}_2026.txt`;
+            a.download = `aniversariantes_empresa_${meses[mesPadrao - 1]}_${anoPadrao}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
@@ -3726,7 +3572,7 @@
                 }
             } else {
                 for (let mes = 1; mes <= 12; mes++) {
-                    evolucaoMensal[`${mes}/2026`] = 0;
+                    evolucaoMensal[`${mes}/${anoPadrao}`] = 0;
                 }
             }
             
@@ -3888,18 +3734,18 @@
         }
 
         function updateDashboard() {
-            const mesSelecionado = document.getElementById('monthFilter').value;
-            
             const aniversariantesVida = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataNascimento) return false;
-                const mesNasc = new Date(c.dataNascimento).getMonth() + 1;
-                return mesNasc == mesSelecionado;
+                const dataNasc = new Date(c.dataNascimento);
+                const mesNasc = dataNasc.getMonth() + 1;
+                return mesNasc == mesPadrao;
             });
             
             const aniversariantesEmpresa = colaboradores.filter(c => {
                 if (c.status !== 'Ativo' || !c.dataAdmissao) return false;
-                const mesAdm = new Date(c.dataAdmissao).getMonth() + 1;
-                return mesAdm == mesSelecionado;
+                const dataAdm = new Date(c.dataAdmissao);
+                const mesAdm = dataAdm.getMonth() + 1;
+                return mesAdm == mesPadrao;
             });
             
             const foraRegiao = colaboradores.filter(c => 
@@ -3965,7 +3811,6 @@
                 console.log('Todos os dados carregados!');
                 
                 // Atualizar interface
-                atualizarFiltros();
                 updateDashboard();
                 
                 // Mostrar dashboard por padrão
