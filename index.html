@@ -1070,16 +1070,161 @@
             color: #059669;
         }
 
+        /* Filtros Financeiro Aprimorados */
         .filtros-financeiro {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        .filtro-financeiro {
+        .filtros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            align-items: end;
+        }
+
+        .filtro-periodo {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .filtro-periodo:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+        }
+
+        .filtro-periodo label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .periodo-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .periodo-input {
             flex: 1;
-            min-width: 200px;
+            position: relative;
+        }
+
+        .periodo-input .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .periodo-input input {
+            width: 100%;
+            padding: 12px 12px 12px 36px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: white;
+            font-weight: 500;
+        }
+
+        .periodo-input input:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .periodo-input input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .periodo-separator {
+            color: #475569;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .btn-aplicar-filtro {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-aplicar-filtro:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-aplicar-filtro:active {
+            transform: translateY(0);
+        }
+
+        .btn-limpar-filtro {
+            background: white;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-limpar-filtro:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+        }
+
+        .acoes-filtro {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .filtros-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .acoes-filtro {
+                flex-direction: column;
+            }
+            
+            .btn-aplicar-filtro, .btn-limpar-filtro {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -1275,32 +1420,47 @@
                         <h2>Controle Financeiro - Pizzas</h2>
                     </div>
 
-                    <!-- Filtros do Financeiro -->
+                    <!-- Filtros do Financeiro Aprimorados -->
                     <div class="filtros-financeiro">
-                        <div class="filtro-financeiro">
-                            <select id="filtroMesFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
-                                <option value="todos">Todos os meses</option>
-                                <option value="1">Janeiro</option>
-                                <option value="2" selected>Fevereiro</option>
-                                <option value="3">Março</option>
-                                <option value="4">Abril</option>
-                                <option value="5">Maio</option>
-                                <option value="6">Junho</option>
-                                <option value="7">Julho</option>
-                                <option value="8">Agosto</option>
-                                <option value="9">Setembro</option>
-                                <option value="10">Outubro</option>
-                                <option value="11">Novembro</option>
-                                <option value="12">Dezembro</option>
-                            </select>
-                        </div>
-                        <div class="filtro-financeiro">
-                            <select id="filtroAnoFinanceiro" class="filter-group" onchange="atualizarFinanceiro()">
-                                <option value="todos">Todos os anos</option>
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026" selected>2026</option>
-                            </select>
+                        <div class="filtros-grid">
+                            <div class="filtro-periodo">
+                                <label>📅 Período Inicial</label>
+                                <div class="periodo-input-group">
+                                    <div class="periodo-input">
+                                        <span class="input-icon">📆</span>
+                                        <input type="text" id="mesInicial" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="01">
+                                    </div>
+                                    <span class="periodo-separator">/</span>
+                                    <div class="periodo-input">
+                                        <span class="input-icon">📅</span>
+                                        <input type="text" id="anoInicial" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="filtro-periodo">
+                                <label>📅 Período Final</label>
+                                <div class="periodo-input-group">
+                                    <div class="periodo-input">
+                                        <span class="input-icon">📆</span>
+                                        <input type="text" id="mesFinal" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="12">
+                                    </div>
+                                    <span class="periodo-separator">/</span>
+                                    <div class="periodo-input">
+                                        <span class="input-icon">📅</span>
+                                        <input type="text" id="anoFinal" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="acoes-filtro">
+                                <button class="btn-aplicar-filtro" onclick="aplicarFiltroPeriodo()">
+                                    <span>🔍</span> Aplicar Filtro
+                                </button>
+                                <button class="btn-limpar-filtro" onclick="limparFiltroPeriodo()">
+                                    <span>🗑️</span> Limpar
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1636,6 +1796,15 @@
         let empresaChecklist = {};
         let pedidosPizzaEmpresa = {};
 
+        // Variáveis para controle do filtro de período
+        let filtroPeriodoAtivo = {
+            mesInicial: 1,
+            anoInicial: 2026,
+            mesFinal: 12,
+            anoFinal: 2026,
+            ativo: false
+        };
+
         // Flags de controle para evitar loops
         let _savingChecklist = false;
         let _savingEmpresaChecklist = false;
@@ -1687,6 +1856,82 @@
             setTimeout(() => {
                 toast.classList.remove('active');
             }, 3000);
+        }
+
+        // Função para validar mês
+        function validarMes(input) {
+            let valor = input.value.replace(/\D/g, '');
+            if (valor.length > 2) valor = valor.slice(0, 2);
+            if (parseInt(valor) > 12) valor = '12';
+            if (parseInt(valor) < 1 && valor.length === 2) valor = '01';
+            input.value = valor;
+        }
+
+        // Função para validar ano
+        function validarAno(input) {
+            let valor = input.value.replace(/\D/g, '');
+            if (valor.length > 4) valor = valor.slice(0, 4);
+            input.value = valor;
+        }
+
+        // Função para aplicar filtro de período
+        function aplicarFiltroPeriodo() {
+            const mesInicial = document.getElementById('mesInicial').value;
+            const anoInicial = document.getElementById('anoInicial').value;
+            const mesFinal = document.getElementById('mesFinal').value;
+            const anoFinal = document.getElementById('anoFinal').value;
+
+            if (!mesInicial || !anoInicial || !mesFinal || !anoFinal) {
+                mostrarToast('Preencha todos os campos do período', 'error');
+                return;
+            }
+
+            const mesInicialNum = parseInt(mesInicial);
+            const anoInicialNum = parseInt(anoInicial);
+            const mesFinalNum = parseInt(mesFinal);
+            const anoFinalNum = parseInt(anoFinal);
+
+            // Validar intervalo
+            if (anoInicialNum > anoFinalNum || (anoInicialNum === anoFinalNum && mesInicialNum > mesFinalNum)) {
+                mostrarToast('Período inicial deve ser anterior ao período final', 'error');
+                return;
+            }
+
+            filtroPeriodoAtivo = {
+                mesInicial: mesInicialNum,
+                anoInicial: anoInicialNum,
+                mesFinal: mesFinalNum,
+                anoFinal: anoFinalNum,
+                ativo: true
+            };
+
+            // Destacar visualmente que o filtro está ativo
+            document.querySelectorAll('.filtro-periodo').forEach(el => {
+                el.style.borderColor = '#2563eb';
+                el.style.backgroundColor = '#f0f9ff';
+            });
+
+            atualizarFinanceiro();
+            mostrarToast('Filtro aplicado com sucesso!', 'success');
+        }
+
+        // Função para limpar filtro de período
+        function limparFiltroPeriodo() {
+            document.getElementById('mesInicial').value = '01';
+            document.getElementById('anoInicial').value = '2026';
+            document.getElementById('mesFinal').value = '12';
+            document.getElementById('anoFinal').value = '2026';
+
+            filtroPeriodoAtivo.ativo = false;
+
+            // Remover destaque visual
+            document.querySelectorAll('.filtro-periodo').forEach(el => {
+                el.style.borderColor = '#e2e8f0';
+                el.style.backgroundColor = 'white';
+            });
+
+            atualizarFinanceiro();
+            mostrarToast('Filtro removido', 'info');
         }
 
         // Função para formatar data no padrão brasileiro
@@ -3284,10 +3529,7 @@
 
         // Funções do Controle Financeiro
         function atualizarFinanceiro() {
-            const mesSelecionado = document.getElementById('filtroMesFinanceiro').value;
-            const anoSelecionado = document.getElementById('filtroAnoFinanceiro').value;
-            
-            // Filtrar pedidos do mês/ano selecionado
+            // Filtrar pedidos com base no período selecionado
             const pedidosFiltrados = [];
             const gastosPorPizzaria = {};
             const pizzasCount = {};
@@ -3302,31 +3544,26 @@
                 // Verificar data
                 let incluirPedido = true;
                 
-                if (pedido.dataEntregaBR) {
+                if (pedido.dataEntregaBR && filtroPeriodoAtivo.ativo) {
                     const partes = pedido.dataEntregaBR.split('/');
                     if (partes.length === 3) {
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        // Aplicar filtro de mês
-                        if (mesSelecionado !== 'todos') {
-                            if (mesPedido !== parseInt(mesSelecionado)) {
-                                incluirPedido = false;
-                            }
-                        }
+                        // Verificar se está dentro do período
+                        const dataPedido = new Date(anoPedido, mesPedido - 1, 1);
+                        const dataInicial = new Date(filtroPeriodoAtivo.anoInicial, filtroPeriodoAtivo.mesInicial - 1, 1);
+                        const dataFinal = new Date(filtroPeriodoAtivo.anoFinal, filtroPeriodoAtivo.mesFinal - 1, 1);
                         
-                        // Aplicar filtro de ano
-                        if (anoSelecionado !== 'todos') {
-                            if (anoPedido !== parseInt(anoSelecionado)) {
-                                incluirPedido = false;
-                            }
+                        if (dataPedido < dataInicial || dataPedido > dataFinal) {
+                            incluirPedido = false;
                         }
                     } else {
                         // Data inválida - não incluir
                         incluirPedido = false;
                     }
-                } else {
-                    // Sem data definida - não incluir nos filtros
+                } else if (filtroPeriodoAtivo.ativo) {
+                    // Sem data definida e filtro ativo - não incluir
                     incluirPedido = false;
                 }
                 
@@ -3394,10 +3631,24 @@
             
             // Gráfico de evolução mensal
             const evolucaoMensal = {};
-            for (let mes = 1; mes <= 12; mes++) {
-                evolucaoMensal[mes] = 0;
+            
+            // Se filtro ativo, mostrar apenas meses do período
+            if (filtroPeriodoAtivo.ativo) {
+                for (let ano = filtroPeriodoAtivo.anoInicial; ano <= filtroPeriodoAtivo.anoFinal; ano++) {
+                    const mesInicio = (ano === filtroPeriodoAtivo.anoInicial) ? filtroPeriodoAtivo.mesInicial : 1;
+                    const mesFim = (ano === filtroPeriodoAtivo.anoFinal) ? filtroPeriodoAtivo.mesFinal : 12;
+                    
+                    for (let mes = mesInicio; mes <= mesFim; mes++) {
+                        evolucaoMensal[`${mes}/${ano}`] = 0;
+                    }
+                }
+            } else {
+                for (let mes = 1; mes <= 12; mes++) {
+                    evolucaoMensal[`${mes}/2026`] = 0;
+                }
             }
             
+            // Calcular valores para evolução mensal
             Object.entries(pedidosPizzaEmpresa).forEach(([key, pedido]) => {
                 if (!pedido.pizzaId) return;
                 
@@ -3407,27 +3658,40 @@
                 if (pedido.dataEntregaBR) {
                     const partes = pedido.dataEntregaBR.split('/');
                     if (partes.length === 3) {
+                        const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        // Se não há filtro de ano ou o ano corresponde
-                        if (anoSelecionado === 'todos' || anoPedido === parseInt(anoSelecionado)) {
-                            const mesPedido = parseInt(partes[1]);
-                            evolucaoMensal[mesPedido] = (evolucaoMensal[mesPedido] || 0) + pizza.valor;
+                        // Verificar se deve incluir
+                        let incluir = true;
+                        
+                        if (filtroPeriodoAtivo.ativo) {
+                            const dataPedido = new Date(anoPedido, mesPedido - 1, 1);
+                            const dataInicial = new Date(filtroPeriodoAtivo.anoInicial, filtroPeriodoAtivo.mesInicial - 1, 1);
+                            const dataFinal = new Date(filtroPeriodoAtivo.anoFinal, filtroPeriodoAtivo.mesFinal - 1, 1);
+                            
+                            if (dataPedido < dataInicial || dataPedido > dataFinal) {
+                                incluir = false;
+                            }
+                        }
+                        
+                        if (incluir) {
+                            const chave = `${mesPedido}/${anoPedido}`;
+                            if (evolucaoMensal[chave] !== undefined) {
+                                evolucaoMensal[chave] = (evolucaoMensal[chave] || 0) + pizza.valor;
+                            }
                         }
                     }
                 }
             });
             
-            const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
             const maxValor = Math.max(...Object.values(evolucaoMensal));
             
             let evolucaoHTML = '';
-            meses.forEach((mes, index) => {
-                const valor = evolucaoMensal[index + 1] || 0;
+            Object.entries(evolucaoMensal).forEach(([periodo, valor]) => {
                 const percentual = maxValor > 0 ? (valor / maxValor) * 100 : 0;
                 evolucaoHTML += `
                     <div class="chart-bar-container">
-                        <div class="chart-bar-label">${mes}</div>
+                        <div class="chart-bar-label">${periodo}</div>
                         <div class="chart-bar-wrapper">
                             <div class="chart-bar" style="width: ${percentual}%; background-color: #059669;">R$ ${valor.toFixed(2)}</div>
                         </div>
