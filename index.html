@@ -1546,6 +1546,16 @@
                     id: doc.id,
                     ...doc.data()
                 }));
+                
+                // Ordenar por nome em ordem alfabética
+                colaboradores.sort((a, b) => {
+                    const nomeA = (a.nome || '').toLowerCase();
+                    const nomeB = (b.nome || '').toLowerCase();
+                    if (nomeA < nomeB) return -1;
+                    if (nomeA > nomeB) return 1;
+                    return 0;
+                });
+                
                 console.log('Total de colaboradores carregados:', colaboradores.length);
                 atualizarTabelaColaboradores();
                 return colaboradores;
@@ -2122,14 +2132,14 @@ service cloud.firestore {
             sectorFilter.innerHTML = '<option value="all">Todos</option>';
             cityFilter.innerHTML = '<option value="all">Todas</option>';
             
-            setores.forEach(s => {
+            setores.sort().forEach(s => {
                 const option = document.createElement('option');
                 option.value = s;
                 option.textContent = s;
                 sectorFilter.appendChild(option);
             });
             
-            cidades.forEach(c => {
+            cidades.sort().forEach(c => {
                 const option = document.createElement('option');
                 option.value = c;
                 option.textContent = c;
@@ -2234,7 +2244,6 @@ service cloud.firestore {
                     postIntranet: false,
                     postWhatsapp: false,
                     texto: '',
-                    fotoPreview: null,
                     fotoNome: ''
                 };
                 
@@ -2265,7 +2274,7 @@ service cloud.firestore {
                     
                     <div class="checklist">
                         <h4>
-                            Checklist de Publicação
+                            Checklist
                             <span class="progresso-checklist ${progressoClass}">${concluidos}/${items.length}</span>
                         </h4>
                         
@@ -2309,8 +2318,7 @@ service cloud.firestore {
                             </div>
                             <input type="file" id="file_${col.id}" accept="image/*" onchange="previewFoto(this, '${col.id}')">
                         </div>
-                        <img id="preview_${col.id}" class="preview-foto ${checklistState.fotoPreview ? 'active' : ''}" 
-                             src="${checklistState.fotoPreview || ''}" alt="Preview">
+                        <img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
@@ -2327,8 +2335,7 @@ service cloud.firestore {
             if (!aniversariosChecklist[checklistKey]) {
                 aniversariosChecklist[checklistKey] = {
                     colaboradorId: colaboradorId,
-                    tipo: 'vida',
-                    items: {}
+                    tipo: 'vida'
                 };
             }
             aniversariosChecklist[checklistKey][item] = checked;
@@ -2364,8 +2371,7 @@ service cloud.firestore {
             if (!aniversariosChecklist[checklistKey]) {
                 aniversariosChecklist[checklistKey] = {
                     colaboradorId: colaboradorId,
-                    tipo: 'vida',
-                    items: {}
+                    tipo: 'vida'
                 };
             }
             aniversariosChecklist[checklistKey].texto = texto;
@@ -2379,18 +2385,16 @@ service cloud.firestore {
                     const preview = document.getElementById(`preview_${colaboradorId}`);
                     if (preview) {
                         preview.src = e.target.result;
-                        preview.classList.add('active');
+                        preview.style.display = 'block';
                         
-                        // Salvar no estado
+                        // Salvar apenas o nome da foto no estado, não o base64
                         const checklistKey = `checklist_${colaboradorId}`;
                         if (!aniversariosChecklist[checklistKey]) {
                             aniversariosChecklist[checklistKey] = {
                                 colaboradorId: colaboradorId,
-                                tipo: 'vida',
-                                items: {}
+                                tipo: 'vida'
                             };
                         }
-                        aniversariosChecklist[checklistKey].fotoPreview = e.target.result;
                         aniversariosChecklist[checklistKey].fotoNome = input.files[0].name;
                     }
                 }
@@ -2412,7 +2416,11 @@ service cloud.firestore {
             if (checklistData) {
                 mostrarLoading();
                 try {
-                    await db.collection('checklists').doc(checklistKey).set(checklistData);
+                    // Remover a fotoPreview antes de salvar (já que não salvamos mais)
+                    const dataToSave = { ...checklistData };
+                    delete dataToSave.fotoPreview;
+                    
+                    await db.collection('checklists').doc(checklistKey).set(dataToSave);
                     mostrarToast('Checklist salvo com sucesso!');
                 } catch (error) {
                     console.error('Erro ao salvar checklist:', error);
@@ -2588,7 +2596,6 @@ service cloud.firestore {
                     passarContato: false,
                     acompanharPedidos: false,
                     entregaConfirmada: false,
-                    fotoPreview: null,
                     fotoNome: ''
                 };
                 
@@ -2661,7 +2668,7 @@ service cloud.firestore {
                     
                     <div class="checklist">
                         <h4>
-                            Checklist Aniversário de Empresa
+                            Checklist
                             <span class="progresso-checklist ${progressoClass}">${concluidos}/${items.length}</span>
                         </h4>
                         
@@ -2817,8 +2824,7 @@ service cloud.firestore {
                             </div>
                             <input type="file" id="empresa_file_${col.id}" accept="image/*" onchange="previewFotoEmpresa(this, '${col.id}')">
                         </div>
-                        <img id="empresa_preview_${col.id}" class="preview-foto ${checklistState.fotoPreview ? 'active' : ''}" 
-                             src="${checklistState.fotoPreview || ''}" alt="Preview">
+                        <img id="empresa_preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
@@ -2903,8 +2909,7 @@ service cloud.firestore {
             if (!empresaChecklist[checklistKey]) {
                 empresaChecklist[checklistKey] = {
                     colaboradorId: colaboradorId,
-                    tipo: 'empresa',
-                    items: {}
+                    tipo: 'empresa'
                 };
             }
             empresaChecklist[checklistKey][item] = checked;
@@ -2948,18 +2953,16 @@ service cloud.firestore {
                     const preview = document.getElementById(`empresa_preview_${colaboradorId}`);
                     if (preview) {
                         preview.src = e.target.result;
-                        preview.classList.add('active');
+                        preview.style.display = 'block';
                         
-                        // Salvar no estado
+                        // Salvar apenas o nome da foto no estado, não o base64
                         const checklistKey = `empresa_${colaboradorId}`;
                         if (!empresaChecklist[checklistKey]) {
                             empresaChecklist[checklistKey] = {
                                 colaboradorId: colaboradorId,
-                                tipo: 'empresa',
-                                items: {}
+                                tipo: 'empresa'
                             };
                         }
-                        empresaChecklist[checklistKey].fotoPreview = e.target.result;
                         empresaChecklist[checklistKey].fotoNome = input.files[0].name;
                     }
                 }
@@ -2975,7 +2978,11 @@ service cloud.firestore {
             if (checklistData) {
                 mostrarLoading();
                 try {
-                    await db.collection('checklists').doc(checklistKey).set(checklistData);
+                    // Remover a fotoPreview antes de salvar (já que não salvamos mais)
+                    const dataToSave = { ...checklistData };
+                    delete dataToSave.fotoPreview;
+                    
+                    await db.collection('checklists').doc(checklistKey).set(dataToSave);
                     
                     // Salvar pedidos também
                     const pedidoKey = `pedido_empresa_${colaboradorId}`;
@@ -2984,7 +2991,7 @@ service cloud.firestore {
                         await db.collection('pedidos').doc(pedidoKey).set(pedidoData);
                     }
                     
-                    mostrarToast('Checklist de empresa salvo com sucesso!');
+                    mostrarToast('Checklist salvo com sucesso!');
                 } catch (error) {
                     console.error('Erro ao salvar checklist:', error);
                     mostrarToast('Erro ao salvar checklist: ' + error.message, 'error');
@@ -3018,7 +3025,7 @@ service cloud.firestore {
                     conteudo += `Empresa: ${col.empresaNome || ''}\n`;
                     conteudo += `Cidade: ${col.cidade || ''}\n`;
                     conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? 'COMPLETO' : 'PENDENTE'}\n`;
-                    conteudo += `\nCHECKLIST EMPRESA:\n`;
+                    conteudo += `\nCHECKLIST:\n`;
                     conteudo += `Arte troféu: ${checklist.arteTrofeu ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `Arte TV corporativa: ${checklist.arteTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `Impressão troféu: ${checklist.impressaoTrofeu ? 'Concluído' : 'Pendente'}\n`;
