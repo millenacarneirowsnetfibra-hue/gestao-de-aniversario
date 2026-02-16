@@ -1475,8 +1475,6 @@
             const dataCurta = formatDateShortBR(dataNascimento);
             const idade = calculateAge(dataNascimento);
             
-            const isOutside = !colaborador.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(colaborador.cidade);
-            
             // Verifica se o aniversário já passou
             const pastBirthday = isPastBirthday(dataNascimento);
             if (pastBirthday) {
@@ -1487,6 +1485,7 @@
                 <div class="person-card-header">
                     <div class="person-info">
                         <h4>${colaborador.nome || 'Sem nome'}</h4>
+                        <p><i class="fas fa-sitemap"></i> ${colaborador.departamentoNome || 'Sem departamento'}</p>
                         <p><i class="fas fa-birthday-cake"></i> ${dataFormatada} (${idade} anos)</p>
                     </div>
                     <span class="date-badge">
@@ -1558,9 +1557,9 @@
             itens.forEach((item, index) => {
                 const itemId = item.id || index;
                 html += `
-                    <div class="checklist-item" data-item-id="${itemId}">
+                    <div class="checklist-item" data-item-id="${itemId}" data-colaborador-id="${colaboradorId}" data-item-index="${index}">
                         <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleChecklistItem('${colaboradorId}', ${index})">
-                        <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}" ondblclick="editChecklistItemName('${colaboradorId}', ${index})">${item.nome}</span>
+                        <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}">${item.nome}</span>
                         <div class="checklist-item-actions">
                             <button class="edit" onclick="editChecklistItemName('${colaboradorId}', ${index})">
                                 <i class="fas fa-edit"></i>
@@ -2511,11 +2510,12 @@
                 let itens;
                 if (doc.exists) {
                     itens = doc.data().itens;
-                    itens[index].checked = !itens[index].checked;
                 } else {
                     itens = getDefaultChecklistItems(currentSection);
-                    itens[index].checked = true;
                 }
+                
+                // Toggle the checked status
+                itens[index].checked = !itens[index].checked;
                 
                 await checklistRef.set({
                     colaboradorId,
@@ -2566,8 +2566,11 @@
                 const doc = await checklistRef.get();
                 
                 let itens;
+                let texto = '';
+                
                 if (doc.exists) {
-                    itens = doc.data().itens;
+                    itens = doc.data().itens || [];
+                    texto = doc.data().texto || '';
                 } else {
                     itens = getDefaultChecklistItems(currentSection);
                 }
@@ -2580,15 +2583,16 @@
                 
                 await checklistRef.set({
                     colaboradorId,
-                    tipo: currentSection,
+                    tipo: currentSection === 'vida' ? 'vida' : 'empresa',
                     itens,
+                    texto,
                     dataAtualizacao: new Date()
                 }, { merge: true });
                 
                 // Reload checklist
                 const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
                 if (checklistDiv) {
-                    checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, currentSection);
+                    checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens, texto }, currentSection);
                 }
                 
                 input.value = '';
@@ -2620,7 +2624,10 @@
                 const doc = await checklistRef.get();
                 
                 if (doc.exists) {
-                    const itens = doc.data().itens;
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    const texto = data.texto || '';
+                    
                     itens[index].nome = newName;
                     
                     await checklistRef.update({
@@ -2653,7 +2660,10 @@
                 const doc = await checklistRef.get();
                 
                 if (doc.exists) {
-                    const itens = doc.data().itens;
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    const texto = data.texto || '';
+                    
                     itens.splice(index, 1);
                     
                     await checklistRef.update({
@@ -2664,7 +2674,7 @@
                     // Reload checklist
                     const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
                     if (checklistDiv) {
-                        checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, currentSection);
+                        checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens, texto }, currentSection);
                     }
                     
                     showToast('Item removido com sucesso!', 'success');
@@ -2725,7 +2735,7 @@
                 
                 await checklistRef.set({
                     colaboradorId,
-                    tipo: currentSection,
+                    tipo: currentSection === 'vida' ? 'vida' : 'empresa',
                     texto,
                     dataAtualizacao: new Date()
                 }, { merge: true });
