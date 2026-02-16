@@ -645,6 +645,176 @@
             margin-top: 4px;
         }
 
+        /* Filtros */
+        .filtros-container {
+            margin-bottom: 24px;
+        }
+
+        .btn-toggle-filtros {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            width: fit-content;
+            margin-bottom: 12px;
+        }
+
+        .btn-toggle-filtros:hover {
+            background: #f8fafc;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-toggle-filtros .seta {
+            transition: transform 0.3s ease;
+            font-size: 16px;
+        }
+
+        .btn-toggle-filtros .seta.rotacionada {
+            transform: rotate(180deg);
+        }
+
+        .filtros-content {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 0;
+        }
+
+        .filtros-content.colapsado {
+            max-height: 0;
+            opacity: 0;
+            padding: 0 24px;
+            margin-top: 0;
+            margin-bottom: 0;
+            border-width: 0;
+        }
+
+        .filtros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .filtro-grupo {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .filtro-grupo label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filtro-grupo input, .filtro-grupo select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .filtro-grupo input:focus, .filtro-grupo select:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .periodo-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .periodo-input-group input {
+            flex: 1;
+            text-align: center;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .acoes-filtro {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            grid-column: span 2;
+        }
+
+        .btn-aplicar {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-aplicar:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-limpar {
+            background: white;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-limpar:hover {
+            background: #f3f4f6;
+        }
+
         /* Checklist */
         .checklist {
             background: #f9fafb;
@@ -707,16 +877,24 @@
             color: #4b5563;
             cursor: pointer;
             flex: 1;
+            transition: all 0.2s;
         }
 
         .checklist-item label.riscado {
             text-decoration: line-through;
             color: #9ca3af;
+            opacity: 0.8;
         }
 
         .checklist-item .item-actions {
             display: flex;
             gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .checklist-item:hover .item-actions {
+            opacity: 1;
         }
 
         .checklist-item .item-action-btn {
@@ -1175,199 +1353,6 @@
             color: #059669;
         }
 
-        /* Filtros Financeiro */
-        .filtros-financeiro-container {
-            margin-bottom: 24px;
-        }
-
-        .btn-toggle-filtros {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
-            color: #1e293b;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            width: fit-content;
-            margin-bottom: 12px;
-        }
-
-        .btn-toggle-filtros:hover {
-            background: #f8fafc;
-            border-color: #2563eb;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-toggle-filtros .seta {
-            transition: transform 0.3s ease;
-            font-size: 16px;
-        }
-
-        .btn-toggle-filtros .seta.rotacionada {
-            transform: rotate(180deg);
-        }
-
-        .filtros-financeiro {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            padding: 24px;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-            overflow: hidden;
-            max-height: 500px;
-            opacity: 1;
-            margin-top: 0;
-        }
-
-        .filtros-financeiro.filtros-colapsado {
-            max-height: 0;
-            opacity: 0;
-            padding: 0 24px;
-            margin-top: 0;
-            margin-bottom: 0;
-            border-width: 0;
-        }
-
-        .filtros-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            align-items: end;
-        }
-
-        .filtro-periodo {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-        }
-
-        .filtro-periodo:hover {
-            border-color: #2563eb;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
-        }
-
-        .filtro-periodo label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .periodo-input-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .periodo-input {
-            flex: 1;
-            position: relative;
-        }
-
-        .periodo-input .input-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            font-size: 14px;
-            pointer-events: none;
-        }
-
-        .periodo-input input {
-            width: 100%;
-            padding: 12px 12px 12px 36px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.2s;
-            background: white;
-            font-weight: 500;
-        }
-
-        .periodo-input input:focus {
-            border-color: #2563eb;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .periodo-input input::placeholder {
-            color: #94a3b8;
-            font-weight: 400;
-        }
-
-        .periodo-separator {
-            color: #475569;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .btn-aplicar-filtro {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
-        }
-
-        .btn-aplicar-filtro:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
-        }
-
-        .btn-aplicar-filtro:active {
-            transform: translateY(0);
-        }
-
-        .btn-limpar-filtro {
-            background: white;
-            color: #475569;
-            border: 2px solid #e2e8f0;
-            padding: 12px 28px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-limpar-filtro:hover {
-            border-color: #94a3b8;
-            background: #f8fafc;
-        }
-
-        .acoes-filtro {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
         @media (max-width: 768px) {
             .filtros-grid {
                 grid-template-columns: 1fr;
@@ -1375,9 +1360,10 @@
             
             .acoes-filtro {
                 flex-direction: column;
+                grid-column: span 1;
             }
             
-            .btn-aplicar-filtro, .btn-limpar-filtro {
+            .btn-aplicar, .btn-limpar {
                 width: 100%;
                 justify-content: center;
             }
@@ -1505,6 +1491,74 @@
                             Exportar Checklist
                         </button>
                     </div>
+
+                    <!-- Filtros -->
+                    <div class="filtros-container">
+                        <button class="btn-toggle-filtros" onclick="toggleFiltrosVida()" id="btnToggleFiltrosVida">
+                            <span>🔍</span>
+                            Filtros
+                            <span class="seta" id="setaFiltrosVida">▼</span>
+                        </button>
+
+                        <div id="filtrosVida" class="filtros-content colapsado">
+                            <div class="filtros-grid">
+                                <div class="filtro-grupo">
+                                    <label>Nome do Colaborador</label>
+                                    <input type="text" id="filtroNomeVida" placeholder="Digite o nome...">
+                                </div>
+
+                                <div class="filtro-grupo">
+                                    <label>Mês</label>
+                                    <select id="filtroMesVida">
+                                        <option value="1">Janeiro</option>
+                                        <option value="2" selected>Fevereiro</option>
+                                        <option value="3">Março</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Maio</option>
+                                        <option value="6">Junho</option>
+                                        <option value="7">Julho</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Setembro</option>
+                                        <option value="10">Outubro</option>
+                                        <option value="11">Novembro</option>
+                                        <option value="12">Dezembro</option>
+                                    </select>
+                                </div>
+
+                                <div class="filtro-grupo">
+                                    <label>Ano</label>
+                                    <input type="number" id="filtroAnoVida" min="2000" max="2100" value="2026">
+                                </div>
+
+                                <div class="filtro-grupo">
+                                    <label>Status</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" name="statusVida" id="todosVida" value="todos" checked>
+                                            <label for="todosVida">Todos</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" name="statusVida" id="proximosVida" value="proximos">
+                                            <label for="proximosVida">Próximos</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" name="statusVida" id="passadosVida" value="passados">
+                                            <label for="passadosVida">Passados</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="acoes-filtro">
+                                    <button class="btn-aplicar" onclick="aplicarFiltrosVida()">
+                                        <span>🔍</span> Aplicar Filtros
+                                    </button>
+                                    <button class="btn-limpar" onclick="limparFiltrosVida()">
+                                        <span>🗑️</span> Limpar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Container dos aniversariantes -->
                     <div id="aniversariantesContainer" class="aniversariantes-grid">
@@ -1521,6 +1575,74 @@
                         <button onclick="exportarChecklistEmpresa()" class="btn-secondary">
                             Exportar Checklist
                         </button>
+                    </div>
+
+                    <!-- Filtros Empresa -->
+                    <div class="filtros-container">
+                        <button class="btn-toggle-filtros" onclick="toggleFiltrosEmpresa()" id="btnToggleFiltrosEmpresa">
+                            <span>🔍</span>
+                            Filtros
+                            <span class="seta" id="setaFiltrosEmpresa">▼</span>
+                        </button>
+
+                        <div id="filtrosEmpresa" class="filtros-content colapsado">
+                            <div class="filtros-grid">
+                                <div class="filtro-grupo">
+                                    <label>Nome do Colaborador</label>
+                                    <input type="text" id="filtroNomeEmpresa" placeholder="Digite o nome...">
+                                </div>
+
+                                <div class="filtro-grupo">
+                                    <label>Mês</label>
+                                    <select id="filtroMesEmpresa">
+                                        <option value="1">Janeiro</option>
+                                        <option value="2" selected>Fevereiro</option>
+                                        <option value="3">Março</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Maio</option>
+                                        <option value="6">Junho</option>
+                                        <option value="7">Julho</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Setembro</option>
+                                        <option value="10">Outubro</option>
+                                        <option value="11">Novembro</option>
+                                        <option value="12">Dezembro</option>
+                                    </select>
+                                </div>
+
+                                <div class="filtro-grupo">
+                                    <label>Ano</label>
+                                    <input type="number" id="filtroAnoEmpresa" min="2000" max="2100" value="2026">
+                                </div>
+
+                                <div class="filtro-grupo">
+                                    <label>Status</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" name="statusEmpresa" id="todosEmpresa" value="todos" checked>
+                                            <label for="todosEmpresa">Todos</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" name="statusEmpresa" id="proximosEmpresa" value="proximos">
+                                            <label for="proximosEmpresa">Próximos</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" name="statusEmpresa" id="passadosEmpresa" value="passados">
+                                            <label for="passadosEmpresa">Passados</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="acoes-filtro">
+                                    <button class="btn-aplicar" onclick="aplicarFiltrosEmpresa()">
+                                        <span>🔍</span> Aplicar Filtros
+                                    </button>
+                                    <button class="btn-limpar" onclick="limparFiltrosEmpresa()">
+                                        <span>🗑️</span> Limpar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Container dos aniversariantes de empresa -->
@@ -1546,43 +1668,31 @@
                         </button>
 
                         <!-- Filtros do Financeiro -->
-                        <div id="filtrosFinanceiro" class="filtros-financeiro">
+                        <div id="filtrosFinanceiro" class="filtros-content colapsado">
                             <div class="filtros-grid">
-                                <div class="filtro-periodo">
-                                    <label>📅 Período Inicial</label>
+                                <div class="filtro-grupo">
+                                    <label>Período Inicial</label>
                                     <div class="periodo-input-group">
-                                        <div class="periodo-input">
-                                            <span class="input-icon">📆</span>
-                                            <input type="text" id="mesInicial" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="01">
-                                        </div>
-                                        <span class="periodo-separator">/</span>
-                                        <div class="periodo-input">
-                                            <span class="input-icon">📅</span>
-                                            <input type="text" id="anoInicial" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
-                                        </div>
+                                        <input type="text" id="mesInicial" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="01">
+                                        <span>/</span>
+                                        <input type="text" id="anoInicial" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
                                     </div>
                                 </div>
 
-                                <div class="filtro-periodo">
-                                    <label>📅 Período Final</label>
+                                <div class="filtro-grupo">
+                                    <label>Período Final</label>
                                     <div class="periodo-input-group">
-                                        <div class="periodo-input">
-                                            <span class="input-icon">📆</span>
-                                            <input type="text" id="mesFinal" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="12">
-                                        </div>
-                                        <span class="periodo-separator">/</span>
-                                        <div class="periodo-input">
-                                            <span class="input-icon">📅</span>
-                                            <input type="text" id="anoFinal" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
-                                        </div>
+                                        <input type="text" id="mesFinal" placeholder="MM" maxlength="2" oninput="validarMes(this)" value="12">
+                                        <span>/</span>
+                                        <input type="text" id="anoFinal" placeholder="AAAA" maxlength="4" oninput="validarAno(this)" value="2026">
                                     </div>
                                 </div>
 
                                 <div class="acoes-filtro">
-                                    <button class="btn-aplicar-filtro" onclick="aplicarFiltroPeriodo()">
+                                    <button class="btn-aplicar" onclick="aplicarFiltroPeriodo()">
                                         <span>🔍</span> Aplicar Filtro
                                     </button>
-                                    <button class="btn-limpar-filtro" onclick="limparFiltroPeriodo()">
+                                    <button class="btn-limpar" onclick="limparFiltroPeriodo()">
                                         <span>🗑️</span> Limpar
                                     </button>
                                 </div>
@@ -1922,7 +2032,25 @@
         let empresaChecklist = {};
         let pedidosPizzaEmpresa = {};
 
-        // Variáveis para controle do filtro de período
+        // Variáveis para controle dos filtros
+        let filtrosVidaVisiveis = false;
+        let filtrosEmpresaVisiveis = false;
+        let filtrosFinanceiroVisiveis = false;
+        
+        let filtrosVida = {
+            nome: '',
+            mes: 2,
+            ano: 2026,
+            status: 'todos'
+        };
+
+        let filtrosEmpresa = {
+            nome: '',
+            mes: 2,
+            ano: 2026,
+            status: 'todos'
+        };
+
         let filtroPeriodoAtivo = {
             mesInicial: 1,
             anoInicial: 2026,
@@ -1930,9 +2058,6 @@
             anoFinal: 2026,
             ativo: false
         };
-
-        // Variável para controle do estado dos filtros
-        let filtrosVisiveis = true;
 
         // Flags de controle para evitar loops
         let _savingChecklist = false;
@@ -2000,26 +2125,53 @@
             }, 3000);
         }
 
-        // Função para alternar visibilidade dos filtros
+        // Funções para alternar filtros
+        function toggleFiltrosVida() {
+            const filtros = document.getElementById('filtrosVida');
+            const seta = document.getElementById('setaFiltrosVida');
+            
+            if (filtrosVidaVisiveis) {
+                filtros.classList.add('colapsado');
+                seta.classList.add('rotacionada');
+            } else {
+                filtros.classList.remove('colapsado');
+                seta.classList.remove('rotacionada');
+            }
+            
+            filtrosVidaVisiveis = !filtrosVidaVisiveis;
+        }
+
+        function toggleFiltrosEmpresa() {
+            const filtros = document.getElementById('filtrosEmpresa');
+            const seta = document.getElementById('setaFiltrosEmpresa');
+            
+            if (filtrosEmpresaVisiveis) {
+                filtros.classList.add('colapsado');
+                seta.classList.add('rotacionada');
+            } else {
+                filtros.classList.remove('colapsado');
+                seta.classList.remove('rotacionada');
+            }
+            
+            filtrosEmpresaVisiveis = !filtrosEmpresaVisiveis;
+        }
+
         function toggleFiltrosFinanceiro() {
             const filtros = document.getElementById('filtrosFinanceiro');
             const seta = document.getElementById('setaFiltros');
-            const btn = document.getElementById('btnToggleFiltros');
             
-            if (filtrosVisiveis) {
-                filtros.classList.add('filtros-colapsado');
+            if (filtrosFinanceiroVisiveis) {
+                filtros.classList.add('colapsado');
                 seta.classList.add('rotacionada');
-                btn.innerHTML = '<span>⚙️</span> Mostrar Filtros <span class="seta" id="setaFiltros">▼</span>';
             } else {
-                filtros.classList.remove('filtros-colapsado');
+                filtros.classList.remove('colapsado');
                 seta.classList.remove('rotacionada');
-                btn.innerHTML = '<span>⚙️</span> Filtros Avançados <span class="seta" id="setaFiltros">▼</span>';
             }
             
-            filtrosVisiveis = !filtrosVisiveis;
+            filtrosFinanceiroVisiveis = !filtrosFinanceiroVisiveis;
         }
 
-        // Função para validar mês
+        // Funções para validar inputs
         function validarMes(input) {
             let valor = input.value.replace(/\D/g, '');
             if (valor.length > 2) valor = valor.slice(0, 2);
@@ -2028,14 +2180,101 @@
             input.value = valor;
         }
 
-        // Função para validar ano
         function validarAno(input) {
             let valor = input.value.replace(/\D/g, '');
             if (valor.length > 4) valor = valor.slice(0, 4);
             input.value = valor;
         }
 
-        // Função para aplicar filtro de período
+        // Funções para aplicar filtros
+        function aplicarFiltrosVida() {
+            filtrosVida.nome = document.getElementById('filtroNomeVida').value;
+            filtrosVida.mes = parseInt(document.getElementById('filtroMesVida').value);
+            filtrosVida.ano = parseInt(document.getElementById('filtroAnoVida').value);
+            
+            const radios = document.getElementsByName('statusVida');
+            for (let radio of radios) {
+                if (radio.checked) {
+                    filtrosVida.status = radio.value;
+                    break;
+                }
+            }
+            
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const titulo = document.querySelector('#vida-section .section-header h2');
+            if (titulo) {
+                titulo.textContent = `Aniversários de Vida - ${meses[filtrosVida.mes - 1]} ${filtrosVida.ano}`;
+            }
+            
+            filtrarAniversariantesVida();
+        }
+
+        function limparFiltrosVida() {
+            document.getElementById('filtroNomeVida').value = '';
+            document.getElementById('filtroMesVida').value = '2';
+            document.getElementById('filtroAnoVida').value = '2026';
+            document.getElementById('todosVida').checked = true;
+            
+            filtrosVida = {
+                nome: '',
+                mes: 2,
+                ano: 2026,
+                status: 'todos'
+            };
+            
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const titulo = document.querySelector('#vida-section .section-header h2');
+            if (titulo) {
+                titulo.textContent = `Aniversários de Vida - ${meses[1]} 2026`;
+            }
+            
+            filtrarAniversariantesVida();
+        }
+
+        function aplicarFiltrosEmpresa() {
+            filtrosEmpresa.nome = document.getElementById('filtroNomeEmpresa').value;
+            filtrosEmpresa.mes = parseInt(document.getElementById('filtroMesEmpresa').value);
+            filtrosEmpresa.ano = parseInt(document.getElementById('filtroAnoEmpresa').value);
+            
+            const radios = document.getElementsByName('statusEmpresa');
+            for (let radio of radios) {
+                if (radio.checked) {
+                    filtrosEmpresa.status = radio.value;
+                    break;
+                }
+            }
+            
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const titulo = document.querySelector('#empresa-section .section-header h2');
+            if (titulo) {
+                titulo.textContent = `Aniversários de Empresa - ${meses[filtrosEmpresa.mes - 1]} ${filtrosEmpresa.ano}`;
+            }
+            
+            filtrarAniversariantesEmpresa();
+        }
+
+        function limparFiltrosEmpresa() {
+            document.getElementById('filtroNomeEmpresa').value = '';
+            document.getElementById('filtroMesEmpresa').value = '2';
+            document.getElementById('filtroAnoEmpresa').value = '2026';
+            document.getElementById('todosEmpresa').checked = true;
+            
+            filtrosEmpresa = {
+                nome: '',
+                mes: 2,
+                ano: 2026,
+                status: 'todos'
+            };
+            
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            const titulo = document.querySelector('#empresa-section .section-header h2');
+            if (titulo) {
+                titulo.textContent = `Aniversários de Empresa - ${meses[1]} 2026`;
+            }
+            
+            filtrarAniversariantesEmpresa();
+        }
+
         function aplicarFiltroPeriodo() {
             const mesInicial = document.getElementById('mesInicial').value;
             const anoInicial = document.getElementById('anoInicial').value;
@@ -2065,7 +2304,7 @@
                 ativo: true
             };
 
-            document.querySelectorAll('.filtro-periodo').forEach(el => {
+            document.querySelectorAll('.filtro-grupo').forEach(el => {
                 el.style.borderColor = '#2563eb';
                 el.style.backgroundColor = '#f0f9ff';
             });
@@ -2074,7 +2313,6 @@
             mostrarToast('Filtro aplicado com sucesso!', 'success');
         }
 
-        // Função para limpar filtro de período
         function limparFiltroPeriodo() {
             document.getElementById('mesInicial').value = '01';
             document.getElementById('anoInicial').value = '2026';
@@ -2083,7 +2321,7 @@
 
             filtroPeriodoAtivo.ativo = false;
 
-            document.querySelectorAll('.filtro-periodo').forEach(el => {
+            document.querySelectorAll('.filtro-grupo').forEach(el => {
                 el.style.borderColor = '#e2e8f0';
                 el.style.backgroundColor = 'white';
             });
@@ -2357,7 +2595,6 @@
         }
 
         async function editarEmpresa(id) {
-            console.log('Editando empresa ID:', id);
             const empresa = empresas.find(e => e.id === id);
             if (empresa) {
                 const novoNome = prompt('Editar nome da empresa:', empresa.nome);
@@ -2376,14 +2613,10 @@
                         esconderLoading();
                     }
                 }
-            } else {
-                console.error('Empresa não encontrada com ID:', id);
-                mostrarToast('Empresa não encontrada', 'error');
             }
         }
 
         async function excluirEmpresa(id) {
-            console.log('Excluindo empresa ID:', id);
             if (confirm('Tem certeza que deseja excluir esta empresa?')) {
                 mostrarLoading();
                 try {
@@ -2436,7 +2669,6 @@
         }
 
         async function editarDepartamento(id) {
-            console.log('Editando departamento ID:', id);
             const dept = departamentos.find(d => d.id === id);
             if (dept) {
                 const novoNome = prompt('Editar nome do departamento:', dept.nome);
@@ -2455,14 +2687,10 @@
                         esconderLoading();
                     }
                 }
-            } else {
-                console.error('Departamento não encontrado com ID:', id);
-                mostrarToast('Departamento não encontrado', 'error');
             }
         }
 
         async function excluirDepartamento(id) {
-            console.log('Excluindo departamento ID:', id);
             if (confirm('Tem certeza que deseja excluir este departamento?')) {
                 mostrarLoading();
                 try {
@@ -2515,7 +2743,6 @@
         }
 
         async function editarPizza(id) {
-            console.log('Editando pizza ID:', id);
             const pizza = pizzas.find(p => p.id === id);
             if (pizza) {
                 const novoNome = prompt('Editar nome da pizza:', pizza.nome);
@@ -2534,14 +2761,10 @@
                         esconderLoading();
                     }
                 }
-            } else {
-                console.error('Pizza não encontrada com ID:', id);
-                mostrarToast('Pizza não encontrada', 'error');
             }
         }
 
         async function excluirPizza(id) {
-            console.log('Excluindo pizza ID:', id);
             if (confirm('Tem certeza que deseja excluir esta pizza?')) {
                 mostrarLoading();
                 try {
@@ -2567,8 +2790,6 @@
             const empId = document.getElementById('empresaColaborador').value;
             const status = document.getElementById('statusColaborador').value;
             
-            console.log('Salvando colaborador:', { nome, dataNasc, dataAdm, cidade, deptId, empId, status });
-            
             if (!nome || !dataNasc || !dataAdm || !cidade || !deptId || !empId) {
                 mostrarToast('Por favor, preencha todos os campos obrigatórios', 'error');
                 return;
@@ -2576,9 +2797,6 @@
             
             const departamento = departamentos.find(d => d.id === deptId);
             const empresa = empresas.find(e => e.id === empId);
-            
-            console.log('Departamento encontrado:', departamento);
-            console.log('Empresa encontrada:', empresa);
             
             if (!departamento || !empresa) {
                 mostrarToast('Departamento ou empresa inválidos', 'error');
@@ -2623,7 +2841,6 @@
         }
 
         async function excluirColaborador(id) {
-            console.log('Excluindo colaborador ID:', id);
             if (confirm('Tem certeza que deseja excluir este colaborador?')) {
                 mostrarLoading();
                 try {
@@ -2754,15 +2971,22 @@
                 
                 const dataNasc = new Date(col.dataNascimento);
                 const mesNasc = dataNasc.getMonth() + 1;
-                return mesNasc == mesPadrao;
+                return mesNasc == filtrosVida.mes;
             });
+            
+            // Filtrar por nome
+            if (filtrosVida.nome) {
+                aniversariantes = aniversariantes.filter(col => 
+                    col.nome && col.nome.toLowerCase().includes(filtrosVida.nome.toLowerCase())
+                );
+            }
             
             const proximos = [];
             const passados = [];
             
             aniversariantes.forEach(col => {
                 const dataNasc = new Date(col.dataNascimento);
-                const dataAniversario = new Date(anoPadrao, dataNasc.getMonth(), dataNasc.getDate());
+                const dataAniversario = new Date(filtrosVida.ano, dataNasc.getMonth(), dataNasc.getDate());
                 
                 if (dataAniversario < hoje) {
                     passados.push(col);
@@ -2783,15 +3007,16 @@
                 return diaB - diaA;
             });
             
-            let resultado = [...proximos, ...passados];
+            let resultado;
+            if (filtrosVida.status === 'proximos') {
+                resultado = proximos;
+            } else if (filtrosVida.status === 'passados') {
+                resultado = passados;
+            } else {
+                resultado = [...proximos, ...passados];
+            }
             
             exibirAniversariantes(resultado);
-            
-            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            const titulo = document.querySelector('#vida-section .section-header h2');
-            if (titulo) {
-                titulo.textContent = `Aniversários de Vida - ${meses[mesPadrao - 1]} ${anoPadrao}`;
-            }
         }
 
         function exibirAniversariantes(aniversariantes) {
@@ -2808,7 +3033,7 @@
             
             aniversariantes.forEach(col => {
                 const dataNasc = new Date(col.dataNascimento);
-                const dataAniversario = new Date(anoPadrao, dataNasc.getMonth(), dataNasc.getDate());
+                const dataAniversario = new Date(filtrosVida.ano, dataNasc.getMonth(), dataNasc.getDate());
                 const jaPassou = dataAniversario < hoje;
                 
                 const dia = dataNasc.getDate().toString().padStart(2, '0');
@@ -2938,6 +3163,23 @@
             return html;
         }
 
+        function atualizarItemChecklistVida(colaboradorId, itemId, checked) {
+            const checklistKey = `checklist_${colaboradorId}`;
+            if (aniversariosChecklist[checklistKey] && aniversariosChecklist[checklistKey].itens) {
+                const item = aniversariosChecklist[checklistKey].itens.find(i => i.id === itemId);
+                if (item) {
+                    item.checked = checked;
+                    
+                    const label = document.getElementById(`label_${itemId}_${colaboradorId}`);
+                    if (label) {
+                        label.className = checked ? 'riscado' : '';
+                    }
+                    
+                    atualizarProgressoVida(colaboradorId);
+                }
+            }
+        }
+
         function editarItemChecklistVida(colaboradorId, itemId) {
             const itemDiv = document.getElementById(`item_${itemId}_${colaboradorId}`);
             if (!itemDiv) return;
@@ -3056,23 +3298,6 @@
                 
                 salvarChecklist(colaboradorId);
                 mostrarToast('Item removido com sucesso!');
-            }
-        }
-
-        function atualizarItemChecklistVida(colaboradorId, itemId, checked) {
-            const checklistKey = `checklist_${colaboradorId}`;
-            if (aniversariosChecklist[checklistKey] && aniversariosChecklist[checklistKey].itens) {
-                const item = aniversariosChecklist[checklistKey].itens.find(i => i.id === itemId);
-                if (item) {
-                    item.checked = checked;
-                    
-                    const label = document.getElementById(`label_${itemId}_${colaboradorId}`);
-                    if (label) {
-                        label.className = checked ? 'riscado' : '';
-                    }
-                    
-                    atualizarProgressoVida(colaboradorId);
-                }
             }
         }
 
@@ -3216,38 +3441,38 @@
         function exportarChecklistVida() {
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${meses[mesPadrao - 1]} ${anoPadrao}\n\n`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE VIDA - ${meses[filtrosVida.mes - 1]} ${filtrosVida.ano}\n\n`;
             
             colaboradores.forEach(col => {
+                const dataNasc = new Date(col.dataNascimento);
+                if (dataNasc.getMonth() + 1 !== filtrosVida.mes) return;
+                
                 const checklistKey = `checklist_${col.id}`;
                 const checklist = aniversariosChecklist[checklistKey] || { itens: [] };
                 
-                if (col.dataNascimento) {
-                    const dataNasc = new Date(col.dataNascimento);
-                    const dataFormatada = dataNasc.toLocaleDateString('pt-BR');
-                    
-                    conteudo += `------------------------------------------------\n`;
-                    conteudo += `Nome: ${col.nome || ''}\n`;
-                    conteudo += `Data: ${dataFormatada}\n`;
-                    conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
-                    conteudo += `Empresa: ${col.empresaNome || ''}\n`;
-                    conteudo += `Cidade: ${col.cidade || ''}\n`;
-                    conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? 'COMPLETO' : 'PENDENTE'}\n`;
-                    conteudo += `\nCHECKLIST:\n`;
-                    
-                    checklist.itens.forEach(item => {
-                        conteudo += `${item.nome}: ${item.checked ? 'Concluído' : 'Pendente'}\n`;
-                    });
-                    
-                    conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n\n`;
-                }
+                const dataFormatada = dataNasc.toLocaleDateString('pt-BR');
+                
+                conteudo += `------------------------------------------------\n`;
+                conteudo += `Nome: ${col.nome || ''}\n`;
+                conteudo += `Data: ${dataFormatada}\n`;
+                conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
+                conteudo += `Empresa: ${col.empresaNome || ''}\n`;
+                conteudo += `Cidade: ${col.cidade || ''}\n`;
+                conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? 'COMPLETO' : 'PENDENTE'}\n`;
+                conteudo += `\nCHECKLIST:\n`;
+                
+                checklist.itens.forEach(item => {
+                    conteudo += `${item.nome}: ${item.checked ? 'Concluído' : 'Pendente'}\n`;
+                });
+                
+                conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n\n`;
             });
             
             const blob = new Blob([conteudo], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_vida_${meses[mesPadrao - 1]}_${anoPadrao}.txt`;
+            a.download = `aniversariantes_vida_${meses[filtrosVida.mes - 1]}_${filtrosVida.ano}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
@@ -3259,15 +3484,22 @@
                 
                 const dataAdm = new Date(col.dataAdmissao);
                 const mesAdm = dataAdm.getMonth() + 1;
-                return mesAdm == mesPadrao;
+                return mesAdm == filtrosEmpresa.mes;
             });
+            
+            // Filtrar por nome
+            if (filtrosEmpresa.nome) {
+                aniversariantes = aniversariantes.filter(col => 
+                    col.nome && col.nome.toLowerCase().includes(filtrosEmpresa.nome.toLowerCase())
+                );
+            }
             
             const proximos = [];
             const passados = [];
             
             aniversariantes.forEach(col => {
                 const dataAdm = new Date(col.dataAdmissao);
-                const dataAniversario = new Date(anoPadrao, dataAdm.getMonth(), dataAdm.getDate());
+                const dataAniversario = new Date(filtrosEmpresa.ano, dataAdm.getMonth(), dataAdm.getDate());
                 
                 if (dataAniversario < hoje) {
                     passados.push(col);
@@ -3288,15 +3520,16 @@
                 return diaB - diaA;
             });
             
-            let resultado = [...proximos, ...passados];
+            let resultado;
+            if (filtrosEmpresa.status === 'proximos') {
+                resultado = proximos;
+            } else if (filtrosEmpresa.status === 'passados') {
+                resultado = passados;
+            } else {
+                resultado = [...proximos, ...passados];
+            }
             
             exibirAniversariantesEmpresa(resultado);
-            
-            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            const titulo = document.querySelector('#empresa-section .section-header h2');
-            if (titulo) {
-                titulo.textContent = `Aniversários de Empresa - ${meses[mesPadrao - 1]} ${anoPadrao}`;
-            }
         }
 
         function exibirAniversariantesEmpresa(aniversariantes) {
@@ -3313,14 +3546,14 @@
             
             aniversariantes.forEach(col => {
                 const dataAdm = new Date(col.dataAdmissao);
-                const dataAniversario = new Date(anoPadrao, dataAdm.getMonth(), dataAdm.getDate());
+                const dataAniversario = new Date(filtrosEmpresa.ano, dataAdm.getMonth(), dataAdm.getDate());
                 const jaPassou = dataAniversario < hoje;
                 
                 const dia = dataAdm.getDate().toString().padStart(2, '0');
                 const mes = (dataAdm.getMonth() + 1).toString().padStart(2, '0');
                 const dataFormatada = `${dia}/${mes}`;
                 
-                const anosEmpresa = anoPadrao - dataAdm.getFullYear();
+                const anosEmpresa = filtrosEmpresa.ano - dataAdm.getFullYear();
                 
                 const checklistKey = `empresa_${col.id}`;
                 let checklistState = empresaChecklist[checklistKey];
@@ -3809,48 +4042,48 @@
         function exportarChecklistEmpresa() {
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             
-            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${meses[mesPadrao - 1]} ${anoPadrao}\n\n`;
+            let conteudo = `RELATÓRIO DE ANIVERSARIANTES DE EMPRESA - ${meses[filtrosEmpresa.mes - 1]} ${filtrosEmpresa.ano}\n\n`;
             
             colaboradores.forEach(col => {
+                const dataAdm = new Date(col.dataAdmissao);
+                if (dataAdm.getMonth() + 1 !== filtrosEmpresa.mes) return;
+                
                 const checklistKey = `empresa_${col.id}`;
                 const checklist = empresaChecklist[checklistKey] || { itens: [] };
                 const pedidoKey = `pedido_empresa_${col.id}`;
                 const pedido = pedidosPizzaEmpresa[pedidoKey] || {};
                 
-                if (col.dataAdmissao) {
-                    const dataAdm = new Date(col.dataAdmissao);
-                    const dataFormatada = dataAdm.toLocaleDateString('pt-BR');
-                    const pizza = pizzas.find(p => p.id == pedido.pizzaId);
-                    
-                    conteudo += `------------------------------------------------\n`;
-                    conteudo += `Nome: ${col.nome || ''}\n`;
-                    conteudo += `Data Admissão: ${dataFormatada}\n`;
-                    conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
-                    conteudo += `Empresa: ${col.empresaNome || ''}\n`;
-                    conteudo += `Cidade: ${col.cidade || ''}\n`;
-                    conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? 'COMPLETO' : 'PENDENTE'}\n`;
-                    conteudo += `\nCHECKLIST:\n`;
-                    
-                    checklist.itens.forEach(item => {
-                        conteudo += `${item.nome}: ${item.checked ? 'Concluído' : 'Pendente'}\n`;
-                    });
-                    
-                    conteudo += `\nPEDIDO DE PIZZA:\n`;
-                    conteudo += `Pizza: ${pizza ? pizza.nome + ' - ' + pizza.pizzaria : 'Não selecionada'}\n`;
-                    conteudo += `Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
-                    conteudo += `Horário: ${pedido.horarioEntrega || 'Não definido'}\n`;
-                    conteudo += `Cidade: ${pedido.local || col.cidade || ''}\n`;
-                    conteudo += `Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
-                    conteudo += `Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
-                    conteudo += `Observações: ${pedido.observacoes || 'Nenhuma'}\n\n`;
-                }
+                const dataFormatada = dataAdm.toLocaleDateString('pt-BR');
+                const pizza = pizzas.find(p => p.id == pedido.pizzaId);
+                
+                conteudo += `------------------------------------------------\n`;
+                conteudo += `Nome: ${col.nome || ''}\n`;
+                conteudo += `Data Admissão: ${dataFormatada}\n`;
+                conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
+                conteudo += `Empresa: ${col.empresaNome || ''}\n`;
+                conteudo += `Cidade: ${col.cidade || ''}\n`;
+                conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? 'COMPLETO' : 'PENDENTE'}\n`;
+                conteudo += `\nCHECKLIST:\n`;
+                
+                checklist.itens.forEach(item => {
+                    conteudo += `${item.nome}: ${item.checked ? 'Concluído' : 'Pendente'}\n`;
+                });
+                
+                conteudo += `\nPEDIDO DE PIZZA:\n`;
+                conteudo += `Pizza: ${pizza ? pizza.nome + ' - ' + pizza.pizzaria : 'Não selecionada'}\n`;
+                conteudo += `Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
+                conteudo += `Horário: ${pedido.horarioEntrega || 'Não definido'}\n`;
+                conteudo += `Cidade: ${pedido.local || col.cidade || ''}\n`;
+                conteudo += `Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
+                conteudo += `Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
+                conteudo += `Observações: ${pedido.observacoes || 'Nenhuma'}\n\n`;
             });
             
             const blob = new Blob([conteudo], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aniversariantes_empresa_${meses[mesPadrao - 1]}_${anoPadrao}.txt`;
+            a.download = `aniversariantes_empresa_${meses[filtrosEmpresa.mes - 1]}_${filtrosEmpresa.ano}.txt`;
             a.click();
             window.URL.revokeObjectURL(url);
         }
