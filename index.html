@@ -122,6 +122,7 @@
             justify-content: center;
             font-weight: 600;
             font-size: 18px;
+            color: white;
         }
 
         .user-details {
@@ -131,6 +132,7 @@
         .user-name {
             font-weight: 600;
             font-size: 14px;
+            color: white;
         }
 
         .user-role {
@@ -1018,7 +1020,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h2>🎂 Aniversariantes</h2>
+                <h2>Gestão de Aniversariantes</h2>
                 <p>Painel Estratégico</p>
             </div>
             
@@ -1127,25 +1129,25 @@
             <div id="dashboard-section" class="content-section">
                 <div class="dashboard-cards">
                     <div class="card">
-                        <div class="card-icon">🎂</div>
+                        <div class="card-icon">📊</div>
                         <div class="card-title">Aniversários de Vida</div>
                         <div class="card-value" id="totalVida">0</div>
                         <div class="card-subtitle">Nenhum registrado</div>
                     </div>
                     <div class="card">
-                        <div class="card-icon">🏢</div>
+                        <div class="card-icon">📊</div>
                         <div class="card-title">Aniversários de Empresa</div>
                         <div class="card-value" id="totalEmpresa">0</div>
                         <div class="card-subtitle">Nenhum registrado</div>
                     </div>
                     <div class="card">
-                        <div class="card-icon">🍕</div>
+                        <div class="card-icon">📊</div>
                         <div class="card-title">Pizzas Cadastradas</div>
                         <div class="card-value" id="totalPizzas">0</div>
                         <div class="card-subtitle">Nenhuma pizza</div>
                     </div>
                     <div class="card">
-                        <div class="card-icon">📍</div>
+                        <div class="card-icon">📊</div>
                         <div class="card-title">Fora da Região</div>
                         <div class="card-value" id="foraRegiao">0</div>
                         <div class="card-subtitle">Nenhum</div>
@@ -1154,7 +1156,7 @@
 
                 <div class="section">
                     <div class="section-header">
-                        <h2>📊 Visão Geral do Mês</h2>
+                        <h2>Visão Geral do Mês</h2>
                     </div>
                     <div class="empty-message">
                         Nenhum dado disponível. Cadastre colaboradores para começar.
@@ -1166,7 +1168,7 @@
             <div id="vida-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
-                        <h2>🎂 Aniversários de Vida - Fevereiro 2026</h2>
+                        <h2>Aniversários de Vida - Fevereiro 2026</h2>
                         <button onclick="exportarChecklistVida()" class="btn-secondary">
                             <span>📥</span> Exportar Checklist
                         </button>
@@ -1183,7 +1185,7 @@
             <div id="empresa-section" class="content-section active">
                 <div class="section">
                     <div class="section-header">
-                        <h2>🏢 Aniversários de Empresa - Fevereiro 2026</h2>
+                        <h2>Aniversários de Empresa - Fevereiro 2026</h2>
                         <button onclick="exportarChecklistEmpresa()" class="btn-secondary">
                             <span>📥</span> Exportar Checklist
                         </button>
@@ -1200,7 +1202,7 @@
             <div id="financeiro-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
-                        <h2>💰 Controle Financeiro - Pizzas</h2>
+                        <h2>Controle Financeiro - Pizzas</h2>
                     </div>
                     <div class="empty-message">
                         Nenhum pedido de pizza registrado.
@@ -1212,7 +1214,7 @@
             <div id="pizzas-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
-                        <h2>🍕 Cadastro de Pizzas</h2>
+                        <h2>Cadastro de Pizzas</h2>
                         <button onclick="mostrarFormularioPizza()">+ Nova Pizza</button>
                     </div>
 
@@ -1267,7 +1269,7 @@
             <div id="cadastros-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
-                        <h2>👤 Cadastro de Colaboradores</h2>
+                        <h2>Cadastro de Colaboradores</h2>
                         <button onclick="mostrarFormularioColaborador()">+ Novo Colaborador</button>
                     </div>
 
@@ -1350,7 +1352,7 @@
             <div id="empresas-cadastro-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
-                        <h2>🏭 Cadastro de Empresas</h2>
+                        <h2>Cadastro de Empresas</h2>
                         <button onclick="mostrarFormularioEmpresa()">+ Nova Empresa</button>
                     </div>
 
@@ -1390,7 +1392,7 @@
             <div id="departamentos-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
-                        <h2>📂 Cadastro de Departamentos</h2>
+                        <h2>Cadastro de Departamentos</h2>
                         <button onclick="mostrarFormularioDepartamento()">+ Novo Departamento</button>
                     </div>
 
@@ -1430,7 +1432,7 @@
             <div id="relatorios-section" class="content-section">
                 <div class="section">
                     <div class="section-header">
-                        <h2>📈 Relatórios Gerenciais</h2>
+                        <h2>Relatórios Gerenciais</h2>
                     </div>
                     <div class="empty-message">
                         Nenhum dado disponível para relatórios.
@@ -1491,7 +1493,7 @@
             const message = document.getElementById('toastMessage');
             
             toast.className = 'toast ' + tipo;
-            icon.textContent = tipo === 'success' ? '✅' : tipo === 'error' ? '❌' : 'ℹ️';
+            icon.textContent = tipo === 'success' ? '✓' : tipo === 'error' ? '✗' : 'ℹ';
             message.textContent = mensagem;
             
             toast.classList.add('active');
@@ -1553,7 +1555,6 @@
                 console.log('Carregando empresas...');
                 const snapshot = await db.collection('empresas').get();
                 empresas = snapshot.docs.map(doc => {
-                    console.log('Empresa encontrada:', doc.id, doc.data());
                     return {
                         id: doc.id,
                         ...doc.data()
@@ -1574,7 +1575,6 @@
                 console.log('Carregando departamentos...');
                 const snapshot = await db.collection('departamentos').get();
                 departamentos = snapshot.docs.map(doc => {
-                    console.log('Departamento encontrado:', doc.id, doc.data());
                     return {
                         id: doc.id,
                         ...doc.data()
@@ -1724,9 +1724,6 @@
             selectEmpresa.innerHTML = '<option value="">Selecione...</option>';
             selectDepartamento.innerHTML = '<option value="">Selecione...</option>';
             
-            console.log('Carregando selects com empresas:', empresas);
-            console.log('Carregando selects com departamentos:', departamentos);
-            
             empresas.forEach(emp => {
                 const option = document.createElement('option');
                 option.value = emp.id;
@@ -1767,7 +1764,24 @@
                 mostrarToast('Empresa cadastrada com sucesso!');
             } catch (error) {
                 console.error('Erro detalhado ao salvar empresa:', error);
-                mostrarToast('Erro ao salvar empresa: ' + error.message, 'error');
+                
+                // Se for erro de permissão, mostrar instruções
+                if (error.code === 'permission-denied') {
+                    mostrarToast('Erro de permissão. Configure as regras do Firestore.', 'error');
+                    console.log('Instruções: Acesse o console do Firebase > Firestore Database > Regras e cole as seguintes regras:');
+                    console.log(`
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+                    `);
+                } else {
+                    mostrarToast('Erro ao salvar empresa: ' + error.message, 'error');
+                }
             } finally {
                 esconderLoading();
             }
@@ -1841,7 +1855,13 @@
                 mostrarToast('Departamento cadastrado com sucesso!');
             } catch (error) {
                 console.error('Erro detalhado ao salvar departamento:', error);
-                mostrarToast('Erro ao salvar departamento: ' + error.message, 'error');
+                
+                // Se for erro de permissão, mostrar instruções
+                if (error.code === 'permission-denied') {
+                    mostrarToast('Erro de permissão. Configure as regras do Firestore.', 'error');
+                } else {
+                    mostrarToast('Erro ao salvar departamento: ' + error.message, 'error');
+                }
             } finally {
                 esconderLoading();
             }
@@ -2250,7 +2270,7 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#vida-section .section-header h2');
             if (titulo) {
-                titulo.textContent = `🎂 Aniversários de Vida - ${meses[mesSelecionado - 1]} 2026`;
+                titulo.textContent = `Aniversários de Vida - ${meses[mesSelecionado - 1]} 2026`;
             }
         }
 
@@ -2304,7 +2324,7 @@
                 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3>${col.nome || ''} ${completo ? '✅' : ''}</h3>
+                        <h3>${col.nome || ''} ${completo ? '✓' : ''}</h3>
                         <span class="${dataClass}">${dataFormatada}</span>
                     </div>
                     <div class="card-info">
@@ -2315,43 +2335,43 @@
                     
                     <div class="checklist">
                         <h4>
-                            📋 Checklist de Publicação
+                            Checklist de Publicação
                             <span class="progresso-checklist ${progressoClass}">${concluidos}/${items.length}</span>
                         </h4>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="arteInstagram_${col.id}" ${checklistState.arteInstagram ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'arteInstagram', this.checked)">
-                            <label for="arteInstagram_${col.id}">🎨 Arte Instagram</label>
+                            <label for="arteInstagram_${col.id}">Arte Instagram</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="arteTV_${col.id}" ${checklistState.arteTV ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'arteTV', this.checked)">
-                            <label for="arteTV_${col.id}">📺 Arte TV</label>
+                            <label for="arteTV_${col.id}">Arte TV</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="postInstagram_${col.id}" ${checklistState.postInstagram ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postInstagram', this.checked)">
-                            <label for="postInstagram_${col.id}">📱 Post Instagram</label>
+                            <label for="postInstagram_${col.id}">Post Instagram</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="postIntranet_${col.id}" ${checklistState.postIntranet ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postIntranet', this.checked)">
-                            <label for="postIntranet_${col.id}">💻 Post Intranet</label>
+                            <label for="postIntranet_${col.id}">Post Intranet</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="postWhatsapp_${col.id}" ${checklistState.postWhatsapp ? 'checked' : ''} onchange="atualizarChecklist('${col.id}', 'postWhatsapp', this.checked)">
-                            <label for="postWhatsapp_${col.id}">📱 Post WhatsApp</label>
+                            <label for="postWhatsapp_${col.id}">Post WhatsApp</label>
                         </div>
                     </div>
                     
                     <div class="postagem-texto">
-                        <label>📝 Texto da postagem:</label>
+                        <label>Texto da postagem:</label>
                         <textarea id="texto_${col.id}" placeholder="Digite aqui o texto que será publicado junto com a foto..." onchange="salvarTexto('${col.id}', this.value)">${checklistState.texto || ''}</textarea>
                     </div>
                     
                     <div class="upload-foto">
-                        <label>📸 Foto do aniversariante:</label>
+                        <label>Foto do aniversariante:</label>
                         <div class="upload-area" onclick="document.getElementById('file_${col.id}').click()">
                             <div class="upload-icon">📷</div>
                             <div class="upload-text">
@@ -2364,7 +2384,7 @@
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                        <button class="btn-success" onclick="salvarChecklist('${col.id}')">✓ Salvar Progresso</button>
+                        <button class="btn-success" onclick="salvarChecklist('${col.id}')">Salvar Progresso</button>
                     </div>
                 `;
                 
@@ -2400,10 +2420,10 @@
                 // Atualizar título se completo
                 const tituloEl = card.querySelector('.card-header h3');
                 if (tituloEl) {
-                    if (completo && !tituloEl.textContent.includes('✅')) {
-                        tituloEl.textContent = tituloEl.textContent + ' ✅';
-                    } else if (!completo && tituloEl.textContent.includes('✅')) {
-                        tituloEl.textContent = tituloEl.textContent.replace(' ✅', '');
+                    if (completo && !tituloEl.textContent.includes('✓')) {
+                        tituloEl.textContent = tituloEl.textContent + ' ✓';
+                    } else if (!completo && tituloEl.textContent.includes('✓')) {
+                        tituloEl.textContent = tituloEl.textContent.replace(' ✓', '');
                     }
                 }
             }
@@ -2493,13 +2513,13 @@
                     conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
                     conteudo += `Empresa: ${col.empresaNome || ''}\n`;
                     conteudo += `Cidade: ${col.cidade || ''}\n`;
-                    conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? '✅ COMPLETO' : '⏳ PENDENTE'}\n`;
+                    conteudo += `Status: ${checklistCompleto(checklist, 'vida') ? 'COMPLETO' : 'PENDENTE'}\n`;
                     conteudo += `\nCHECKLIST:\n`;
-                    conteudo += `✓ Arte Instagram: ${checklist.arteInstagram ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Arte TV: ${checklist.arteTV ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Post Instagram: ${checklist.postInstagram ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Post Intranet: ${checklist.postIntranet ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Post WhatsApp: ${checklist.postWhatsapp ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Arte Instagram: ${checklist.arteInstagram ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Arte TV: ${checklist.arteTV ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Post Instagram: ${checklist.postInstagram ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Post Intranet: ${checklist.postIntranet ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Post WhatsApp: ${checklist.postWhatsapp ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `\nTEXTO: ${checklist.texto || 'Não informado'}\n`;
                     conteudo += `FOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
                 }
@@ -2578,7 +2598,7 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#empresa-section .section-header h2');
             if (titulo) {
-                titulo.textContent = `🏢 Aniversários de Empresa - ${meses[mesSelecionado - 1]} 2026`;
+                titulo.textContent = `Aniversários de Empresa - ${meses[mesSelecionado - 1]} 2026`;
             }
         }
 
@@ -2687,104 +2707,104 @@
                 if (pedidoState.pizzaId) {
                     pedidoResumoHTML = `
                         <div class="pedido-pizza-resumo">
-                            <p><strong>🍕 Pizza:</strong> ${pizzaSelecionada ? pizzaSelecionada.nome : 'Selecionada'}</p>
-                            <p><strong>📅 Data:</strong> ${pedidoState.dataEntregaBR || pedidoState.dataEntrega || 'Não definida'} ${pedidoState.horarioEntrega ? 'às ' + pedidoState.horarioEntrega : ''}</p>
-                            <p><strong>📍 Local:</strong> ${pedidoState.local || col.cidade || ''}</p>
-                            ${pedidoState.enderecoCompleto ? `<p><strong>🏠 Endereço:</strong> ${pedidoState.enderecoCompleto}</p>` : ''}
-                            ${pedidoState.borda ? `<p><strong>🧀 Borda:</strong> ${pedidoState.borda.charAt(0).toUpperCase() + pedidoState.borda.slice(1)}</p>` : ''}
-                            ${pedidoState.observacoes ? `<p><strong>📝 Obs:</strong> ${pedidoState.observacoes}</p>` : ''}
+                            <p><strong>Pizza:</strong> ${pizzaSelecionada ? pizzaSelecionada.nome : 'Selecionada'}</p>
+                            <p><strong>Data:</strong> ${pedidoState.dataEntregaBR || pedidoState.dataEntrega || 'Não definida'} ${pedidoState.horarioEntrega ? 'às ' + pedidoState.horarioEntrega : ''}</p>
+                            <p><strong>Local:</strong> ${pedidoState.local || col.cidade || ''}</p>
+                            ${pedidoState.enderecoCompleto ? `<p><strong>Endereço:</strong> ${pedidoState.enderecoCompleto}</p>` : ''}
+                            ${pedidoState.borda ? `<p><strong>Borda:</strong> ${pedidoState.borda.charAt(0).toUpperCase() + pedidoState.borda.slice(1)}</p>` : ''}
+                            ${pedidoState.observacoes ? `<p><strong>Obs:</strong> ${pedidoState.observacoes}</p>` : ''}
                         </div>
                     `;
                 }
                 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3>${col.nome || ''} ${completo ? '✅' : ''}</h3>
+                        <h3>${col.nome || ''} ${completo ? '✓' : ''}</h3>
                         <span class="${dataClass}">${dataFormatada} • ${anosEmpresa} anos</span>
                     </div>
                     <div class="card-info">
                         <p><strong>Departamento:</strong> ${col.departamentoNome || ''}</p>
                         <p><strong>Empresa:</strong> ${col.empresaNome || ''}</p>
                         <p><strong>Cidade:</strong> ${col.cidade || ''}</p>
-                        ${col.cidade === 'Mongaguá' ? '<span class="alerta-mongagua">⚠️ Atenção: Entrega em Mongaguá - verificar disponibilidade</span>' : ''}
+                        ${col.cidade === 'Mongaguá' ? '<span class="alerta-mongagua">Atenção: Entrega em Mongaguá - verificar disponibilidade</span>' : ''}
                     </div>
                     
                     <div class="checklist">
                         <h4>
-                            🏆 Checklist Aniversário de Empresa
+                            Checklist Aniversário de Empresa
                             <span class="progresso-checklist ${progressoClass}">${concluidos}/${items.length}</span>
                         </h4>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_arteTrofeu_${col.id}" ${checklistState.arteTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'arteTrofeu', this.checked)">
-                            <label for="empresa_arteTrofeu_${col.id}">🏆 Arte troféu</label>
+                            <label for="empresa_arteTrofeu_${col.id}">Arte troféu</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_arteTvCorporativa_${col.id}" ${checklistState.arteTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'arteTvCorporativa', this.checked)">
-                            <label for="empresa_arteTvCorporativa_${col.id}">📺 Arte TV corporativa</label>
+                            <label for="empresa_arteTvCorporativa_${col.id}">Arte TV corporativa</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_impressaoTrofeu_${col.id}" ${checklistState.impressaoTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'impressaoTrofeu', this.checked)">
-                            <label for="empresa_impressaoTrofeu_${col.id}">🖨️ Impressão troféu</label>
+                            <label for="empresa_impressaoTrofeu_${col.id}">Impressão troféu</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_entregaPizzariaTrofeu_${col.id}" ${checklistState.entregaPizzariaTrofeu ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'entregaPizzariaTrofeu', this.checked)">
-                            <label for="empresa_entregaPizzariaTrofeu_${col.id}">🏪 Entrega pizzaria troféu com impressão</label>
+                            <label for="empresa_entregaPizzariaTrofeu_${col.id}">Entrega pizzaria troféu com impressão</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_listagemPizzaria_${col.id}" ${checklistState.listagemPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'listagemPizzaria', this.checked)">
-                            <label for="empresa_listagemPizzaria_${col.id}">📋 Listagem para pizzaria</label>
+                            <label for="empresa_listagemPizzaria_${col.id}">Listagem para pizzaria</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_escolhaSabor_${col.id}" ${checklistState.escolhaSabor ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'escolhaSabor', this.checked)">
-                            <label for="empresa_escolhaSabor_${col.id}">🍕 Escolha do sabor colaborador</label>
+                            <label for="empresa_escolhaSabor_${col.id}">Escolha do sabor colaborador</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_postagemGrupoInterno_${col.id}" ${checklistState.postagemGrupoInterno ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemGrupoInterno', this.checked)">
-                            <label for="empresa_postagemGrupoInterno_${col.id}">💬 Postagem grupo interno</label>
+                            <label for="empresa_postagemGrupoInterno_${col.id}">Postagem grupo interno</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_postagemInstagram_${col.id}" ${checklistState.postagemInstagram ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemInstagram', this.checked)">
-                            <label for="empresa_postagemInstagram_${col.id}">📱 Postagem Instagram</label>
+                            <label for="empresa_postagemInstagram_${col.id}">Postagem Instagram</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_postagemTvCorporativa_${col.id}" ${checklistState.postagemTvCorporativa ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'postagemTvCorporativa', this.checked)">
-                            <label for="empresa_postagemTvCorporativa_${col.id}">📺 Postagem TV corporativa</label>
+                            <label for="empresa_postagemTvCorporativa_${col.id}">Postagem TV corporativa</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_contatoPizzaria_${col.id}" ${checklistState.contatoPizzaria ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'contatoPizzaria', this.checked)">
-                            <label for="empresa_contatoPizzaria_${col.id}">📞 Contato com pizzaria</label>
+                            <label for="empresa_contatoPizzaria_${col.id}">Contato com pizzaria</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_passarContato_${col.id}" ${checklistState.passarContato ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'passarContato', this.checked)">
-                            <label for="empresa_passarContato_${col.id}">👤 Passar contato colaborador pizzaria</label>
+                            <label for="empresa_passarContato_${col.id}">Passar contato colaborador pizzaria</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_acompanharPedidos_${col.id}" ${checklistState.acompanharPedidos ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'acompanharPedidos', this.checked)">
-                            <label for="empresa_acompanharPedidos_${col.id}">📦 Acompanhar pedidos</label>
+                            <label for="empresa_acompanharPedidos_${col.id}">Acompanhar pedidos</label>
                         </div>
                         
                         <div class="checklist-item">
                             <input type="checkbox" id="empresa_entregaConfirmada_${col.id}" ${checklistState.entregaConfirmada ? 'checked' : ''} onchange="atualizarChecklistEmpresa('${col.id}', 'entregaConfirmada', this.checked)">
-                            <label for="empresa_entregaConfirmada_${col.id}">✅ Entrega confirmada</label>
+                            <label for="empresa_entregaConfirmada_${col.id}">Entrega confirmada</label>
                         </div>
                     </div>
                     
                     <!-- Pedido de Pizza -->
                     <div class="pedido-pizza">
                         <div class="pedido-pizza-header">
-                            <h4>🍕 Pedido de Pizza</h4>
+                            <h4>Pedido de Pizza</h4>
                             <button class="btn-toggle-pedido" onclick="togglePedidoPizza('${col.id}', this)">
                                 ${pedidoState.pizzaId ? 'Ver pedido' : 'Fazer pedido'}
                             </button>
@@ -2821,7 +2841,7 @@
                                     <option value="Peruíbe" ${pedidoState.local === 'Peruíbe' ? 'selected' : ''}>Peruíbe</option>
                                     <option value="Mongaguá" ${pedidoState.local === 'Mongaguá' ? 'selected' : ''}>Mongaguá</option>
                                 </select>
-                                ${col.cidade === 'Mongaguá' ? '<small style="color: #92400e; display: block; margin-top: 5px;">⚠️ Mongaguá - Verificar disponibilidade de entrega</small>' : ''}
+                                ${col.cidade === 'Mongaguá' ? '<small style="color: #92400e; display: block; margin-top: 5px;">Mongaguá - Verificar disponibilidade de entrega</small>' : ''}
                             </div>
                             
                             <div class="pedido-form-group">
@@ -2853,13 +2873,13 @@
                             </div>
                             
                             <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                                <button class="btn-success" onclick="salvarPedidoCompleto('${col.id}')">✓ Salvar Pedido</button>
+                                <button class="btn-success" onclick="salvarPedidoCompleto('${col.id}')">Salvar Pedido</button>
                             </div>
                         </div>
                     </div>
                     
                     <div class="upload-foto">
-                        <label>📸 Foto do aniversariante:</label>
+                        <label>Foto do aniversariante:</label>
                         <div class="upload-area" onclick="document.getElementById('empresa_file_${col.id}').click()">
                             <div class="upload-icon">📷</div>
                             <div class="upload-text">
@@ -2872,7 +2892,7 @@
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                        <button class="btn-success" onclick="salvarChecklistEmpresa('${col.id}')">✓ Salvar Progresso</button>
+                        <button class="btn-success" onclick="salvarChecklistEmpresa('${col.id}')">Salvar Progresso</button>
                     </div>
                 `;
                 
@@ -2981,10 +3001,10 @@
                 // Atualizar título se completo
                 const tituloEl = card.querySelector('.card-header h3');
                 if (tituloEl) {
-                    if (completo && !tituloEl.textContent.includes('✅')) {
-                        tituloEl.textContent = tituloEl.textContent + ' ✅';
-                    } else if (!completo && tituloEl.textContent.includes('✅')) {
-                        tituloEl.textContent = tituloEl.textContent.replace(' ✅', '');
+                    if (completo && !tituloEl.textContent.includes('✓')) {
+                        tituloEl.textContent = tituloEl.textContent + ' ✓';
+                    } else if (!completo && tituloEl.textContent.includes('✓')) {
+                        tituloEl.textContent = tituloEl.textContent.replace(' ✓', '');
                     }
                 }
             }
@@ -3067,29 +3087,29 @@
                     conteudo += `Departamento: ${col.departamentoNome || ''}\n`;
                     conteudo += `Empresa: ${col.empresaNome || ''}\n`;
                     conteudo += `Cidade: ${col.cidade || ''}\n`;
-                    conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? '✅ COMPLETO' : '⏳ PENDENTE'}\n`;
+                    conteudo += `Status: ${checklistCompleto(checklist, 'empresa') ? 'COMPLETO' : 'PENDENTE'}\n`;
                     conteudo += `\nCHECKLIST EMPRESA:\n`;
-                    conteudo += `✓ Arte troféu: ${checklist.arteTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Arte TV corporativa: ${checklist.arteTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Impressão troféu: ${checklist.impressaoTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Entrega pizzaria troféu: ${checklist.entregaPizzariaTrofeu ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Listagem para pizzaria: ${checklist.listagemPizzaria ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Escolha do sabor: ${checklist.escolhaSabor ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Postagem grupo interno: ${checklist.postagemGrupoInterno ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Postagem Instagram: ${checklist.postagemInstagram ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Postagem TV corporativa: ${checklist.postagemTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Contato com pizzaria: ${checklist.contatoPizzaria ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Passar contato: ${checklist.passarContato ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Acompanhar pedidos: ${checklist.acompanharPedidos ? 'Concluído' : 'Pendente'}\n`;
-                    conteudo += `✓ Entrega confirmada: ${checklist.entregaConfirmada ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Arte troféu: ${checklist.arteTrofeu ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Arte TV corporativa: ${checklist.arteTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Impressão troféu: ${checklist.impressaoTrofeu ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Entrega pizzaria troféu: ${checklist.entregaPizzariaTrofeu ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Listagem para pizzaria: ${checklist.listagemPizzaria ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Escolha do sabor: ${checklist.escolhaSabor ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Postagem grupo interno: ${checklist.postagemGrupoInterno ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Postagem Instagram: ${checklist.postagemInstagram ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Postagem TV corporativa: ${checklist.postagemTvCorporativa ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Contato com pizzaria: ${checklist.contatoPizzaria ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Passar contato: ${checklist.passarContato ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Acompanhar pedidos: ${checklist.acompanharPedidos ? 'Concluído' : 'Pendente'}\n`;
+                    conteudo += `Entrega confirmada: ${checklist.entregaConfirmada ? 'Concluído' : 'Pendente'}\n`;
                     conteudo += `\nPEDIDO DE PIZZA:\n`;
-                    conteudo += `✓ Pizza: ${pizza ? pizza.nome + ' - ' + pizza.descricao : 'Não selecionada'}\n`;
-                    conteudo += `✓ Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
-                    conteudo += `✓ Horário: ${pedido.horarioEntrega || 'Não definido'}\n`;
-                    conteudo += `✓ Cidade: ${pedido.local || col.cidade || ''}\n`;
-                    conteudo += `✓ Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
-                    conteudo += `✓ Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
-                    conteudo += `✓ Observações: ${pedido.observacoes || 'Nenhuma'}\n`;
+                    conteudo += `Pizza: ${pizza ? pizza.nome + ' - ' + pizza.descricao : 'Não selecionada'}\n`;
+                    conteudo += `Data entrega: ${pedido.dataEntregaBR || pedido.dataEntrega || 'Não definida'}\n`;
+                    conteudo += `Horário: ${pedido.horarioEntrega || 'Não definido'}\n`;
+                    conteudo += `Cidade: ${pedido.local || col.cidade || ''}\n`;
+                    conteudo += `Endereço: ${pedido.enderecoCompleto || 'Não informado'}\n`;
+                    conteudo += `Borda: ${pedido.borda ? pedido.borda.charAt(0).toUpperCase() + pedido.borda.slice(1) : 'Não selecionada'}\n`;
+                    conteudo += `Observações: ${pedido.observacoes || 'Nenhuma'}\n`;
                     conteudo += `\nFOTO: ${checklist.fotoNome || 'Não anexada'}\n\n`;
                 }
             });
