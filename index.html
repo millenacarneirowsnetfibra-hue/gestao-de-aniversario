@@ -2602,6 +2602,9 @@
                             </div>
                             <input type="file" id="file_${col.id}" accept="image/*" onchange="fazerUploadFoto(this, '${col.id}', 'vida')">
                         </div>
+                        <div id="progress_${col.id}" class="upload-progress">
+                            <div class="upload-progress-bar"></div>
+                        </div>
                         ${checklistState.fotoUrl ? `<img id="preview_${col.id}" class="preview-foto active" src="${checklistState.fotoUrl}" alt="Preview">` : `<img id="preview_${col.id}" class="preview-foto" src="" alt="Preview" style="display: none;">`}
                     </div>
                     
@@ -2662,101 +2665,148 @@
         }
 
         async function fazerUploadFoto(input, colaboradorId, tipo) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const filePath = `${tipo}/${colaboradorId}/${Date.now()}_${file.name}`;
-                const storageRef = storage.ref().child(filePath);
+            if (!input.files || !input.files[0]) {
+                return;
+            }
+
+            const file = input.files[0];
+            
+            // Validar tipo de arquivo
+            if (!file.type.startsWith('image/')) {
+                mostrarToast('Por favor, selecione apenas arquivos de imagem', 'error');
+                input.value = ''; // Limpar o input
+                return;
+            }
+
+            // Validar tamanho (máximo 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                mostrarToast('A imagem deve ter no máximo 5MB', 'error');
+                input.value = ''; // Limpar o input
+                return;
+            }
+
+            const filePath = `${tipo}/${colaboradorId}/${Date.now()}_${file.name}`;
+            const storageRef = storage.ref().child(filePath);
+            
+            // Mostrar barra de progresso
+            const progressBar = document.getElementById(`progress_${colaboradorId}`);
+            if (progressBar) {
+                progressBar.classList.add('active');
+            }
+            
+            mostrarLoading();
+            
+            try {
+                // Upload da foto para o Storage com monitoramento de progresso
+                const uploadTask = storageRef.put(file);
                 
-                mostrarLoading();
-                
-                try {
-                    // Mostrar barra de progresso
-                    const progressBar = document.getElementById(`progress_${colaboradorId}`);
-                    if (progressBar) {
-                        progressBar.classList.add('active');
-                    }
-                    
-                    // Upload da foto para o Storage
-                    const snapshot = await storageRef.put(file, {
-                        onUploadProgress: (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            if (progressBar) {
-                                const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                                if (progressBarInner) {
-                                    progressBarInner.style.width = progress + '%';
-                                }
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        // Progresso do upload
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        if (progressBar) {
+                            const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                            if (progressBarInner) {
+                                progressBarInner.style.width = progress + '%';
                             }
                         }
-                    });
-                    
-                    // Pegar URL da foto
-                    const downloadUrl = await snapshot.ref.getDownloadURL();
-                    
-                    // Mostrar preview
-                    const preview = document.getElementById(`preview_${colaboradorId}`);
-                    if (preview) {
-                        preview.src = downloadUrl;
-                        preview.classList.add('active');
-                    }
-                    
-                    // Salvar URL no estado
-                    if (tipo === 'vida') {
-                        const checklistKey = `checklist_${colaboradorId}`;
-                        if (!aniversariosChecklist[checklistKey]) {
-                            aniversariosChecklist[checklistKey] = {
-                                colaboradorId: colaboradorId,
-                                tipo: 'vida'
-                            };
-                        }
-                        aniversariosChecklist[checklistKey].fotoUrl = downloadUrl;
+                    },
+                    (error) => {
+                        // Erro durante o upload
+                        console.error('Erro no upload:', error);
+                        mostrarToast('Erro ao fazer upload da foto: ' + error.message, 'error');
                         
-                        // Salvar automaticamente no Firebase
-                        await db.collection('checklists').doc(checklistKey).set(aniversariosChecklist[checklistKey]);
-                    } else {
-                        const checklistKey = `empresa_${colaboradorId}`;
-                        if (!empresaChecklist[checklistKey]) {
-                            empresaChecklist[checklistKey] = {
-                                colaboradorId: colaboradorId,
-                                tipo: 'empresa',
-                                itens: itensPadraoChecklistEmpresa.map(item => ({
-                                    id: item.id,
-                                    nome: item.nome,
-                                    checked: false
-                                }))
-                            };
+                        // Esconder barra de progresso
+                        if (progressBar) {
+                            progressBar.classList.remove('active');
+                            const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                            if (progressBarInner) {
+                                progressBarInner.style.width = '0%';
+                            }
                         }
-                        empresaChecklist[checklistKey].fotoUrl = downloadUrl;
                         
-                        // Salvar automaticamente no Firebase
-                        await db.collection('checklists').doc(checklistKey).set(empresaChecklist[checklistKey]);
-                    }
-                    
-                    // Esconder barra de progresso
-                    if (progressBar) {
-                        progressBar.classList.remove('active');
-                        const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                        if (progressBarInner) {
-                            progressBarInner.style.width = '0%';
+                        // Limpar o input
+                        input.value = '';
+                    },
+                    async () => {
+                        // Upload completo
+                        try {
+                            const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
+                            
+                            // Mostrar preview
+                            const preview = document.getElementById(`preview_${colaboradorId}`);
+                            if (preview) {
+                                preview.src = downloadUrl;
+                                preview.classList.add('active');
+                            }
+                            
+                            // Salvar URL no estado
+                            if (tipo === 'vida') {
+                                const checklistKey = `checklist_${colaboradorId}`;
+                                if (!aniversariosChecklist[checklistKey]) {
+                                    aniversariosChecklist[checklistKey] = {
+                                        colaboradorId: colaboradorId,
+                                        tipo: 'vida'
+                                    };
+                                }
+                                aniversariosChecklist[checklistKey].fotoUrl = downloadUrl;
+                                
+                                // Salvar automaticamente no Firebase
+                                await db.collection('checklists').doc(checklistKey).set(aniversariosChecklist[checklistKey]);
+                            } else {
+                                const checklistKey = `empresa_${colaboradorId}`;
+                                if (!empresaChecklist[checklistKey]) {
+                                    empresaChecklist[checklistKey] = {
+                                        colaboradorId: colaboradorId,
+                                        tipo: 'empresa',
+                                        itens: itensPadraoChecklistEmpresa.map(item => ({
+                                            id: item.id,
+                                            nome: item.nome,
+                                            checked: false
+                                        }))
+                                    };
+                                }
+                                empresaChecklist[checklistKey].fotoUrl = downloadUrl;
+                                
+                                // Salvar automaticamente no Firebase
+                                await db.collection('checklists').doc(checklistKey).set(empresaChecklist[checklistKey]);
+                            }
+                            
+                            // Esconder barra de progresso
+                            if (progressBar) {
+                                progressBar.classList.remove('active');
+                                const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                                if (progressBarInner) {
+                                    progressBarInner.style.width = '0%';
+                                }
+                            }
+                            
+                            mostrarToast('Foto enviada com sucesso!');
+                        } catch (error) {
+                            console.error('Erro ao processar upload:', error);
+                            mostrarToast('Erro ao processar upload: ' + error.message, 'error');
+                        } finally {
+                            esconderLoading();
+                            // Limpar o input para permitir novo upload do mesmo arquivo
+                            input.value = '';
                         }
                     }
-                    
-                    mostrarToast('Foto enviada com sucesso!');
-                } catch (error) {
-                    console.error('Erro ao fazer upload da foto:', error);
-                    mostrarToast('Erro ao enviar foto: ' + error.message, 'error');
-                    
-                    // Esconder barra de progresso em caso de erro
-                    const progressBar = document.getElementById(`progress_${colaboradorId}`);
-                    if (progressBar) {
-                        progressBar.classList.remove('active');
-                        const progressBarInner = progressBar.querySelector('.upload-progress-bar');
-                        if (progressBarInner) {
-                            progressBarInner.style.width = '0%';
-                        }
+                );
+            } catch (error) {
+                console.error('Erro ao iniciar upload:', error);
+                mostrarToast('Erro ao iniciar upload: ' + error.message, 'error');
+                
+                // Esconder barra de progresso em caso de erro
+                if (progressBar) {
+                    progressBar.classList.remove('active');
+                    const progressBarInner = progressBar.querySelector('.upload-progress-bar');
+                    if (progressBarInner) {
+                        progressBarInner.style.width = '0%';
                     }
-                } finally {
-                    esconderLoading();
                 }
+                
+                esconderLoading();
+                input.value = '';
             }
         }
 
