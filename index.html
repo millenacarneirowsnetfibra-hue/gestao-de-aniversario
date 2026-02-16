@@ -553,7 +553,7 @@
         /* Cards de aniversariantes */
         .aniversariantes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
             gap: 20px;
         }
 
@@ -696,6 +696,9 @@
             width: 16px;
             height: 16px;
             cursor: pointer;
+        }
+
+        .checklist-item input[type="checkbox"]:checked {
             accent-color: #2563eb;
         }
 
@@ -711,17 +714,31 @@
             color: #9ca3af;
         }
 
-        .checklist-item .remove-item {
-            color: #dc2626;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0 4px;
-            opacity: 0.6;
-            transition: opacity 0.2s;
+        .checklist-item .item-actions {
+            display: flex;
+            gap: 4px;
         }
 
-        .checklist-item .remove-item:hover {
-            opacity: 1;
+        .checklist-item .item-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            color: #6b7280;
+        }
+
+        .checklist-item .item-action-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .checklist-item .item-action-btn.edit:hover {
+            color: #2563eb;
+        }
+
+        .checklist-item .item-action-btn.delete:hover {
+            color: #dc2626;
         }
 
         .add-checklist-item {
@@ -757,16 +774,21 @@
         }
 
         /* Edição de item */
+        .edit-item-container {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+        }
+
         .edit-item-input {
             flex: 1;
             padding: 4px 8px;
             border: 1px solid #2563eb;
             border-radius: 4px;
             font-size: 12px;
-            margin-right: 5px;
         }
 
-        .save-edit-btn {
+        .edit-item-btn {
             background: #059669;
             color: white;
             border: none;
@@ -775,18 +797,10 @@
             cursor: pointer;
             font-size: 11px;
             font-weight: 500;
-            margin-right: 5px;
         }
 
-        .cancel-edit-btn {
+        .edit-item-btn.cancel {
             background: #6b7280;
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 500;
         }
 
         /* Postagem texto */
@@ -819,7 +833,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             padding: 2px 5px;
             border-radius: 4px;
             color: #6b7280;
@@ -904,11 +918,140 @@
             min-height: 100px;
         }
         
+        .postagem-texto-editor textarea:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        
         .postagem-texto-editor-acoes {
             display: flex;
             gap: 8px;
             justify-content: flex-end;
             margin-top: 8px;
+        }
+
+        /* Pedido de Pizza */
+        .pedido-pizza {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            border-left: 4px solid #2563eb;
+        }
+
+        .pedido-pizza-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .pedido-pizza-header h4 {
+            font-size: 14px;
+            color: #1f2937;
+        }
+
+        .pedido-pizza-content {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .pedido-pizza-content.active {
+            display: block;
+        }
+
+        .pedido-pizza-resumo {
+            background: white;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pedido-pizza-resumo p {
+            margin: 4px 0;
+            color: #4b5563;
+        }
+
+        .pedido-pizza-resumo strong {
+            color: #1f2937;
+        }
+
+        .btn-toggle-pedido {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background 0.2s;
+        }
+
+        .btn-toggle-pedido:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        .btn-toggle-pedido.ver-menos {
+            background: #6b7280;
+        }
+
+        .pedido-form-group {
+            margin-bottom: 12px;
+        }
+
+        .pedido-form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        .pedido-form-group select, .pedido-form-group input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .pedido-form-group select:focus, .pedido-form-group input:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .borda-options {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .borda-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .borda-option input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .borda-option input[type="radio"]:checked {
+            accent-color: #2563eb;
+        }
+
+        .borda-option label {
+            font-size: 12px;
+            color: #4b5563;
+        }
+
+        .data-input-group input[type="text"] {
+            font-family: monospace;
         }
 
         /* Progresso checklist */
@@ -988,6 +1131,48 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+        }
+
+        /* Resumo financeiro */
+        .resumo-financeiro {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .resumo-valor {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .resumo-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .pizzaria-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .pizzaria-row:last-child {
+            border-bottom: none;
+        }
+
+        .pizzaria-nome {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .pizzaria-valor {
+            font-weight: 600;
+            color: #059669;
         }
 
         /* Filtros Financeiro */
@@ -1360,7 +1545,7 @@
                             <span class="seta" id="setaFiltros">▼</span>
                         </button>
 
-                        <!-- Filtros do Financeiro (inicialmente visíveis) -->
+                        <!-- Filtros do Financeiro -->
                         <div id="filtrosFinanceiro" class="filtros-financeiro">
                             <div class="filtros-grid">
                                 <div class="filtro-periodo">
@@ -1867,7 +2052,6 @@
             const mesFinalNum = parseInt(mesFinal);
             const anoFinalNum = parseInt(anoFinal);
 
-            // Validar intervalo
             if (anoInicialNum > anoFinalNum || (anoInicialNum === anoFinalNum && mesInicialNum > mesFinalNum)) {
                 mostrarToast('Período inicial deve ser anterior ao período final', 'error');
                 return;
@@ -1881,7 +2065,6 @@
                 ativo: true
             };
 
-            // Destacar visualmente que o filtro está ativo
             document.querySelectorAll('.filtro-periodo').forEach(el => {
                 el.style.borderColor = '#2563eb';
                 el.style.backgroundColor = '#f0f9ff';
@@ -1900,7 +2083,6 @@
 
             filtroPeriodoAtivo.ativo = false;
 
-            // Remover destaque visual
             document.querySelectorAll('.filtro-periodo').forEach(el => {
                 el.style.borderColor = '#e2e8f0';
                 el.style.backgroundColor = 'white';
@@ -1930,27 +2112,12 @@
             return '';
         }
 
-        // Função para verificar se uma data já passou
-        function dataPassou(dataString) {
-            const data = new Date(dataString + 'T12:00:00');
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            data.setHours(0, 0, 0, 0);
-            return data < hoje;
-        }
-
         // Função para verificar se checklist está completo
         function checklistCompleto(checklistState, tipo) {
             if (!checklistState) return false;
             
-            if (tipo === 'vida') {
-                const itens = checklistState.itens || [];
-                return itens.length > 0 && itens.every(item => item.checked);
-            } else {
-                // Para empresa, verificar todos os itens personalizados
-                const itens = checklistState.itens || [];
-                return itens.length > 0 && itens.every(item => item.checked);
-            }
+            const itens = checklistState.itens || [];
+            return itens.length > 0 && itens.every(item => item.checked);
         }
 
         // Funções para carregar dados do Firebase
@@ -2021,7 +2188,6 @@
                     ...doc.data()
                 }));
                 
-                // Ordenar por nome em ordem alfabética
                 colaboradores.sort((a, b) => {
                     const nomeA = (a.nome || '').toLowerCase();
                     const nomeB = (b.nome || '').toLowerCase();
@@ -2441,7 +2607,6 @@
                 esconderFormularioColaborador();
                 mostrarToast('Colaborador cadastrado com sucesso!');
                 
-                // Atualiza os dashboards
                 updateDashboard();
                 filtrarAniversariantesVida();
                 filtrarAniversariantesEmpresa();
@@ -2584,7 +2749,6 @@
 
         // Funções para Aniversário de Vida
         function filtrarAniversariantesVida() {
-            // Filtrar colaboradores ativos que fazem aniversário no mês de Fevereiro 2026
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataNascimento) return false;
                 
@@ -2593,13 +2757,11 @@
                 return mesNasc == mesPadrao;
             });
             
-            // Separar em duas listas: próximos e passados (considerando ano 2026)
             const proximos = [];
             const passados = [];
             
             aniversariantes.forEach(col => {
                 const dataNasc = new Date(col.dataNascimento);
-                // Criar data do aniversário em 2026
                 const dataAniversario = new Date(anoPadrao, dataNasc.getMonth(), dataNasc.getDate());
                 
                 if (dataAniversario < hoje) {
@@ -2609,26 +2771,22 @@
                 }
             });
             
-            // Ordenar próximos por data mais próxima
             proximos.sort((a, b) => {
                 const diaA = new Date(a.dataNascimento).getDate();
                 const diaB = new Date(b.dataNascimento).getDate();
                 return diaA - diaB;
             });
             
-            // Ordenar passados por data mais recente
             passados.sort((a, b) => {
                 const diaA = new Date(a.dataNascimento).getDate();
                 const diaB = new Date(b.dataNascimento).getDate();
                 return diaB - diaA;
             });
             
-            // Mostrar apenas os próximos por padrão (não mostrar passados)
             let resultado = proximos;
             
             exibirAniversariantes(resultado);
             
-            // Atualizar título com o mês
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#vida-section .section-header h2');
             if (titulo) {
@@ -2657,12 +2815,10 @@
                 const mes = (dataNasc.getMonth() + 1).toString().padStart(2, '0');
                 const dataFormatada = `${dia}/${mes}`;
                 
-                // Recuperar estado salvo do checklist, se existir
                 const checklistKey = `checklist_${col.id}`;
                 let checklistState = aniversariosChecklist[checklistKey];
                 
                 if (!checklistState) {
-                    // Inicializar com itens padrão se não existir
                     checklistState = {
                         colaboradorId: col.id,
                         tipo: 'vida',
@@ -2681,7 +2837,6 @@
                 card.className = `aniversariante-card ${jaPassou ? 'passado' : ''}`;
                 card.id = `card_${col.id}`;
                 
-                // Gerar HTML do checklist
                 const checklistHTML = gerarHTMLChecklistVida(checklistState, col.id);
                 
                 card.innerHTML = `
@@ -2701,10 +2856,10 @@
                     
                     <div class="postagem-texto">
                         <div class="postagem-texto-header">
-                            <label>Texto da postagem:</label>
+                            <label>Texto da postagem</label>
                             <div class="postagem-texto-acoes">
-                                <button class="editar" onclick="editarTexto('${col.id}')" title="Editar texto">✏️</button>
-                                <button class="excluir" onclick="excluirTexto('${col.id}')" title="Excluir texto">🗑️</button>
+                                <button class="editar" onclick="editarTexto('${col.id}')">Editar</button>
+                                <button class="excluir" onclick="excluirTexto('${col.id}')">Excluir</button>
                             </div>
                         </div>
                         
@@ -2757,7 +2912,6 @@
                 </div>
             `;
             
-            // Adicionar itens do checklist
             itens.forEach(item => {
                 const labelClass = item.checked ? 'riscado' : '';
                 html += `
@@ -2765,17 +2919,18 @@
                         <input type="checkbox" id="vida_${item.id}_${colaboradorId}" 
                             ${item.checked ? 'checked' : ''} 
                             onchange="atualizarItemChecklistVida('${colaboradorId}', '${item.id}', this.checked)">
-                        <label for="vida_${item.id}_${colaboradorId}" class="${labelClass}" id="label_${item.id}_${colaboradorId}">${item.nome}</label>
-                        <span class="remove-item" onclick="editarItemChecklistVida('${colaboradorId}', '${item.id}')" title="Editar item">✏️</span>
-                        <span class="remove-item" onclick="removerItemChecklistVida('${colaboradorId}', '${item.id}')" title="Remover item">✕</span>
+                        <label for="vida_${item.id}_${colaboradorId}" id="label_${item.id}_${colaboradorId}" class="${labelClass}">${item.nome}</label>
+                        <div class="item-actions">
+                            <button class="item-action-btn edit" onclick="editarItemChecklistVida('${colaboradorId}', '${item.id}')">Editar</button>
+                            <button class="item-action-btn delete" onclick="removerItemChecklistVida('${colaboradorId}', '${item.id}')">Excluir</button>
+                        </div>
                     </div>
                 `;
             });
             
-            // Adicionar campo para novo item
             html += `
                 <div class="add-checklist-item">
-                    <input type="text" id="novo_item_vida_${colaboradorId}" placeholder="Novo item do checklist...">
+                    <input type="text" id="novo_item_vida_${colaboradorId}" placeholder="Novo item do checklist">
                     <button onclick="adicionarItemChecklistVida('${colaboradorId}', document.getElementById('novo_item_vida_${colaboradorId}'))">Adicionar</button>
                 </div>
             `;
@@ -2784,29 +2939,25 @@
         }
 
         function editarItemChecklistVida(colaboradorId, itemId) {
-            const checklistKey = `checklist_${colaboradorId}`;
             const itemDiv = document.getElementById(`item_${itemId}_${colaboradorId}`);
-            
             if (!itemDiv) return;
             
+            const checklistKey = `checklist_${colaboradorId}`;
             const checklistState = aniversariosChecklist[checklistKey];
             const item = checklistState.itens.find(i => i.id === itemId);
             
             if (!item) return;
             
-            // Salvar conteúdo original
-            const label = document.getElementById(`label_${itemId}_${colaboradorId}`);
-            const nomeOriginal = item.nome;
-            
-            // Criar campo de edição
             itemDiv.innerHTML = `
-                <input type="text" id="edit_${itemId}_${colaboradorId}" class="edit-item-input" value="${item.nome}">
-                <button class="save-edit-btn" onclick="salvarEdicaoItemChecklistVida('${colaboradorId}', '${itemId}', this)">Salvar</button>
-                <button class="cancel-edit-btn" onclick="cancelarEdicaoItemChecklistVida('${colaboradorId}', '${itemId}', '${nomeOriginal}')">Cancelar</button>
+                <div class="edit-item-container">
+                    <input type="text" id="edit_${itemId}_${colaboradorId}" class="edit-item-input" value="${item.nome}">
+                    <button class="edit-item-btn" onclick="salvarEdicaoItemChecklistVida('${colaboradorId}', '${itemId}')">Salvar</button>
+                    <button class="edit-item-btn cancel" onclick="cancelarEdicaoItemChecklistVida('${colaboradorId}', '${itemId}')">Cancelar</button>
+                </div>
             `;
         }
 
-        function salvarEdicaoItemChecklistVida(colaboradorId, itemId, btn) {
+        function salvarEdicaoItemChecklistVida(colaboradorId, itemId) {
             const input = document.getElementById(`edit_${itemId}_${colaboradorId}`);
             const novoNome = input.value.trim();
             
@@ -2822,7 +2973,6 @@
             if (item) {
                 item.nome = novoNome;
                 
-                // Recarregar o card
                 const card = document.getElementById(`card_${colaboradorId}`);
                 if (card) {
                     const checklistDiv = card.querySelector('.checklist');
@@ -2831,16 +2981,15 @@
                     }
                 }
                 
-                // Salvar automaticamente
                 salvarChecklist(colaboradorId);
+                mostrarToast('Item atualizado com sucesso!');
             }
         }
 
-        function cancelarEdicaoItemChecklistVida(colaboradorId, itemId, nomeOriginal) {
+        function cancelarEdicaoItemChecklistVida(colaboradorId, itemId) {
             const checklistKey = `checklist_${colaboradorId}`;
             const checklistState = aniversariosChecklist[checklistKey];
             
-            // Recarregar o card
             const card = document.getElementById(`card_${colaboradorId}`);
             if (card) {
                 const checklistDiv = card.querySelector('.checklist');
@@ -2866,20 +3015,16 @@
                 };
             }
             
-            // Gerar ID único para o novo item
             const novoId = 'item_vida_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             
-            // Adicionar novo item
             aniversariosChecklist[checklistKey].itens.push({
                 id: novoId,
                 nome: input.value.trim(),
                 checked: false
             });
             
-            // Limpar input
             input.value = '';
             
-            // Recarregar o card
             const card = document.getElementById(`card_${colaboradorId}`);
             if (card) {
                 const checklistDiv = card.querySelector('.checklist');
@@ -2888,8 +3033,8 @@
                 }
             }
             
-            // Salvar automaticamente
             salvarChecklist(colaboradorId);
+            mostrarToast('Item adicionado com sucesso!');
         }
 
         function removerItemChecklistVida(colaboradorId, itemId) {
@@ -2897,10 +3042,8 @@
             
             const checklistKey = `checklist_${colaboradorId}`;
             if (aniversariosChecklist[checklistKey] && aniversariosChecklist[checklistKey].itens) {
-                // Filtrar para remover o item
                 aniversariosChecklist[checklistKey].itens = aniversariosChecklist[checklistKey].itens.filter(item => item.id !== itemId);
                 
-                // Recarregar o card
                 const card = document.getElementById(`card_${colaboradorId}`);
                 if (card) {
                     const checklistDiv = card.querySelector('.checklist');
@@ -2908,12 +3051,11 @@
                         checklistDiv.innerHTML = gerarHTMLChecklistVida(aniversariosChecklist[checklistKey], colaboradorId);
                     }
                     
-                    // Atualizar progresso
                     atualizarProgressoVida(colaboradorId);
                 }
                 
-                // Salvar automaticamente
                 salvarChecklist(colaboradorId);
+                mostrarToast('Item removido com sucesso!');
             }
         }
 
@@ -2924,13 +3066,11 @@
                 if (item) {
                     item.checked = checked;
                     
-                    // Atualizar estilo da label
                     const label = document.getElementById(`label_${itemId}_${colaboradorId}`);
                     if (label) {
                         label.className = checked ? 'riscado' : '';
                     }
                     
-                    // Atualizar progresso
                     atualizarProgressoVida(colaboradorId);
                 }
             }
@@ -2955,7 +3095,6 @@
                     progressoEl.className = `progresso-checklist ${progressoClass}`;
                 }
                 
-                // Atualizar título se completo
                 const tituloEl = card.querySelector('.card-header h3');
                 if (tituloEl) {
                     if (completo && !tituloEl.textContent.includes('✓')) {
@@ -2987,8 +3126,8 @@
                 document.getElementById(`btn_ver_mais_${colaboradorId}`).style.display = 'none';
                 document.getElementById(`texto_editor_${colaboradorId}`).classList.remove('active');
                 
-                // Salvar automaticamente
                 salvarChecklist(colaboradorId);
+                mostrarToast('Texto excluído com sucesso!');
             }
         }
 
@@ -3009,7 +3148,6 @@
             }
             aniversariosChecklist[checklistKey].texto = texto;
             
-            // Atualizar visualização
             const visualizacao = document.getElementById(`texto_visualizacao_${colaboradorId}`);
             visualizacao.textContent = texto || 'Nenhum texto cadastrado.';
             
@@ -3017,8 +3155,8 @@
             document.getElementById(`btn_ver_mais_${colaboradorId}`).style.display = texto ? 'block' : 'none';
             document.getElementById(`texto_editor_${colaboradorId}`).classList.remove('active');
             
-            // Salvar automaticamente
             salvarChecklist(colaboradorId);
+            mostrarToast('Texto salvo com sucesso!');
         }
 
         function cancelarEdicaoTexto(colaboradorId) {
@@ -3047,7 +3185,6 @@
         }
 
         async function salvarChecklist(colaboradorId) {
-            // Verificar se já está salvando
             if (_savingChecklist) {
                 console.log('Já está salvando, ignorando...');
                 return;
@@ -3106,7 +3243,6 @@
                 }
             });
             
-            // Criar arquivo para download
             const blob = new Blob([conteudo], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -3118,7 +3254,6 @@
 
         // Funções para Aniversário de Empresa
         function filtrarAniversariantesEmpresa() {
-            // Filtrar colaboradores ativos que fazem aniversário de empresa no mês de Fevereiro 2026
             let aniversariantes = colaboradores.filter(col => {
                 if (col.status !== 'Ativo' || !col.dataAdmissao) return false;
                 
@@ -3127,13 +3262,11 @@
                 return mesAdm == mesPadrao;
             });
             
-            // Separar em duas listas: próximos e passados (considerando ano 2026)
             const proximos = [];
             const passados = [];
             
             aniversariantes.forEach(col => {
                 const dataAdm = new Date(col.dataAdmissao);
-                // Criar data do aniversário em 2026
                 const dataAniversario = new Date(anoPadrao, dataAdm.getMonth(), dataAdm.getDate());
                 
                 if (dataAniversario < hoje) {
@@ -3143,26 +3276,22 @@
                 }
             });
             
-            // Ordenar próximos por data mais próxima
             proximos.sort((a, b) => {
                 const diaA = new Date(a.dataAdmissao).getDate();
                 const diaB = new Date(b.dataAdmissao).getDate();
                 return diaA - diaB;
             });
             
-            // Ordenar passados por data mais recente
             passados.sort((a, b) => {
                 const diaA = new Date(a.dataAdmissao).getDate();
                 const diaB = new Date(b.dataAdmissao).getDate();
                 return diaB - diaA;
             });
             
-            // Mostrar apenas os próximos por padrão (não mostrar passados)
             let resultado = proximos;
             
             exibirAniversariantesEmpresa(resultado);
             
-            // Atualizar título com o mês
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const titulo = document.querySelector('#empresa-section .section-header h2');
             if (titulo) {
@@ -3170,87 +3299,182 @@
             }
         }
 
-        function togglePedidoPizza(colaboradorId, botao) {
-            const pedidoDiv = document.getElementById(`pedido_${colaboradorId}`);
+        function exibirAniversariantesEmpresa(aniversariantes) {
+            const container = document.getElementById('aniversariantesEmpresaContainer');
             
-            if (pedidoDiv) {
-                if (pedidoDiv.classList.contains('active')) {
-                    pedidoDiv.classList.remove('active');
-                    botao.textContent = 'Ver pedido';
-                    botao.classList.remove('ver-menos');
-                } else {
-                    pedidoDiv.classList.add('active');
-                    botao.textContent = 'Ver menos';
-                    botao.classList.add('ver-menos');
-                }
+            if (!container) return;
+            
+            if (aniversariantes.length === 0) {
+                container.innerHTML = '<div class="empty-message">Nenhum aniversariante de empresa encontrado para este período.</div>';
+                return;
             }
-        }
-
-        function adicionarItemChecklistEmpresa(colaboradorId, input) {
-            if (!input.value.trim()) return;
             
-            const checklistKey = `empresa_${colaboradorId}`;
-            if (!empresaChecklist[checklistKey]) {
-                empresaChecklist[checklistKey] = {
-                    colaboradorId: colaboradorId,
-                    tipo: 'empresa',
-                    itens: itensPadraoChecklistEmpresa.map(item => ({
-                        id: item.id,
-                        nome: item.nome,
-                        checked: false
-                    }))
+            container.innerHTML = '';
+            
+            aniversariantes.forEach(col => {
+                const dataAdm = new Date(col.dataAdmissao);
+                const dataAniversario = new Date(anoPadrao, dataAdm.getMonth(), dataAdm.getDate());
+                const jaPassou = dataAniversario < hoje;
+                
+                const dia = dataAdm.getDate().toString().padStart(2, '0');
+                const mes = (dataAdm.getMonth() + 1).toString().padStart(2, '0');
+                const dataFormatada = `${dia}/${mes}`;
+                
+                const anosEmpresa = anoPadrao - dataAdm.getFullYear();
+                
+                const checklistKey = `empresa_${col.id}`;
+                let checklistState = empresaChecklist[checklistKey];
+                
+                if (!checklistState) {
+                    checklistState = {
+                        colaboradorId: col.id,
+                        tipo: 'empresa',
+                        itens: itensPadraoChecklistEmpresa.map(item => ({
+                            id: item.id,
+                            nome: item.nome,
+                            checked: false
+                        }))
+                    };
+                    empresaChecklist[checklistKey] = checklistState;
+                }
+                
+                const completo = checklistCompleto(checklistState, 'empresa');
+                
+                const pedidoKey = `pedido_empresa_${col.id}`;
+                let pedidoState = pedidosPizzaEmpresa[pedidoKey] || {
+                    pizzaId: '',
+                    dataEntrega: '',
+                    dataEntregaBR: '',
+                    horarioEntrega: '',
+                    local: col.cidade || '',
+                    enderecoCompleto: '',
+                    borda: '',
+                    observacoes: ''
                 };
-            }
-            
-            // Gerar ID único para o novo item
-            const novoId = 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            
-            // Adicionar novo item
-            empresaChecklist[checklistKey].itens.push({
-                id: novoId,
-                nome: input.value.trim(),
-                checked: false
-            });
-            
-            // Limpar input
-            input.value = '';
-            
-            // Recarregar o card
-            const card = document.getElementById(`empresa_card_${colaboradorId}`);
-            if (card) {
-                const checklistDiv = card.querySelector('.checklist');
-                if (checklistDiv) {
-                    checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
-                }
-            }
-            
-            // Salvar automaticamente
-            salvarChecklistEmpresa(colaboradorId);
-        }
-
-        function removerItemChecklistEmpresa(colaboradorId, itemId) {
-            if (!confirm('Tem certeza que deseja remover este item do checklist?')) return;
-            
-            const checklistKey = `empresa_${colaboradorId}`;
-            if (empresaChecklist[checklistKey] && empresaChecklist[checklistKey].itens) {
-                // Filtrar para remover o item
-                empresaChecklist[checklistKey].itens = empresaChecklist[checklistKey].itens.filter(item => item.id !== itemId);
                 
-                // Recarregar o card
-                const card = document.getElementById(`empresa_card_${colaboradorId}`);
-                if (card) {
-                    const checklistDiv = card.querySelector('.checklist');
-                    if (checklistDiv) {
-                        checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
-                    }
+                if (pedidoState.dataEntregaBR) {
+                    pedidoState.dataEntrega = dataBRparaISO(pedidoState.dataEntregaBR);
+                }
+                
+                const pizzaSelecionada = pizzas.find(p => p.id == pedidoState.pizzaId);
+                
+                const card = document.createElement('div');
+                card.className = `aniversariante-card ${jaPassou ? 'passado' : ''}`;
+                card.id = `empresa_card_${col.id}`;
+                
+                const dataClass = jaPassou ? 'data-passado' : 'data-empresa';
+                
+                let pedidoResumoHTML = '';
+                if (pedidoState.pizzaId) {
+                    pedidoResumoHTML = `
+                        <div class="pedido-pizza-resumo">
+                            <p><strong>Pizza:</strong> ${pizzaSelecionada ? pizzaSelecionada.nome : 'Selecionada'}</p>
+                            <p><strong>Pizzaria:</strong> ${pizzaSelecionada ? pizzaSelecionada.pizzaria : ''}</p>
+                            <p><strong>Data:</strong> ${pedidoState.dataEntregaBR || pedidoState.dataEntrega || 'Não definida'} ${pedidoState.horarioEntrega ? 'às ' + pedidoState.horarioEntrega : ''}</p>
+                            <p><strong>Local:</strong> ${pedidoState.local || col.cidade || ''}</p>
+                            ${pedidoState.enderecoCompleto ? `<p><strong>Endereço:</strong> ${pedidoState.enderecoCompleto}</p>` : ''}
+                            ${pedidoState.borda ? `<p><strong>Borda:</strong> ${pedidoState.borda.charAt(0).toUpperCase() + pedidoState.borda.slice(1)}</p>` : ''}
+                            ${pedidoState.observacoes ? `<p><strong>Obs:</strong> ${pedidoState.observacoes}</p>` : ''}
+                        </div>
+                    `;
+                }
+                
+                const checklistHTML = gerarHTMLChecklistEmpresa(checklistState, col.id);
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3>${col.nome || ''} ${completo ? '✓' : ''}</h3>
+                        <span class="${dataClass}">${dataFormatada} • ${anosEmpresa} anos</span>
+                    </div>
+                    <div class="card-info">
+                        <p><strong>Departamento:</strong> ${col.departamentoNome || ''}</p>
+                        <p><strong>Empresa:</strong> ${col.empresaNome || ''}</p>
+                        <p><strong>Cidade:</strong> ${col.cidade || ''}</p>
+                        ${col.cidade === 'Mongaguá' ? '<span class="alerta-mongagua">Atenção: Entrega em Mongaguá - verificar disponibilidade</span>' : ''}
+                    </div>
                     
-                    // Atualizar progresso
-                    atualizarProgressoEmpresa(colaboradorId);
-                }
+                    <div class="checklist">
+                        ${checklistHTML}
+                    </div>
+                    
+                    <div class="pedido-pizza">
+                        <div class="pedido-pizza-header">
+                            <h4>Pedido de Pizza</h4>
+                            <button class="btn-toggle-pedido" onclick="togglePedidoPizza('${col.id}', this)">
+                                ${pedidoState.pizzaId ? 'Ver pedido' : 'Fazer pedido'}
+                            </button>
+                        </div>
+                        
+                        ${pedidoResumoHTML}
+                        
+                        <div id="pedido_${col.id}" class="pedido-pizza-content">
+                            <div class="pedido-form-group">
+                                <label>Escolha a pizza</label>
+                                <select id="pizza_select_${col.id}" onchange="salvarPedidoPizza('${col.id}', 'pizzaId', this.value)">
+                                    <option value="">Selecione...</option>
+                                    ${pizzas.map(p => `<option value="${p.id}" ${pedidoState.pizzaId == p.id ? 'selected' : ''}>${p.nome} - ${p.pizzaria}</option>`).join('')}
+                                </select>
+                            </div>
+                            
+                            <div class="pedido-form-group">
+                                <label>Data de entrega (DD/MM/AAAA)</label>
+                                <div class="data-input-group">
+                                    <input type="text" id="data_entrega_${col.id}" placeholder="DD/MM/AAAA" value="${pedidoState.dataEntregaBR || ''}" onchange="salvarDataEntregaBR('${col.id}', this.value)" maxlength="10">
+                                </div>
+                            </div>
+                            
+                            <div class="pedido-form-group">
+                                <label>Horário de entrega</label>
+                                <input type="time" id="horario_entrega_${col.id}" value="${pedidoState.horarioEntrega || ''}" onchange="salvarPedidoPizza('${col.id}', 'horarioEntrega', this.value)">
+                            </div>
+                            
+                            <div class="pedido-form-group">
+                                <label>Cidade de entrega</label>
+                                <select id="cidade_entrega_${col.id}" onchange="salvarPedidoPizza('${col.id}', 'local', this.value)">
+                                    <option value="Itanhaém" ${pedidoState.local === 'Itanhaém' ? 'selected' : ''}>Itanhaém</option>
+                                    <option value="Peruíbe" ${pedidoState.local === 'Peruíbe' ? 'selected' : ''}>Peruíbe</option>
+                                    <option value="Mongaguá" ${pedidoState.local === 'Mongaguá' ? 'selected' : ''}>Mongaguá</option>
+                                </select>
+                                ${col.cidade === 'Mongaguá' ? '<small style="color: #92400e; display: block; margin-top: 5px;">Mongaguá - Verificar disponibilidade de entrega</small>' : ''}
+                            </div>
+                            
+                            <div class="pedido-form-group">
+                                <label>Endereço completo</label>
+                                <input type="text" id="endereco_${col.id}" placeholder="Rua, número, complemento" value="${pedidoState.enderecoCompleto || ''}" onchange="salvarPedidoPizza('${col.id}', 'enderecoCompleto', this.value)">
+                            </div>
+                            
+                            <div class="pedido-form-group">
+                                <label>Borda recheada</label>
+                                <div class="borda-options">
+                                    <div class="borda-option">
+                                        <input type="radio" name="borda_${col.id}" id="borda_cheddar_${col.id}" value="cheddar" ${pedidoState.borda === 'cheddar' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
+                                        <label for="borda_cheddar_${col.id}">Cheddar</label>
+                                    </div>
+                                    <div class="borda-option">
+                                        <input type="radio" name="borda_${col.id}" id="borda_requeijao_${col.id}" value="requeijao" ${pedidoState.borda === 'requeijao' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
+                                        <label for="borda_requeijao_${col.id}">Requeijão</label>
+                                    </div>
+                                    <div class="borda-option">
+                                        <input type="radio" name="borda_${col.id}" id="borda_catupiry_${col.id}" value="catupiry" ${pedidoState.borda === 'catupiry' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
+                                        <label for="borda_catupiry_${col.id}">Catupiry</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pedido-form-group">
+                                <label>Observações</label>
+                                <textarea id="observacoes_${col.id}" placeholder="Observações adicionais" onchange="salvarPedidoPizza('${col.id}', 'observacoes', this.value)">${pedidoState.observacoes || ''}</textarea>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                                <button class="btn-success" onclick="salvarPedidoCompleto('${col.id}')">Salvar Pedido</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 
-                // Salvar automaticamente
-                salvarChecklistEmpresa(colaboradorId);
-            }
+                container.appendChild(card);
+            });
         }
 
         function gerarHTMLChecklistEmpresa(checklistState, colaboradorId) {
@@ -3276,28 +3500,151 @@
                 </div>
             `;
             
-            // Adicionar itens do checklist
             itens.forEach(item => {
+                const labelClass = item.checked ? 'riscado' : '';
                 html += `
-                    <div class="checklist-item">
+                    <div class="checklist-item" id="empresa_item_${item.id}_${colaboradorId}">
                         <input type="checkbox" id="empresa_${item.id}_${colaboradorId}" 
                             ${item.checked ? 'checked' : ''} 
                             onchange="atualizarItemChecklistEmpresa('${colaboradorId}', '${item.id}', this.checked)">
-                        <label for="empresa_${item.id}_${colaboradorId}">${item.nome}</label>
-                        <span class="remove-item" onclick="removerItemChecklistEmpresa('${colaboradorId}', '${item.id}')">✕</span>
+                        <label for="empresa_${item.id}_${colaboradorId}" id="empresa_label_${item.id}_${colaboradorId}" class="${labelClass}">${item.nome}</label>
+                        <div class="item-actions">
+                            <button class="item-action-btn edit" onclick="editarItemChecklistEmpresa('${colaboradorId}', '${item.id}')">Editar</button>
+                            <button class="item-action-btn delete" onclick="removerItemChecklistEmpresa('${colaboradorId}', '${item.id}')">Excluir</button>
+                        </div>
                     </div>
                 `;
             });
             
-            // Adicionar campo para novo item
             html += `
                 <div class="add-checklist-item">
-                    <input type="text" id="novo_item_${colaboradorId}" placeholder="Novo item do checklist...">
-                    <button onclick="adicionarItemChecklistEmpresa('${colaboradorId}', document.getElementById('novo_item_${colaboradorId}'))">Adicionar</button>
+                    <input type="text" id="novo_item_empresa_${colaboradorId}" placeholder="Novo item do checklist">
+                    <button onclick="adicionarItemChecklistEmpresa('${colaboradorId}', document.getElementById('novo_item_empresa_${colaboradorId}'))">Adicionar</button>
                 </div>
             `;
             
             return html;
+        }
+
+        function editarItemChecklistEmpresa(colaboradorId, itemId) {
+            const itemDiv = document.getElementById(`empresa_item_${itemId}_${colaboradorId}`);
+            if (!itemDiv) return;
+            
+            const checklistKey = `empresa_${colaboradorId}`;
+            const checklistState = empresaChecklist[checklistKey];
+            const item = checklistState.itens.find(i => i.id === itemId);
+            
+            if (!item) return;
+            
+            itemDiv.innerHTML = `
+                <div class="edit-item-container">
+                    <input type="text" id="empresa_edit_${itemId}_${colaboradorId}" class="edit-item-input" value="${item.nome}">
+                    <button class="edit-item-btn" onclick="salvarEdicaoItemChecklistEmpresa('${colaboradorId}', '${itemId}')">Salvar</button>
+                    <button class="edit-item-btn cancel" onclick="cancelarEdicaoItemChecklistEmpresa('${colaboradorId}', '${itemId}')">Cancelar</button>
+                </div>
+            `;
+        }
+
+        function salvarEdicaoItemChecklistEmpresa(colaboradorId, itemId) {
+            const input = document.getElementById(`empresa_edit_${itemId}_${colaboradorId}`);
+            const novoNome = input.value.trim();
+            
+            if (!novoNome) {
+                mostrarToast('O nome do item não pode estar vazio', 'error');
+                return;
+            }
+            
+            const checklistKey = `empresa_${colaboradorId}`;
+            const checklistState = empresaChecklist[checklistKey];
+            const item = checklistState.itens.find(i => i.id === itemId);
+            
+            if (item) {
+                item.nome = novoNome;
+                
+                const card = document.getElementById(`empresa_card_${colaboradorId}`);
+                if (card) {
+                    const checklistDiv = card.querySelector('.checklist');
+                    if (checklistDiv) {
+                        checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(checklistState, colaboradorId);
+                    }
+                }
+                
+                salvarChecklistEmpresa(colaboradorId);
+                mostrarToast('Item atualizado com sucesso!');
+            }
+        }
+
+        function cancelarEdicaoItemChecklistEmpresa(colaboradorId, itemId) {
+            const checklistKey = `empresa_${colaboradorId}`;
+            const checklistState = empresaChecklist[checklistKey];
+            
+            const card = document.getElementById(`empresa_card_${colaboradorId}`);
+            if (card) {
+                const checklistDiv = card.querySelector('.checklist');
+                if (checklistDiv) {
+                    checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(checklistState, colaboradorId);
+                }
+            }
+        }
+
+        function adicionarItemChecklistEmpresa(colaboradorId, input) {
+            if (!input.value.trim()) return;
+            
+            const checklistKey = `empresa_${colaboradorId}`;
+            if (!empresaChecklist[checklistKey]) {
+                empresaChecklist[checklistKey] = {
+                    colaboradorId: colaboradorId,
+                    tipo: 'empresa',
+                    itens: itensPadraoChecklistEmpresa.map(item => ({
+                        id: item.id,
+                        nome: item.nome,
+                        checked: false
+                    }))
+                };
+            }
+            
+            const novoId = 'item_empresa_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            empresaChecklist[checklistKey].itens.push({
+                id: novoId,
+                nome: input.value.trim(),
+                checked: false
+            });
+            
+            input.value = '';
+            
+            const card = document.getElementById(`empresa_card_${colaboradorId}`);
+            if (card) {
+                const checklistDiv = card.querySelector('.checklist');
+                if (checklistDiv) {
+                    checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
+                }
+            }
+            
+            salvarChecklistEmpresa(colaboradorId);
+            mostrarToast('Item adicionado com sucesso!');
+        }
+
+        function removerItemChecklistEmpresa(colaboradorId, itemId) {
+            if (!confirm('Tem certeza que deseja remover este item do checklist?')) return;
+            
+            const checklistKey = `empresa_${colaboradorId}`;
+            if (empresaChecklist[checklistKey] && empresaChecklist[checklistKey].itens) {
+                empresaChecklist[checklistKey].itens = empresaChecklist[checklistKey].itens.filter(item => item.id !== itemId);
+                
+                const card = document.getElementById(`empresa_card_${colaboradorId}`);
+                if (card) {
+                    const checklistDiv = card.querySelector('.checklist');
+                    if (checklistDiv) {
+                        checklistDiv.innerHTML = gerarHTMLChecklistEmpresa(empresaChecklist[checklistKey], colaboradorId);
+                    }
+                    
+                    atualizarProgressoEmpresa(colaboradorId);
+                }
+                
+                salvarChecklistEmpresa(colaboradorId);
+                mostrarToast('Item removido com sucesso!');
+            }
         }
 
         function atualizarItemChecklistEmpresa(colaboradorId, itemId, checked) {
@@ -3307,7 +3654,11 @@
                 if (item) {
                     item.checked = checked;
                     
-                    // Atualizar progresso
+                    const label = document.getElementById(`empresa_label_${itemId}_${colaboradorId}`);
+                    if (label) {
+                        label.className = checked ? 'riscado' : '';
+                    }
+                    
                     atualizarProgressoEmpresa(colaboradorId);
                 }
             }
@@ -3332,7 +3683,6 @@
                     progressoEl.className = `progresso-checklist ${progressoClass}`;
                 }
                 
-                // Atualizar título se completo
                 const tituloEl = card.querySelector('.card-header h3');
                 if (tituloEl) {
                     if (completo && !tituloEl.textContent.includes('✓')) {
@@ -3344,197 +3694,23 @@
             }
         }
 
-        function exibirAniversariantesEmpresa(aniversariantes) {
-            const container = document.getElementById('aniversariantesEmpresaContainer');
+        function togglePedidoPizza(colaboradorId, botao) {
+            const pedidoDiv = document.getElementById(`pedido_${colaboradorId}`);
             
-            if (!container) return;
-            
-            if (aniversariantes.length === 0) {
-                container.innerHTML = '<div class="empty-message">Nenhum aniversariante de empresa encontrado para este período.</div>';
-                return;
+            if (pedidoDiv) {
+                if (pedidoDiv.classList.contains('active')) {
+                    pedidoDiv.classList.remove('active');
+                    botao.textContent = 'Ver pedido';
+                    botao.classList.remove('ver-menos');
+                } else {
+                    pedidoDiv.classList.add('active');
+                    botao.textContent = 'Ocultar';
+                    botao.classList.add('ver-menos');
+                }
             }
-            
-            container.innerHTML = '';
-            
-            aniversariantes.forEach(col => {
-                const dataAdm = new Date(col.dataAdmissao);
-                const dataAniversario = new Date(anoPadrao, dataAdm.getMonth(), dataAdm.getDate());
-                const jaPassou = dataAniversario < hoje;
-                
-                const dia = dataAdm.getDate().toString().padStart(2, '0');
-                const mes = (dataAdm.getMonth() + 1).toString().padStart(2, '0');
-                const dataFormatada = `${dia}/${mes}`;
-                
-                // Calcular anos de empresa
-                const anosEmpresa = anoPadrao - dataAdm.getFullYear();
-                
-                // Recuperar estado salvo do checklist de empresa, se existir
-                const checklistKey = `empresa_${col.id}`;
-                let checklistState = empresaChecklist[checklistKey];
-                
-                if (!checklistState) {
-                    // Inicializar com itens padrão se não existir
-                    checklistState = {
-                        colaboradorId: col.id,
-                        tipo: 'empresa',
-                        itens: itensPadraoChecklistEmpresa.map(item => ({
-                            id: item.id,
-                            nome: item.nome,
-                            checked: false
-                        }))
-                    };
-                    empresaChecklist[checklistKey] = checklistState;
-                }
-                
-                const completo = checklistCompleto(checklistState, 'empresa');
-                
-                // Recuperar pedido de pizza salvo
-                const pedidoKey = `pedido_empresa_${col.id}`;
-                let pedidoState = pedidosPizzaEmpresa[pedidoKey] || {
-                    pizzaId: '',
-                    dataEntrega: '',
-                    dataEntregaBR: '',
-                    horarioEntrega: '',
-                    local: col.cidade || '',
-                    enderecoCompleto: '',
-                    borda: '',
-                    observacoes: ''
-                };
-                
-                // Se tiver data em formato BR, converter para exibição
-                if (pedidoState.dataEntregaBR) {
-                    pedidoState.dataEntrega = dataBRparaISO(pedidoState.dataEntregaBR);
-                }
-                
-                // Buscar pizza selecionada
-                const pizzaSelecionada = pizzas.find(p => p.id == pedidoState.pizzaId);
-                
-                const card = document.createElement('div');
-                card.className = `aniversariante-card ${jaPassou ? 'passado' : ''}`;
-                card.id = `empresa_card_${col.id}`;
-                
-                // Definir classe da data
-                const dataClass = jaPassou ? 'data-passado' : 'data-empresa';
-                
-                // Montar HTML do pedido resumo
-                let pedidoResumoHTML = '';
-                if (pedidoState.pizzaId) {
-                    pedidoResumoHTML = `
-                        <div class="pedido-pizza-resumo">
-                            <p><strong>Pizza:</strong> ${pizzaSelecionada ? pizzaSelecionada.nome : 'Selecionada'}</p>
-                            <p><strong>Pizzaria:</strong> ${pizzaSelecionada ? pizzaSelecionada.pizzaria : ''}</p>
-                            <p><strong>Data:</strong> ${pedidoState.dataEntregaBR || pedidoState.dataEntrega || 'Não definida'} ${pedidoState.horarioEntrega ? 'às ' + pedidoState.horarioEntrega : ''}</p>
-                            <p><strong>Local:</strong> ${pedidoState.local || col.cidade || ''}</p>
-                            ${pedidoState.enderecoCompleto ? `<p><strong>Endereço:</strong> ${pedidoState.enderecoCompleto}</p>` : ''}
-                            ${pedidoState.borda ? `<p><strong>Borda:</strong> ${pedidoState.borda.charAt(0).toUpperCase() + pedidoState.borda.slice(1)}</p>` : ''}
-                            ${pedidoState.observacoes ? `<p><strong>Obs:</strong> ${pedidoState.observacoes}</p>` : ''}
-                        </div>
-                    `;
-                }
-                
-                // Gerar HTML do checklist
-                const checklistHTML = gerarHTMLChecklistEmpresa(checklistState, col.id);
-                
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3>${col.nome || ''} ${completo ? '✓' : ''}</h3>
-                        <span class="${dataClass}">${dataFormatada} • ${anosEmpresa} anos</span>
-                    </div>
-                    <div class="card-info">
-                        <p><strong>Departamento:</strong> ${col.departamentoNome || ''}</p>
-                        <p><strong>Empresa:</strong> ${col.empresaNome || ''}</p>
-                        <p><strong>Cidade:</strong> ${col.cidade || ''}</p>
-                        ${col.cidade === 'Mongaguá' ? '<span class="alerta-mongagua">Atenção: Entrega em Mongaguá - verificar disponibilidade</span>' : ''}
-                    </div>
-                    
-                    <div class="checklist">
-                        ${checklistHTML}
-                    </div>
-                    
-                    <!-- Pedido de Pizza -->
-                    <div class="pedido-pizza">
-                        <div class="pedido-pizza-header">
-                            <h4>Pedido de Pizza</h4>
-                            <button class="btn-toggle-pedido" onclick="togglePedidoPizza('${col.id}', this)">
-                                ${pedidoState.pizzaId ? 'Ver pedido' : 'Fazer pedido'}
-                            </button>
-                        </div>
-                        
-                        ${pedidoResumoHTML}
-                        
-                        <div id="pedido_${col.id}" class="pedido-pizza-content">
-                            <div class="pedido-form-group">
-                                <label>Escolha a pizza:</label>
-                                <select id="pizza_select_${col.id}" onchange="salvarPedidoPizza('${col.id}', 'pizzaId', this.value)">
-                                    <option value="">Selecione...</option>
-                                    ${pizzas.map(p => `<option value="${p.id}" ${pedidoState.pizzaId == p.id ? 'selected' : ''}>${p.nome} - ${p.pizzaria}</option>`).join('')}
-                                </select>
-                            </div>
-                            
-                            <div class="pedido-form-group">
-                                <label>Data de entrega (DD/MM/AAAA):</label>
-                                <div class="data-input-group">
-                                    <input type="text" id="data_entrega_${col.id}" placeholder="DD/MM/AAAA" value="${pedidoState.dataEntregaBR || ''}" onchange="salvarDataEntregaBR('${col.id}', this.value)" maxlength="10">
-                                </div>
-                                <small style="color: #6b7280;">Digite no formato DD/MM/AAAA</small>
-                            </div>
-                            
-                            <div class="pedido-form-group">
-                                <label>Horário de entrega:</label>
-                                <input type="time" id="horario_entrega_${col.id}" value="${pedidoState.horarioEntrega || ''}" onchange="salvarPedidoPizza('${col.id}', 'horarioEntrega', this.value)">
-                            </div>
-                            
-                            <div class="pedido-form-group">
-                                <label>Cidade de entrega:</label>
-                                <select id="cidade_entrega_${col.id}" onchange="salvarPedidoPizza('${col.id}', 'local', this.value)">
-                                    <option value="Itanhaém" ${pedidoState.local === 'Itanhaém' ? 'selected' : ''}>Itanhaém</option>
-                                    <option value="Peruíbe" ${pedidoState.local === 'Peruíbe' ? 'selected' : ''}>Peruíbe</option>
-                                    <option value="Mongaguá" ${pedidoState.local === 'Mongaguá' ? 'selected' : ''}>Mongaguá</option>
-                                </select>
-                                ${col.cidade === 'Mongaguá' ? '<small style="color: #92400e; display: block; margin-top: 5px;">Mongaguá - Verificar disponibilidade de entrega</small>' : ''}
-                            </div>
-                            
-                            <div class="pedido-form-group">
-                                <label>Endereço completo:</label>
-                                <input type="text" id="endereco_${col.id}" placeholder="Rua, número, complemento..." value="${pedidoState.enderecoCompleto || ''}" onchange="salvarPedidoPizza('${col.id}', 'enderecoCompleto', this.value)">
-                            </div>
-                            
-                            <div class="pedido-form-group">
-                                <label>Borda recheada:</label>
-                                <div class="borda-options">
-                                    <div class="borda-option">
-                                        <input type="radio" name="borda_${col.id}" id="borda_cheddar_${col.id}" value="cheddar" ${pedidoState.borda === 'cheddar' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
-                                        <label for="borda_cheddar_${col.id}">Cheddar</label>
-                                    </div>
-                                    <div class="borda-option">
-                                        <input type="radio" name="borda_${col.id}" id="borda_requeijao_${col.id}" value="requeijao" ${pedidoState.borda === 'requeijao' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
-                                        <label for="borda_requeijao_${col.id}">Requeijão</label>
-                                    </div>
-                                    <div class="borda-option">
-                                        <input type="radio" name="borda_${col.id}" id="borda_catupiry_${col.id}" value="catupiry" ${pedidoState.borda === 'catupiry' ? 'checked' : ''} onchange="salvarPedidoPizza('${col.id}', 'borda', this.value)">
-                                        <label for="borda_catupiry_${col.id}">Catupiry</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="pedido-form-group">
-                                <label>Observações:</label>
-                                <textarea id="observacoes_${col.id}" placeholder="Observações adicionais..." onchange="salvarPedidoPizza('${col.id}', 'observacoes', this.value)">${pedidoState.observacoes || ''}</textarea>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                                <button class="btn-success" onclick="salvarPedidoCompleto('${col.id}')">Salvar Pedido</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                container.appendChild(card);
-            });
         }
 
         function salvarDataEntregaBR(colaboradorId, dataBR) {
-            // Validar formato DD/MM/AAAA
             const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
             const match = dataBR.match(regex);
             
@@ -3543,7 +3719,6 @@
                 const mes = match[2];
                 const ano = match[3];
                 
-                // Validar data
                 const dataObj = new Date(ano, mes - 1, dia);
                 if (dataObj.getDate() == dia && dataObj.getMonth() == mes - 1 && dataObj.getFullYear() == ano) {
                     const dataISO = `${ano}-${mes}-${dia}`;
@@ -3576,7 +3751,6 @@
                 try {
                     await db.collection('pedidos').doc(pedidoKey).set(pedidoData);
                     
-                    // Fechar o formulário de pedido
                     const pedidoDiv = document.getElementById(`pedido_${colaboradorId}`);
                     const botao = document.querySelector(`#empresa_card_${colaboradorId} .btn-toggle-pedido`);
                     
@@ -3588,10 +3762,8 @@
                         }
                     }
                     
-                    // Recarregar o card para mostrar o resumo
                     filtrarAniversariantesEmpresa();
                     
-                    // Atualizar controle financeiro
                     await carregarPedidos();
                     atualizarFinanceiro();
                     
@@ -3606,7 +3778,6 @@
         }
 
         async function salvarChecklistEmpresa(colaboradorId) {
-            // Verificar se já está salvando
             if (_savingEmpresaChecklist) {
                 console.log('Já está salvando checklist empresa, ignorando...');
                 return;
@@ -3675,7 +3846,6 @@
                 }
             });
             
-            // Criar arquivo para download
             const blob = new Blob([conteudo], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -3687,19 +3857,16 @@
 
         // Funções do Controle Financeiro
         function atualizarFinanceiro() {
-            // Filtrar pedidos com base no período selecionado
             const pedidosFiltrados = [];
             const gastosPorPizzaria = {};
             const pizzasCount = {};
             
             Object.entries(pedidosPizzaEmpresa).forEach(([key, pedido]) => {
-                // Verificar se tem pizza selecionada
                 if (!pedido.pizzaId) return;
                 
                 const pizza = pizzas.find(p => p.id == pedido.pizzaId);
                 if (!pizza) return;
                 
-                // Verificar data
                 let incluirPedido = true;
                 
                 if (pedido.dataEntregaBR && filtroPeriodoAtivo.ativo) {
@@ -3708,7 +3875,6 @@
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        // Verificar se está dentro do período
                         const dataPedido = new Date(anoPedido, mesPedido - 1, 1);
                         const dataInicial = new Date(filtroPeriodoAtivo.anoInicial, filtroPeriodoAtivo.mesInicial - 1, 1);
                         const dataFinal = new Date(filtroPeriodoAtivo.anoFinal, filtroPeriodoAtivo.mesFinal - 1, 1);
@@ -3717,16 +3883,13 @@
                             incluirPedido = false;
                         }
                     } else {
-                        // Data inválida - não incluir
                         incluirPedido = false;
                     }
                 } else if (filtroPeriodoAtivo.ativo) {
-                    // Sem data definida e filtro ativo - não incluir
                     incluirPedido = false;
                 }
                 
                 if (incluirPedido) {
-                    // Adicionar aos pedidos filtrados
                     pedidosFiltrados.push({
                         ...pedido,
                         pizzaNome: pizza.nome,
@@ -3735,16 +3898,13 @@
                         colaboradorNome: colaboradores.find(c => c.id === pedido.colaboradorId)?.nome || 'Desconhecido'
                     });
                     
-                    // Calcular gastos por pizzaria
                     const pizzariaNome = pizza.pizzaria;
                     gastosPorPizzaria[pizzariaNome] = (gastosPorPizzaria[pizzariaNome] || 0) + pizza.valor;
                     
-                    // Contar pizzas
                     pizzasCount[pizza.nome] = (pizzasCount[pizza.nome] || 0) + 1;
                 }
             });
             
-            // Atualizar cards
             const totalGasto = Object.values(gastosPorPizzaria).reduce((a, b) => a + b, 0);
             document.getElementById('gastoTotal').textContent = `R$ ${totalGasto.toFixed(2)}`;
             document.getElementById('totalPedidos').textContent = `${pedidosFiltrados.length} pedidos`;
@@ -3753,7 +3913,6 @@
             const mediaPedido = pedidosFiltrados.length > 0 ? totalGasto / pedidosFiltrados.length : 0;
             document.getElementById('mediaPedido').textContent = `R$ ${mediaPedido.toFixed(2)}`;
             
-            // Maior gasto
             let maiorGasto = 0;
             let maiorGastoPizzaria = '-';
             Object.entries(gastosPorPizzaria).forEach(([pizzaria, valor]) => {
@@ -3765,7 +3924,6 @@
             document.getElementById('maiorGasto').textContent = `R$ ${maiorGasto.toFixed(2)}`;
             document.getElementById('maiorGastoPizzaria').textContent = maiorGastoPizzaria;
             
-            // Gráfico de gastos por pizzaria
             let graficoHTML = '';
             Object.entries(gastosPorPizzaria)
                 .sort((a, b) => b[1] - a[1])
@@ -3787,10 +3945,8 @@
             }
             document.getElementById('graficoPizzarias').innerHTML = graficoHTML;
             
-            // Gráfico de evolução mensal
             const evolucaoMensal = {};
             
-            // Se filtro ativo, mostrar apenas meses do período
             if (filtroPeriodoAtivo.ativo) {
                 for (let ano = filtroPeriodoAtivo.anoInicial; ano <= filtroPeriodoAtivo.anoFinal; ano++) {
                     const mesInicio = (ano === filtroPeriodoAtivo.anoInicial) ? filtroPeriodoAtivo.mesInicial : 1;
@@ -3806,7 +3962,6 @@
                 }
             }
             
-            // Calcular valores para evolução mensal
             Object.entries(pedidosPizzaEmpresa).forEach(([key, pedido]) => {
                 if (!pedido.pizzaId) return;
                 
@@ -3819,7 +3974,6 @@
                         const mesPedido = parseInt(partes[1]);
                         const anoPedido = parseInt(partes[2]);
                         
-                        // Verificar se deve incluir
                         let incluir = true;
                         
                         if (filtroPeriodoAtivo.ativo) {
@@ -3863,7 +4017,6 @@
             }
             document.getElementById('graficoEvolucao').innerHTML = evolucaoHTML;
             
-            // Top 5 pizzas mais pedidas
             const topPizzas = Object.entries(pizzasCount)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
@@ -3890,7 +4043,6 @@
             }
             document.getElementById('topPizzas').innerHTML = topPizzasHTML;
             
-            // Tabela de pedidos
             const tbody = document.getElementById('corpoTabelaPedidos');
             tbody.innerHTML = '';
             
@@ -3927,7 +4079,6 @@
                 section.classList.add('active');
             }
             
-            // Marcar o item do menu como ativo
             document.querySelectorAll('.nav-item').forEach(item => {
                 const text = item.textContent || '';
                 if (sectionId === 'dashboard' && text.includes('Dashboard')) {
@@ -3951,7 +4102,6 @@
                 }
             });
             
-            // Atualizar dados quando mudar de seção
             if (sectionId === 'vida') {
                 filtrarAniversariantesVida();
             } else if (sectionId === 'empresa') {
@@ -3982,7 +4132,6 @@
                 c.status === 'Ativo' && c.cidade && c.cidade !== 'Itanhaém' && c.cidade !== 'Peruíbe' && c.cidade !== 'Mongaguá'
             );
             
-            // Total de pizzas cadastradas
             const totalPizzas = pizzas.length;
             
             const totalVidaEl = document.getElementById('totalVida');
@@ -3998,7 +4147,6 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
-            // Verificar se já inicializou
             if (_initialized) {
                 console.log('Sistema já inicializado, ignorando...');
                 return;
@@ -4010,7 +4158,6 @@
             try {
                 console.log('Iniciando carregamento dos dados...');
                 
-                // Carregar dados em paralelo
                 await Promise.all([
                     carregarEmpresas().catch(err => {
                         console.error('Erro ao carregar empresas:', err);
@@ -4040,10 +4187,8 @@
                 
                 console.log('Todos os dados carregados!');
                 
-                // Atualizar interface
                 updateDashboard();
                 
-                // Mostrar dashboard por padrão
                 showSection('dashboard');
                 
                 mostrarToast('Dados carregados com sucesso!', 'success');
