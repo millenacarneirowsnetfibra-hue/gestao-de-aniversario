@@ -2288,6 +2288,7 @@
                         </div>
                     </div>
                     
+                    <!-- Campo para Pizza Inteira -->
                     <div class="form-group pizza-fields pizza-inteira ${tipoPizza === 'inteira' ? 'active' : ''}">
                         <label>Pizza</label>
                         <select id="editPizzaSelect1">
@@ -2296,6 +2297,7 @@
                         </select>
                     </div>
                     
+                    <!-- Campos para Meia a Meia -->
                     <div class="form-group pizza-fields pizza-meia ${tipoPizza === 'meia' ? 'active' : ''}">
                         <label>1ª Metade</label>
                         <select id="editPizzaSelect1">
@@ -4168,7 +4170,7 @@
                         <tbody id="pedidosTableBody">
                             <tr>
                                 <td colspan="7" style="text-align: center; color: var(--secondary);">
-                                    Nenhum pedido encontrado no período
+                                    Nenhum pedido encontrado
                                 </td>
                             </tr>
                         </tbody>
@@ -4236,6 +4238,7 @@
                 
                 valoresAbertos = valoresAbertosAtualizados;
                 
+                // Calcular totais
                 let totalGasto = 0;
                 let totalPedidos = 0;
                 let pizzarias = new Set();
@@ -4393,6 +4396,7 @@
                 if (tbody) {
                     tbody.innerHTML = '';
                     
+                    // Filtrar apenas pedidos que têm colaborador válido
                     const pedidosComColaborador = pedidos.filter(p => colaboradoresMap[p.colaboradorId]);
                     
                     if (pedidosComColaborador.length > 0) {
@@ -4458,7 +4462,7 @@
             }
         }
 
-        // Load Cadastros Gerais (mantido igual)
+        // Load Cadastros Gerais
         async function loadCadastros(container) {
             await loadEmpresasDropDowns();
             await loadPizzasList();
