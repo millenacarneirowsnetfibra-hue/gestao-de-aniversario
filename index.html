@@ -1414,6 +1414,8 @@
         async function loadVida(container) {
             await loadEmpresasDropDowns();
             
+            const currentMonth = new Date().getMonth() + 1;
+            
             container.innerHTML = `
                 <div class="filters-container" id="vidaFilters">
                     <div class="filters-header" onclick="toggleFilters('vida')">
@@ -1473,10 +1475,10 @@
             if (filtroAno) filtroAno.addEventListener('input', () => filterVida());
             if (filtroStatus) filtroStatus.addEventListener('change', () => filterVida());
 
-            await loadVidaCards();
+            await loadVidaCards(currentMonth);
         }
 
-        async function loadVidaCards() {
+        async function loadVidaCards(currentMonth) {
             const container = document.getElementById('vidaCardsList');
             if (!container) return;
 
@@ -1487,7 +1489,16 @@
                 
                 container.innerHTML = '';
                 
+                const mesAtual = currentMonth || new Date().getMonth() + 1;
+                
                 for (const col of colaboradores) {
+                    if (!col.dataNascimento) continue;
+                    
+                    const dataNascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
+                    const mesNascimento = dataNascimento.getMonth() + 1;
+                    
+                    if (mesNascimento !== mesAtual) continue;
+                    
                     const checklistSnapshot = await db.collection('checklists')
                         .where('colaboradorId', '==', col.id)
                         .where('tipo', '==', 'vida')
@@ -1569,6 +1580,8 @@
         async function loadEmpresa(container) {
             await loadEmpresasDropDowns();
             
+            const currentMonth = new Date().getMonth() + 1;
+            
             container.innerHTML = `
                 <div class="filters-container" id="empresaFilters">
                     <div class="filters-header" onclick="toggleFilters('empresa')">
@@ -1628,10 +1641,10 @@
             if (filtroAno) filtroAno.addEventListener('input', () => filterEmpresa());
             if (filtroStatus) filtroStatus.addEventListener('change', () => filterEmpresa());
 
-            await loadEmpresaCards();
+            await loadEmpresaCards(currentMonth);
         }
 
-        async function loadEmpresaCards() {
+        async function loadEmpresaCards(currentMonth) {
             const container = document.getElementById('empresaCardsList');
             if (!container) return;
 
@@ -1642,7 +1655,16 @@
                 
                 container.innerHTML = '';
                 
+                const mesAtual = currentMonth || new Date().getMonth() + 1;
+                
                 for (const col of colaboradores) {
+                    if (!col.dataAdmissao) continue;
+                    
+                    const dataAdmissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
+                    const mesAdmissao = dataAdmissao.getMonth() + 1;
+                    
+                    if (mesAdmissao !== mesAtual) continue;
+                    
                     const checklistSnapshot = await db.collection('checklists')
                         .where('colaboradorId', '==', col.id)
                         .where('tipo', '==', 'empresa')
@@ -1995,6 +2017,22 @@
                 const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
                 valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                // Verificar pedidos cancelados automaticamente
+                for (const pedido of pedidos) {
+                    const colaborador = colaboradoresMap[pedido.colaboradorId];
+                    if (colaborador && colaborador.status === 'Inativo' && pedido.status !== 'cancelado') {
+                        const dataEntrega = pedido.dataEntrega?.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
+                        const hoje = new Date();
+                        
+                        if (dataEntrega > hoje) {
+                            await db.collection('pedidos').doc(pedido.id).update({
+                                status: 'cancelado'
+                            });
+                            pedido.status = 'cancelado';
+                        }
+                    }
+                }
+                
                 // Calcular valores em aberto atuais
                 const valoresAbertosAtualizados = [];
                 for (const valor of valoresAbertos) {
@@ -2184,19 +2222,17 @@
                                 <td>${pedido.dataEntregaBR || formatDateBR(pedido.dataEntrega) || '-'}</td>
                                 <td>R$ ${pizza ? parseFloat(pizza.valor).toFixed(2) : '0.00'}</td>
                                 <td>
-                                    <select class="status-select" onchange="atualizarStatusPedido('${pedido.id}', this.value)" style="padding: 4px; border-radius: 4px; border: 1px solid var(--gray-200);">
-                                        <option value="pendente" ${pedido.status === 'pendente' ? 'selected' : ''}>Pendente</option>
-                                        <option value="entregue" ${pedido.status === 'entregue' ? 'selected' : ''}>Entregue</option>
-                                        <option value="cancelado" ${pedido.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                                    </select>
+                                    <span class="badge ${pedido.status === 'entregue' ? 'entregue' : pedido.status === 'cancelado' ? 'cancelado' : 'pendente'}">${pedido.status || 'pendente'}</span>
                                 </td>
                                 <td class="action-buttons">
-                                    <button class="edit" onclick="editarPedido('${pedido.id}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="delete" onclick="excluirPedido('${pedido.id}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    ${pedido.status !== 'cancelado' ? `
+                                        <button class="edit" onclick="editarStatusPedido('${pedido.id}', 'entregue')">
+                                            <i class="fas fa-check-circle"></i> Entregue
+                                        </button>
+                                        <button class="edit" onclick="editarStatusPedido('${pedido.id}', 'pendente')">
+                                            <i class="fas fa-clock"></i> Pendente
+                                        </button>
+                                    ` : ''}
                                 </td>
                             `;
                             tbody.appendChild(row);
@@ -2208,6 +2244,24 @@
             } catch (error) {
                 console.error('Error loading financeiro data:', error);
                 showToast('Erro ao carregar dados financeiros', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function editarStatusPedido(pedidoId, novoStatus) {
+            showLoading();
+            try {
+                await db.collection('pedidos').doc(pedidoId).update({
+                    status: novoStatus,
+                    dataAtualizacao: new Date()
+                });
+                
+                showToast('Status atualizado com sucesso!', 'success');
+                await loadFinanceiroData();
+            } catch (error) {
+                console.error('Error updating pedido status:', error);
+                showToast('Erro ao atualizar status', 'error');
             } finally {
                 hideLoading();
             }
@@ -2298,43 +2352,6 @@
             } catch (error) {
                 console.error('Error marking valor quitado:', error);
                 showToast('Erro ao marcar como quitado', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function atualizarStatusPedido(pedidoId, novoStatus) {
-            showLoading();
-            try {
-                await db.collection('pedidos').doc(pedidoId).update({
-                    status: novoStatus,
-                    dataAtualizacao: new Date()
-                });
-                
-                showToast('Status atualizado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error updating pedido status:', error);
-                showToast('Erro ao atualizar status', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function editarPedido(pedidoId) {
-            showToast('Funcionalidade de edição em desenvolvimento', 'info');
-        }
-
-        async function excluirPedido(pedidoId) {
-            if (!confirm('Tem certeza que deseja excluir este pedido?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('pedidos').doc(pedidoId).delete();
-                await loadFinanceiroData();
-                showToast('Pedido excluído com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error deleting pedido:', error);
-                showToast('Erro ao excluir pedido', 'error');
             } finally {
                 hideLoading();
             }
