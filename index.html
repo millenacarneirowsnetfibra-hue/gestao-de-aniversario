@@ -23,6 +23,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
+    <!-- SortableJS para drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -579,7 +582,7 @@
         /* Cards List */
         .cards-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 20px;
         }
 
@@ -715,19 +718,50 @@
         }
 
         .checklist-items.expanded {
-            max-height: 500px;
+            max-height: 1000px;
+        }
+
+        .checklist-items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checklist-items-header .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+        }
+
+        .checklist-items-list {
+            min-height: 50px;
         }
 
         .checklist-item {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--gray-100);
+            padding: 10px;
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: white;
+            cursor: move;
         }
 
-        .checklist-item:last-child {
-            border-bottom: none;
+        .checklist-item.dragging {
+            opacity: 0.5;
+            background: var(--gray-100);
+        }
+
+        .checklist-item .drag-handle {
+            color: var(--gray-400);
+            cursor: move;
+            padding: 0 5px;
+        }
+
+        .checklist-item .drag-handle:hover {
+            color: var(--primary);
         }
 
         .checklist-item input[type="checkbox"] {
@@ -736,20 +770,45 @@
             cursor: pointer;
         }
 
-        .checklist-item .item-text {
+        .checklist-item .item-content {
             flex: 1;
-            padding: 6px 10px;
-            border: 1px solid var(--gray-200);
-            border-radius: 4px;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            cursor: text;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
-        .checklist-item .item-text.checked {
+        .checklist-item .item-name {
+            font-weight: 500;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .checklist-item .item-name:hover {
+            background: var(--gray-100);
+        }
+
+        .checklist-item .item-name.checked {
             text-decoration: line-through;
             color: var(--gray-500);
-            background-color: var(--gray-100);
+        }
+
+        .checklist-item .item-description {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            padding: 6px 8px;
+            background: var(--gray-100);
+            border-radius: 4px;
+            border: 1px solid var(--gray-200);
+            cursor: text;
+            width: 100%;
+        }
+
+        .checklist-item .item-description:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
         }
 
         .checklist-item-actions {
@@ -762,7 +821,7 @@
             border: none;
             color: var(--secondary);
             cursor: pointer;
-            padding: 4px;
+            padding: 4px 8px;
             border-radius: 4px;
             transition: all 0.2s ease;
         }
@@ -779,31 +838,86 @@
             color: var(--danger);
         }
 
-        .add-checklist-item {
-            margin-top: 10px;
-            display: flex;
-            gap: 5px;
+        .checklist-item-actions button.description:hover {
+            color: var(--success);
         }
 
-        .add-checklist-item input {
-            flex: 1;
-            padding: 8px;
+        .add-checklist-item {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            background: var(--gray-100);
+            border-radius: 8px;
+        }
+
+        .add-checklist-item-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-checklist-item-row input[type="text"] {
+            flex: 2;
+            padding: 8px 12px;
             border: 1px solid var(--gray-200);
             border-radius: 4px;
         }
 
-        .add-checklist-item button {
+        .add-checklist-item-row input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .add-checklist-item-row textarea {
+            flex: 3;
             padding: 8px 12px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .add-checklist-item-row textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .add-checklist-item-row button {
+            padding: 8px 16px;
             background: var(--primary);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background 0.2s ease;
+            white-space: nowrap;
         }
 
-        .add-checklist-item button:hover {
+        .add-checklist-item-row button:hover {
             background: var(--primary-dark);
+        }
+
+        .checklist-footer {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .checklist-footer .btn-toggle {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .checklist-footer .btn-toggle:hover {
+            text-decoration: underline;
         }
 
         /* Pizza Order */
@@ -1705,6 +1819,7 @@
         let charts = {};
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
+        let sortableInstances = {};
 
         // Utility Functions
         function showLoading() {
@@ -2768,7 +2883,35 @@
                 
                 const mesAtual = currentMonth || new Date().getMonth() + 1;
                 
-                for (const col of colaboradores) {
+                // Ordenar por data de nascimento (mais recente primeiro)
+                const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
+                    if (!a.dataNascimento) return 1;
+                    if (!b.dataNascimento) return -1;
+                    
+                    const dataA = parseDateISO(a.dataNascimento) || new Date(a.dataNascimento);
+                    const dataB = parseDateISO(b.dataNascimento) || new Date(b.dataNascimento);
+                    
+                    // Ordenar por mês e dia (do mais recente para o mais antigo)
+                    const mesDiaA = dataA.getMonth() * 100 + dataA.getDate();
+                    const mesDiaB = dataB.getMonth() * 100 + dataB.getDate();
+                    
+                    // Calcular diferença para o mês atual
+                    const hoje = new Date();
+                    const mesAtual = hoje.getMonth();
+                    const diaAtual = hoje.getDate();
+                    
+                    const diffA = (dataA.getMonth() - mesAtual) * 100 + (dataA.getDate() - diaAtual);
+                    const diffB = (dataB.getMonth() - mesAtual) * 100 + (dataB.getDate() - diaAtual);
+                    
+                    // Se uma data já passou e outra não, colocar as que não passaram primeiro
+                    if (diffA < 0 && diffB >= 0) return 1;
+                    if (diffA >= 0 && diffB < 0) return -1;
+                    
+                    // Se ambas passaram ou ambas não passaram, ordenar por proximidade
+                    return Math.abs(diffA) - Math.abs(diffB);
+                });
+                
+                for (const col of colaboradoresOrdenados) {
                     if (!col.dataNascimento) continue;
                     
                     const dataNascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
@@ -3047,18 +3190,32 @@
         function renderChecklistItems(colaboradorId, checklist, tipo) {
             const itens = checklist?.itens || getDefaultChecklistItems(tipo);
             
-            let html = '';
+            let html = `
+                <div class="checklist-items-header">
+                    <span><small>Arraste os itens para reordenar</small></span>
+                    <button class="btn btn-sm btn-secondary" onclick="toggleAllChecklistItems('${colaboradorId}')">
+                        <i class="fas fa-eye"></i> Ver Mais/Menos
+                    </button>
+                </div>
+                <div class="checklist-items-list" id="checklistList-${colaboradorId}">
+            `;
+            
             itens.forEach((item, index) => {
-                const itemId = item.id || index;
                 html += `
-                    <div class="checklist-item" data-item-id="${itemId}" data-colaborador-id="${colaboradorId}" data-item-index="${index}">
+                    <div class="checklist-item" data-item-id="${item.id || index}" data-index="${index}">
+                        <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                         <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleChecklistItem('${colaboradorId}', ${index})">
-                        <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}">${item.nome}</span>
+                        <div class="item-content">
+                            <span class="item-name ${item.checked ? 'checked' : ''}" ondblclick="editChecklistItemName('${colaboradorId}', ${index})">${item.nome}</span>
+                            <textarea class="item-description" 
+                                      placeholder="Descrição do texto a ser publicado..." 
+                                      onchange="updateChecklistItemDescription('${colaboradorId}', ${index}, this.value)">${item.descricao || ''}</textarea>
+                        </div>
                         <div class="checklist-item-actions">
-                            <button class="edit" onclick="editChecklistItemName('${colaboradorId}', ${index})">
+                            <button class="edit" onclick="editChecklistItemName('${colaboradorId}', ${index})" title="Editar nome">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="delete" onclick="removeChecklistItem('${colaboradorId}', ${index})">
+                            <button class="delete" onclick="removeChecklistItem('${colaboradorId}', ${index})" title="Excluir">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -3066,11 +3223,22 @@
                 `;
             });
             
+            html += `</div>`;
+            
             html += `
                 <div class="add-checklist-item">
-                    <input type="text" placeholder="Novo item..." id="newItem-${colaboradorId}">
-                    <button onclick="addChecklistItem('${colaboradorId}')">
-                        <i class="fas fa-plus"></i>
+                    <div class="add-checklist-item-row">
+                        <input type="text" placeholder="Nome do item..." id="newItemName-${colaboradorId}">
+                        <textarea placeholder="Descrição do texto..." id="newItemDesc-${colaboradorId}"></textarea>
+                        <button onclick="addChecklistItem('${colaboradorId}')">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="checklist-footer">
+                    <button class="btn-toggle" onclick="toggleAllChecklistItems('${colaboradorId}')">
+                        <i class="fas fa-chevron-down"></i> Ver Mais/Menos Itens
                     </button>
                 </div>
             `;
@@ -3081,28 +3249,28 @@
         function getDefaultChecklistItems(tipo) {
             if (tipo === 'vida') {
                 return [
-                    { id: '1', nome: 'Arte Instagram', checked: false },
-                    { id: '2', nome: 'Arte TV', checked: false },
-                    { id: '3', nome: 'Post Instagram', checked: false },
-                    { id: '4', nome: 'Post Intranet', checked: false },
-                    { id: '5', nome: 'Post WhatsApp', checked: false }
+                    { id: '1', nome: 'Arte Instagram', descricao: '', checked: false },
+                    { id: '2', nome: 'Arte TV', descricao: '', checked: false },
+                    { id: '3', nome: 'Post Instagram', descricao: '', checked: false },
+                    { id: '4', nome: 'Post Intranet', descricao: '', checked: false },
+                    { id: '5', nome: 'Post WhatsApp', descricao: '', checked: false }
                 ];
             } else {
                 return [
-                    { id: '1', nome: 'Arte Instagram', checked: false },
-                    { id: '2', nome: 'Arte TV', checked: false },
-                    { id: '3', nome: 'Post Instagram', checked: false },
-                    { id: '4', nome: 'Post Intranet', checked: false },
-                    { id: '5', nome: 'Post WhatsApp', checked: false },
-                    { id: '6', nome: 'Contato com pizzaria', checked: false },
-                    { id: '7', nome: 'Confirmar pedido', checked: false },
-                    { id: '8', nome: 'Verificar endereço', checked: false },
-                    { id: '9', nome: 'Confirmar horário', checked: false },
-                    { id: '10', nome: 'Preparar mensagem', checked: false },
-                    { id: '11', nome: 'Enviar lembrete', checked: false },
-                    { id: '12', nome: 'Post LinkedIn', checked: false },
-                    { id: '13', nome: 'Email corporativo', checked: false },
-                    { id: '14', nome: 'Mural de recados', checked: false }
+                    { id: '1', nome: 'Arte Instagram', descricao: '', checked: false },
+                    { id: '2', nome: 'Arte TV', descricao: '', checked: false },
+                    { id: '3', nome: 'Post Instagram', descricao: '', checked: false },
+                    { id: '4', nome: 'Post Intranet', descricao: '', checked: false },
+                    { id: '5', nome: 'Post WhatsApp', descricao: '', checked: false },
+                    { id: '6', nome: 'Contato com pizzaria', descricao: '', checked: false },
+                    { id: '7', nome: 'Confirmar pedido', descricao: '', checked: false },
+                    { id: '8', nome: 'Verificar endereço', descricao: '', checked: false },
+                    { id: '9', nome: 'Confirmar horário', descricao: '', checked: false },
+                    { id: '10', nome: 'Preparar mensagem', descricao: '', checked: false },
+                    { id: '11', nome: 'Enviar lembrete', descricao: '', checked: false },
+                    { id: '12', nome: 'Post LinkedIn', descricao: '', checked: false },
+                    { id: '13', nome: 'Email corporativo', descricao: '', checked: false },
+                    { id: '14', nome: 'Mural de recados', descricao: '', checked: false }
                 ];
             }
         }
@@ -3172,6 +3340,313 @@
                     </div>
                 </div>
             `;
+        }
+
+        // Checklist Functions
+        function initSortable(colaboradorId) {
+            const list = document.getElementById(`checklistList-${colaboradorId}`);
+            if (!list) return;
+            
+            // Destroy existing sortable instance if any
+            if (sortableInstances[colaboradorId]) {
+                sortableInstances[colaboradorId].destroy();
+            }
+            
+            sortableInstances[colaboradorId] = new Sortable(list, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'dragging',
+                onEnd: function(evt) {
+                    const oldIndex = evt.oldIndex;
+                    const newIndex = evt.newIndex;
+                    if (oldIndex !== newIndex) {
+                        reorderChecklistItems(colaboradorId, oldIndex, newIndex);
+                    }
+                }
+            });
+        }
+
+        async function reorderChecklistItems(colaboradorId, oldIndex, newIndex) {
+            showLoading();
+            try {
+                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
+                const doc = await checklistRef.get();
+                
+                if (doc.exists) {
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    // Reorder items
+                    const [movedItem] = itens.splice(oldIndex, 1);
+                    itens.splice(newIndex, 0, movedItem);
+                    
+                    await checklistRef.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    showToast('Itens reordenados com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error reordering checklist items:', error);
+                showToast('Erro ao reordenar itens', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function toggleAllChecklistItems(colaboradorId) {
+            const checklist = document.getElementById(`checklist-${colaboradorId}`);
+            if (checklist) {
+                checklist.classList.toggle('expanded');
+                
+                // Reinitialize sortable when expanding
+                if (checklist.classList.contains('expanded')) {
+                    setTimeout(() => initSortable(colaboradorId), 100);
+                }
+            }
+        }
+
+        async function toggleChecklistItem(colaboradorId, index) {
+            showLoading();
+            try {
+                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
+                const doc = await checklistRef.get();
+                
+                let itens;
+                let tipo = currentSection;
+                
+                if (doc.exists) {
+                    itens = doc.data().itens;
+                    tipo = doc.data().tipo;
+                } else {
+                    itens = getDefaultChecklistItems(tipo);
+                }
+                
+                itens[index].checked = !itens[index].checked;
+                
+                await checklistRef.set({
+                    colaboradorId,
+                    tipo,
+                    itens,
+                    dataAtualizacao: new Date()
+                }, { merge: true });
+                
+                const checkedCount = itens.filter(item => item.checked).length;
+                const progress = (checkedCount / itens.length) * 100;
+                const progressBar = document.getElementById(`progress-${colaboradorId}`);
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+                
+                const itemName = document.querySelector(`#checklistList-${colaboradorId} .checklist-item[data-index="${index}"] .item-name`);
+                if (itemName) {
+                    if (itens[index].checked) {
+                        itemName.classList.add('checked');
+                    } else {
+                        itemName.classList.remove('checked');
+                    }
+                }
+                
+                showToast('Checklist atualizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error updating checklist:', error);
+                showToast('Erro ao atualizar checklist', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function addChecklistItem(colaboradorId) {
+            const nameInput = document.getElementById(`newItemName-${colaboradorId}`);
+            const descInput = document.getElementById(`newItemDesc-${colaboradorId}`);
+            const itemName = nameInput.value.trim();
+            const itemDesc = descInput.value.trim();
+            
+            if (!itemName) {
+                showToast('Digite um nome para o item', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
+                const doc = await checklistRef.get();
+                
+                let itens;
+                let tipo = currentSection;
+                
+                if (doc.exists) {
+                    itens = doc.data().itens || [];
+                    tipo = doc.data().tipo;
+                } else {
+                    itens = getDefaultChecklistItems(tipo);
+                }
+                
+                itens.push({
+                    id: Date.now().toString(),
+                    nome: itemName,
+                    descricao: itemDesc,
+                    checked: false
+                });
+                
+                await checklistRef.set({
+                    colaboradorId,
+                    tipo,
+                    itens,
+                    dataAtualizacao: new Date()
+                }, { merge: true });
+                
+                const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
+                if (checklistDiv) {
+                    checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
+                    if (checklistDiv.classList.contains('expanded')) {
+                        setTimeout(() => initSortable(colaboradorId), 100);
+                    }
+                }
+                
+                nameInput.value = '';
+                descInput.value = '';
+                showToast('Item adicionado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error adding checklist item:', error);
+                showToast('Erro ao adicionar item', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function editChecklistItemName(colaboradorId, index) {
+            const itemName = document.querySelector(`#checklistList-${colaboradorId} .checklist-item[data-index="${index}"] .item-name`);
+            const currentName = itemName.textContent;
+            const newName = prompt('Editar nome do item:', currentName);
+            
+            if (newName && newName.trim() !== '') {
+                updateChecklistItemName(colaboradorId, index, newName.trim());
+            }
+        }
+
+        async function updateChecklistItemName(colaboradorId, index, newName) {
+            if (!newName.trim()) return;
+            
+            showLoading();
+            try {
+                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
+                const doc = await checklistRef.get();
+                
+                if (doc.exists) {
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    itens[index].nome = newName;
+                    
+                    await checklistRef.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    const itemName = document.querySelector(`#checklistList-${colaboradorId} .checklist-item[data-index="${index}"] .item-name`);
+                    if (itemName) {
+                        itemName.textContent = newName;
+                    }
+                    
+                    showToast('Item atualizado com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error updating checklist item:', error);
+                showToast('Erro ao atualizar item', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function updateChecklistItemDescription(colaboradorId, index, description) {
+            showLoading();
+            try {
+                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
+                const doc = await checklistRef.get();
+                
+                if (doc.exists) {
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    itens[index].descricao = description;
+                    
+                    await checklistRef.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    showToast('Descrição atualizada com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error updating checklist description:', error);
+                showToast('Erro ao atualizar descrição', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function removeChecklistItem(colaboradorId, index) {
+            if (!confirm('Tem certeza que deseja remover este item?')) return;
+            
+            showLoading();
+            try {
+                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
+                const doc = await checklistRef.get();
+                
+                if (doc.exists) {
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    itens.splice(index, 1);
+                    
+                    await checklistRef.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
+                    if (checklistDiv) {
+                        checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, data.tipo);
+                        if (checklistDiv.classList.contains('expanded')) {
+                            setTimeout(() => initSortable(colaboradorId), 100);
+                        }
+                    }
+                    
+                    showToast('Item removido com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error removing checklist item:', error);
+                showToast('Erro ao remover item', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function toggleChecklist(colaboradorId) {
+            const checklist = document.getElementById(`checklist-${colaboradorId}`);
+            const icon = document.getElementById(`checklistIcon-${colaboradorId}`);
+            
+            if (checklist && icon) {
+                checklist.classList.toggle('expanded');
+                icon.style.transform = checklist.classList.contains('expanded') ? 'rotate(180deg)' : '';
+                
+                // Initialize sortable when expanding
+                if (checklist.classList.contains('expanded')) {
+                    setTimeout(() => initSortable(colaboradorId), 100);
+                }
+            }
+        }
+
+        function togglePizzaOrder(colaboradorId) {
+            const order = document.getElementById(`pizzaOrder-${colaboradorId}`);
+            const icon = document.getElementById(`pizzaIcon-${colaboradorId}`);
+            
+            if (order && icon) {
+                order.classList.toggle('expanded');
+                icon.style.transform = order.classList.contains('expanded') ? 'rotate(180deg)' : '';
+            }
         }
 
         // Load Controle Financeiro
@@ -4266,207 +4741,6 @@
                 departamentos = departamentosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             } catch (error) {
                 console.error('Error loading dropdowns:', error);
-            }
-        }
-
-        function toggleChecklist(colaboradorId) {
-            const checklist = document.getElementById(`checklist-${colaboradorId}`);
-            const icon = document.getElementById(`checklistIcon-${colaboradorId}`);
-            
-            if (checklist && icon) {
-                checklist.classList.toggle('expanded');
-                icon.style.transform = checklist.classList.contains('expanded') ? 'rotate(180deg)' : '';
-            }
-        }
-
-        function togglePizzaOrder(colaboradorId) {
-            const order = document.getElementById(`pizzaOrder-${colaboradorId}`);
-            const icon = document.getElementById(`pizzaIcon-${colaboradorId}`);
-            
-            if (order && icon) {
-                order.classList.toggle('expanded');
-                icon.style.transform = order.classList.contains('expanded') ? 'rotate(180deg)' : '';
-            }
-        }
-
-        // Checklist Functions
-        async function toggleChecklistItem(colaboradorId, index) {
-            showLoading();
-            try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
-                
-                let itens;
-                let tipo = currentSection;
-                
-                if (doc.exists) {
-                    itens = doc.data().itens;
-                    tipo = doc.data().tipo;
-                } else {
-                    itens = getDefaultChecklistItems(tipo);
-                }
-                
-                itens[index].checked = !itens[index].checked;
-                
-                await checklistRef.set({
-                    colaboradorId,
-                    tipo,
-                    itens,
-                    dataAtualizacao: new Date()
-                }, { merge: true });
-                
-                const checkedCount = itens.filter(item => item.checked).length;
-                const progress = (checkedCount / itens.length) * 100;
-                const progressBar = document.getElementById(`progress-${colaboradorId}`);
-                if (progressBar) {
-                    progressBar.style.width = `${progress}%`;
-                }
-                
-                const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-                if (itemText) {
-                    if (itens[index].checked) {
-                        itemText.classList.add('checked');
-                    } else {
-                        itemText.classList.remove('checked');
-                    }
-                }
-                
-                showToast('Checklist atualizado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error updating checklist:', error);
-                showToast('Erro ao atualizar checklist', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function addChecklistItem(colaboradorId) {
-            const input = document.getElementById(`newItem-${colaboradorId}`);
-            const itemName = input.value.trim();
-            
-            if (!itemName) {
-                showToast('Digite um nome para o item', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
-                
-                let itens;
-                let tipo = currentSection;
-                
-                if (doc.exists) {
-                    itens = doc.data().itens || [];
-                    tipo = doc.data().tipo;
-                } else {
-                    itens = getDefaultChecklistItems(tipo);
-                }
-                
-                itens.push({
-                    id: Date.now().toString(),
-                    nome: itemName,
-                    checked: false
-                });
-                
-                await checklistRef.set({
-                    colaboradorId,
-                    tipo,
-                    itens,
-                    dataAtualizacao: new Date()
-                }, { merge: true });
-                
-                const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
-                if (checklistDiv) {
-                    checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
-                }
-                
-                input.value = '';
-                showToast('Item adicionado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error adding checklist item:', error);
-                showToast('Erro ao adicionar item', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        function editChecklistItemName(colaboradorId, index) {
-            const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-            const currentName = itemText.textContent;
-            const newName = prompt('Editar item:', currentName);
-            
-            if (newName && newName.trim() !== '') {
-                updateChecklistItemName(colaboradorId, index, newName.trim());
-            }
-        }
-
-        async function updateChecklistItemName(colaboradorId, index, newName) {
-            if (!newName.trim()) return;
-            
-            showLoading();
-            try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
-                
-                if (doc.exists) {
-                    const data = doc.data();
-                    const itens = data.itens || [];
-                    
-                    itens[index].nome = newName;
-                    
-                    await checklistRef.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-                    if (itemText) {
-                        itemText.textContent = newName;
-                    }
-                    
-                    showToast('Item atualizado com sucesso!', 'success');
-                }
-            } catch (error) {
-                console.error('Error updating checklist item:', error);
-                showToast('Erro ao atualizar item', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function removeChecklistItem(colaboradorId, index) {
-            if (!confirm('Tem certeza que deseja remover este item?')) return;
-            
-            showLoading();
-            try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
-                
-                if (doc.exists) {
-                    const data = doc.data();
-                    const itens = data.itens || [];
-                    
-                    itens.splice(index, 1);
-                    
-                    await checklistRef.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
-                    if (checklistDiv) {
-                        checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, data.tipo);
-                    }
-                    
-                    showToast('Item removido com sucesso!', 'success');
-                }
-            } catch (error) {
-                console.error('Error removing checklist item:', error);
-                showToast('Erro ao remover item', 'error');
-            } finally {
-                hideLoading();
             }
         }
 
