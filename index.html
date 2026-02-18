@@ -869,6 +869,72 @@
                 grid-column: span 1;
             }
         }
+
+        /* Valores em Aberto */
+        .valores-abertos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .valor-aberto-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--warning);
+        }
+
+        .valor-aberto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .valor-aberto-colaborador {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .valor-aberto-colaborador.inativo {
+            color: var(--danger);
+        }
+
+        .valor-aberto-colaborador i {
+            margin-right: 5px;
+        }
+
+        .valor-aberto-valor {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--warning);
+        }
+
+        .valor-aberto-obs {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-top: 5px;
+            padding: 5px;
+            background: var(--gray-100);
+            border-radius: 4px;
+        }
+
+        .valor-aberto-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .obs-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -979,6 +1045,7 @@
         let empresas = [];
         let departamentos = [];
         let pizzas = [];
+        let valoresAbertos = [];
 
         // Utility Functions
         function showLoading() {
@@ -1084,10 +1151,8 @@
             const hoje = new Date();
             const dataNascimento = new Date(birthDate);
             
-            // Cria data do aniversário deste ano
             const aniversarioEsteAno = new Date(hoje.getFullYear(), dataNascimento.getMonth(), dataNascimento.getDate());
             
-            // Se o aniversário já passou este ano, pega o do próximo ano
             if (aniversarioEsteAno < hoje) {
                 return new Date(hoje.getFullYear() + 1, dataNascimento.getMonth(), dataNascimento.getDate());
             }
@@ -1114,10 +1179,8 @@
             const hoje = new Date();
             const dataAdmissao = new Date(admissionDate);
             
-            // Cria data do aniversário de empresa deste ano
             const aniversarioEsteAno = new Date(hoje.getFullYear(), dataAdmissao.getMonth(), dataAdmissao.getDate());
             
-            // Se o aniversário já passou este ano, pega o do próximo ano
             if (aniversarioEsteAno < hoje) {
                 return new Date(hoje.getFullYear() + 1, dataAdmissao.getMonth(), dataAdmissao.getDate());
             }
@@ -1144,10 +1207,8 @@
             const hoje = new Date();
             const dataNascimento = new Date(birthDate);
             
-            // Cria data do aniversário deste ano
             const aniversarioEsteAno = new Date(hoje.getFullYear(), dataNascimento.getMonth(), dataNascimento.getDate());
             
-            // Se o aniversário já passou este ano
             return aniversarioEsteAno < hoje;
         }
 
@@ -1156,10 +1217,8 @@
             const hoje = new Date();
             const dataAdmissao = new Date(admissionDate);
             
-            // Cria data do aniversário de empresa deste ano
             const aniversarioEsteAno = new Date(hoje.getFullYear(), dataAdmissao.getMonth(), dataAdmissao.getDate());
             
-            // Se o aniversário já passou este ano
             return aniversarioEsteAno < hoje;
         }
 
@@ -1219,7 +1278,6 @@
         // Load Dashboard
         async function loadDashboard(container) {
             try {
-                // Load counts
                 const colaboradoresSnapshot = await db.collection('colaboradores').get();
                 const colaboradores = colaboradoresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
@@ -1348,14 +1406,12 @@
                 <div class="cards-list" id="vidaCardsList"></div>
             `;
 
-            // Set default filter to current month
             const currentMonth = new Date().getMonth() + 1;
             const mesFilter = document.getElementById('filtroMesVida');
             if (mesFilter) {
                 mesFilter.value = currentMonth.toString();
             }
 
-            // Add event listeners to filters
             const filtroNome = document.getElementById('filtroNomeVida');
             const filtroMes = document.getElementById('filtroMesVida');
             const filtroAno = document.getElementById('filtroAnoVida');
@@ -1378,19 +1434,16 @@
                 const snapshot = await db.collection('colaboradores').get();
                 const colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // Ordenar: primeiro os mais próximos, depois os que já passaram
                 const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
                     const diasA = getDaysUntilNextBirthday(a.dataNascimento);
                     const diasB = getDaysUntilNextBirthday(b.dataNascimento);
                     
-                    // Se um já passou (dias negativos) e o outro não
                     const aPassou = isPastBirthday(a.dataNascimento);
                     const bPassou = isPastBirthday(b.dataNascimento);
                     
-                    if (aPassou && !bPassou) return 1; // a vai para o final
-                    if (!aPassou && bPassou) return -1; // b vai para o final
+                    if (aPassou && !bPassou) return 1;
+                    if (!aPassou && bPassou) return -1;
                     
-                    // Ambos não passaram ou ambos passados - ordena por dias
                     return diasA - diasB;
                 });
                 
@@ -1411,7 +1464,6 @@
                     container.appendChild(card);
                 }
                 
-                // Apply initial filter for current month
                 filterVida();
             } catch (error) {
                 console.error('Error loading vida cards:', error);
@@ -1431,7 +1483,6 @@
             const dataCurta = formatDateShortBR(dataNascimento);
             const idade = calculateAge(dataNascimento);
             
-            // Verifica se o aniversário já passou
             const pastBirthday = isPastBirthday(dataNascimento);
             if (pastBirthday) {
                 card.classList.add('past-birthday');
@@ -1522,14 +1573,12 @@
                 <div class="cards-list" id="empresaCardsList"></div>
             `;
 
-            // Set default filter to current month
             const currentMonth = new Date().getMonth() + 1;
             const mesFilter = document.getElementById('filtroMesEmpresa');
             if (mesFilter) {
                 mesFilter.value = currentMonth.toString();
             }
 
-            // Add event listeners to filters
             const filtroNome = document.getElementById('filtroNomeEmpresa');
             const filtroMes = document.getElementById('filtroMesEmpresa');
             const filtroAno = document.getElementById('filtroAnoEmpresa');
@@ -1552,7 +1601,6 @@
                 const snapshot = await db.collection('colaboradores').get();
                 const colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // Primeiro filtra apenas aniversariantes do mês atual
                 const currentMonth = new Date().getMonth() + 1;
                 const colaboradoresDoMes = colaboradores.filter(col => {
                     if (!col.dataAdmissao) return false;
@@ -1560,22 +1608,18 @@
                     return admissao.getMonth() + 1 === currentMonth;
                 });
                 
-                // Ordenar: primeiro os mais próximos, depois os que já passaram
                 const colaboradoresOrdenados = [...colaboradoresDoMes].sort((a, b) => {
                     const diasA = getDaysUntilNextCompanyAnniversary(a.dataAdmissao);
                     const diasB = getDaysUntilNextCompanyAnniversary(b.dataAdmissao);
                     
-                    // Se um já passou e o outro não
                     const aPassou = isPastCompanyAnniversary(a.dataAdmissao);
                     const bPassou = isPastCompanyAnniversary(b.dataAdmissao);
                     
-                    if (aPassou && !bPassou) return 1; // a vai para o final
-                    if (!aPassou && bPassou) return -1; // b vai para o final
+                    if (aPassou && !bPassou) return 1;
+                    if (!aPassou && bPassou) return -1;
                     
-                    // Ambos não passaram - ordena por proximidade
                     if (!aPassou && !bPassou) return diasA - diasB;
                     
-                    // Ambos passaram - ordena por data (mais recentes primeiro)
                     const dataA = new Date(a.dataAdmissao);
                     const dataB = new Date(b.dataAdmissao);
                     const anivA = new Date(2024, dataA.getMonth(), dataA.getDate());
@@ -1619,13 +1663,11 @@
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
             
-            // Verifica se o aniversário já passou
             const pastAnniversary = isPastCompanyAnniversary(dataAdmissao);
             if (pastAnniversary) {
                 card.classList.add('past-birthday');
             }
             
-            // Adiciona alerta visual para Mongaguá
             if (isMongagua) {
                 card.classList.add('mongagua-alert');
             }
@@ -1874,6 +1916,14 @@
                 
                 <div class="dashboard-cards" id="financeiroCards"></div>
                 
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Valores em Aberto</h3>
+                        <span class="badge warning">${valoresAbertos.length} pendente(s)</span>
+                    </div>
+                    <div class="valores-abertos-list" id="valoresAbertosList"></div>
+                </div>
+                
                 <div class="table-container">
                     <h3 style="margin-bottom: 20px;">Histórico de Pedidos</h3>
                     <table id="pedidosTable">
@@ -1885,11 +1935,12 @@
                                 <th>Data</th>
                                 <th>Valor</th>
                                 <th>Status</th>
+                                <th>Observação</th>
                             </tr>
                         </thead>
                         <tbody id="pedidosTableBody">
                             <tr>
-                                <td colspan="6" style="text-align: center; color: var(--secondary);">
+                                <td colspan="7" style="text-align: center; color: var(--secondary);">
                                     Nenhum pedido encontrado no período
                                 </td>
                             </tr>
@@ -1906,16 +1957,32 @@
                 const pedidosSnapshot = await db.collection('pedidos').get();
                 const pedidos = pedidosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                const colaboradoresSnapshot = await db.collection('colaboradores').get();
+                const colaboradoresMap = {};
+                colaboradoresSnapshot.docs.forEach(doc => {
+                    colaboradoresMap[doc.id] = { id: doc.id, ...doc.data() };
+                });
+                
+                const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
+                valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
                 let totalGasto = 0;
                 const pizzarias = new Set();
+                const pedidosValidos = [];
                 
                 for (const pedido of pedidos) {
-                    if (pedido.pizzaId) {
-                        const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
-                        if (pizzaDoc.exists) {
-                            const pizza = pizzaDoc.data();
-                            totalGasto += parseFloat(pizza.valor) || 0;
-                            pizzarias.add(pizza.pizzaria);
+                    const colaborador = colaboradoresMap[pedido.colaboradorId];
+                    
+                    if (colaborador) {
+                        pedidosValidos.push({ ...pedido, colaborador });
+                        
+                        if (pedido.pizzaId) {
+                            const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
+                            if (pizzaDoc.exists) {
+                                const pizza = pizzaDoc.data();
+                                totalGasto += parseFloat(pizza.valor) || 0;
+                                pizzarias.add(pizza.pizzaria);
+                            }
                         }
                     }
                 }
@@ -1944,7 +2011,7 @@
                                 <h3>Total de Pedidos</h3>
                                 <i class="fas fa-shopping-cart"></i>
                             </div>
-                            <div class="card-value">${pedidos.length}</div>
+                            <div class="card-value">${pedidosValidos.length}</div>
                         </div>
                         
                         <div class="card">
@@ -1952,52 +2019,93 @@
                                 <h3>Média por Pedido</h3>
                                 <i class="fas fa-calculator"></i>
                             </div>
-                            <div class="card-value">R$ ${pedidos.length > 0 ? (totalGasto / pedidos.length).toFixed(2) : '0.00'}</div>
+                            <div class="card-value">R$ ${pedidosValidos.length > 0 ? (totalGasto / pedidosValidos.length).toFixed(2) : '0.00'}</div>
                         </div>
                     `;
                 }
                 
-                // Load pedidos table
+                const valoresAbertosList = document.getElementById('valoresAbertosList');
+                if (valoresAbertosList) {
+                    if (valoresAbertos.length > 0) {
+                        valoresAbertosList.innerHTML = '';
+                        
+                        for (const valor of valoresAbertos) {
+                            const colaborador = colaboradoresMap[valor.colaboradorId];
+                            
+                            const valorCard = document.createElement('div');
+                            valorCard.className = 'valor-aberto-card';
+                            
+                            const isInativo = colaborador && colaborador.status === 'Inativo';
+                            
+                            valorCard.innerHTML = `
+                                <div class="valor-aberto-header">
+                                    <span class="valor-aberto-colaborador ${isInativo ? 'inativo' : ''}">
+                                        <i class="fas ${isInativo ? 'fa-user-slash' : 'fa-user'}"></i>
+                                        ${colaborador ? colaborador.nome : 'Colaborador não encontrado'}
+                                        ${isInativo ? ' (Inativo)' : ''}
+                                    </span>
+                                    <span class="valor-aberto-valor">R$ ${valor.valor.toFixed(2)}</span>
+                                </div>
+                                <div>
+                                    <input type="text" 
+                                           class="obs-input" 
+                                           id="valorAbertoObs-${valor.id}" 
+                                           placeholder="Observação sobre este valor..."
+                                           value="${valor.observacao || ''}"
+                                           onchange="updateValorAbertoObs('${valor.id}')">
+                                </div>
+                                <div class="valor-aberto-actions">
+                                    <button class="btn btn-success btn-sm" onclick="marcarValorQuitado('${valor.id}')">
+                                        <i class="fas fa-check"></i> Marcar como Quitado
+                                    </button>
+                                </div>
+                            `;
+                            
+                            valoresAbertosList.appendChild(valorCard);
+                        }
+                    } else {
+                        valoresAbertosList.innerHTML = '<p style="text-align: center; color: var(--secondary);">Nenhum valor em aberto</p>';
+                    }
+                }
+                
                 const tbody = document.getElementById('pedidosTableBody');
-                if (tbody && pedidos.length > 0) {
-                    tbody.innerHTML = '';
-                    
-                    for (const pedido of pedidos) {
-                        const row = document.createElement('tr');
+                if (tbody) {
+                    if (pedidosValidos.length > 0) {
+                        tbody.innerHTML = '';
                         
-                        // Get colaborador name
-                        let colaboradorNome = 'Desconhecido';
-                        if (pedido.colaboradorId) {
-                            const colDoc = await db.collection('colaboradores').doc(pedido.colaboradorId).get();
-                            if (colDoc.exists) {
-                                colaboradorNome = colDoc.data().nome;
+                        for (const pedido of pedidosValidos) {
+                            const row = document.createElement('tr');
+                            
+                            const isInativo = pedido.colaborador.status === 'Inativo';
+                            
+                            let pizzaNome = 'Desconhecida';
+                            let pizzariaNome = 'Desconhecida';
+                            let valor = 0;
+                            
+                            if (pedido.pizzaId) {
+                                const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
+                                if (pizzaDoc.exists) {
+                                    const pizza = pizzaDoc.data();
+                                    pizzaNome = pizza.nome;
+                                    pizzariaNome = pizza.pizzaria;
+                                    valor = pizza.valor;
+                                }
                             }
+                            
+                            row.innerHTML = `
+                                <td>
+                                    ${pedido.colaborador.nome}
+                                    ${isInativo ? '<span class="badge inactive" style="margin-left: 5px;">Inativo</span>' : ''}
+                                </td>
+                                <td>${pizzaNome}</td>
+                                <td>${pizzariaNome}</td>
+                                <td>${pedido.dataEntregaBR || formatDateBR(pedido.dataEntrega) || '-'}</td>
+                                <td>R$ ${parseFloat(valor).toFixed(2)}</td>
+                                <td><span class="badge ${pedido.status === 'entregue' ? 'active' : 'warning'}">${pedido.status || 'pendente'}</span></td>
+                                <td>${pedido.observacaoFinanceiro || '-'}</td>
+                            `;
+                            tbody.appendChild(row);
                         }
-                        
-                        // Get pizza info
-                        let pizzaNome = 'Desconhecida';
-                        let pizzariaNome = 'Desconhecida';
-                        let valor = 0;
-                        
-                        if (pedido.pizzaId) {
-                            const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
-                            if (pizzaDoc.exists) {
-                                const pizza = pizzaDoc.data();
-                                pizzaNome = pizza.nome;
-                                pizzariaNome = pizza.pizzaria;
-                                valor = pizza.valor;
-                            }
-                        }
-                        
-                        row.innerHTML = `
-                            <td>${colaboradorNome}</td>
-                            <td>${pizzaNome}</td>
-                            <td>${pizzariaNome}</td>
-                            <td>${pedido.dataEntregaBR || formatDateBR(pedido.dataEntrega) || '-'}</td>
-                            <td>R$ ${parseFloat(valor).toFixed(2)}</td>
-                            <td><span class="badge ${pedido.status === 'entregue' ? 'active' : 'inactive'}">${pedido.status || 'pendente'}</span></td>
-                        `;
-                        tbody.appendChild(row);
                     }
                 }
             } catch (error) {
@@ -2441,7 +2549,6 @@
                     itens = getDefaultChecklistItems(tipo);
                 }
                 
-                // Toggle the checked status
                 itens[index].checked = !itens[index].checked;
                 
                 await checklistRef.set({
@@ -2451,7 +2558,6 @@
                     dataAtualizacao: new Date()
                 }, { merge: true });
                 
-                // Update progress bar
                 const checkedCount = itens.filter(item => item.checked).length;
                 const progress = (checkedCount / itens.length) * 100;
                 const progressBar = document.getElementById(`progress-${colaboradorId}`);
@@ -2459,7 +2565,6 @@
                     progressBar.style.width = `${progress}%`;
                 }
                 
-                // Update item text style
                 const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
                 if (itemText) {
                     if (itens[index].checked) {
@@ -2515,7 +2620,6 @@
                     dataAtualizacao: new Date()
                 }, { merge: true });
                 
-                // Reload checklist
                 const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
                 if (checklistDiv) {
                     checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
@@ -2560,7 +2664,6 @@
                         dataAtualizacao: new Date()
                     });
                     
-                    // Update the displayed text
                     const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
                     if (itemText) {
                         itemText.textContent = newName;
@@ -2595,7 +2698,6 @@
                         dataAtualizacao: new Date()
                     });
                     
-                    // Reload checklist
                     const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
                     if (checklistDiv) {
                         checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, data.tipo);
@@ -2752,15 +2854,22 @@
             const col = colaboradores.find(c => c.id === id);
             if (!col) return;
             
-            // Simple edit using prompt for now
             const novoNome = prompt('Novo nome:', col.nome);
             if (!novoNome) return;
+            
+            const novoStatus = prompt('Novo status (Ativo/Inativo):', col.status);
+            if (!novoStatus || (novoStatus !== 'Ativo' && novoStatus !== 'Inativo')) return;
             
             showLoading();
             try {
                 await db.collection('colaboradores').doc(id).update({
-                    nome: novoNome
+                    nome: novoNome,
+                    status: novoStatus
                 });
+                
+                if (novoStatus === 'Inativo') {
+                    await criarValorAbertoParaInativo(id);
+                }
                 
                 await loadColaboradoresList();
                 showToast('Colaborador atualizado com sucesso!', 'success');
@@ -2773,16 +2882,101 @@
         }
 
         async function deleteColaborador(id) {
-            if (!confirm('Tem certeza que deseja excluir este colaborador?')) return;
+            if (!confirm('Tem certeza que deseja excluir este colaborador? Isso removerá todos os pedidos associados.')) return;
             
             showLoading();
             try {
+                const pedidosSnapshot = await db.collection('pedidos')
+                    .where('colaboradorId', '==', id)
+                    .get();
+                
+                const batch = db.batch();
+                
+                pedidosSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+                
                 await db.collection('colaboradores').doc(id).delete();
+                
                 await loadColaboradoresList();
-                showToast('Colaborador excluído com sucesso!', 'success');
+                showToast('Colaborador e pedidos excluídos com sucesso!', 'success');
             } catch (error) {
                 console.error('Error deleting colaborador:', error);
                 showToast('Erro ao excluir colaborador', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Valor em Aberto Functions
+        async function criarValorAbertoParaInativo(colaboradorId) {
+            try {
+                const pedidosSnapshot = await db.collection('pedidos')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .where('status', '==', 'pendente')
+                    .get();
+                
+                for (const pedidoDoc of pedidosSnapshot.docs) {
+                    const pedido = pedidoDoc.data();
+                    
+                    if (pedido.pizzaId) {
+                        const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
+                        if (pizzaDoc.exists) {
+                            const pizza = pizzaDoc.data();
+                            
+                            await db.collection('valoresAbertos').add({
+                                colaboradorId,
+                                pedidoId: pedidoDoc.id,
+                                valor: pizza.valor,
+                                dataCriacao: new Date(),
+                                status: 'pendente',
+                                observacao: 'Colaborador inativado - pedido pendente'
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error creating valor aberto:', error);
+            }
+        }
+
+        async function updateValorAbertoObs(id) {
+            const input = document.getElementById(`valorAbertoObs-${id}`);
+            const observacao = input.value.trim();
+            
+            showLoading();
+            try {
+                await db.collection('valoresAbertos').doc(id).update({
+                    observacao,
+                    dataAtualizacao: new Date()
+                });
+                
+                showToast('Observação atualizada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error updating valor aberto:', error);
+                showToast('Erro ao atualizar observação', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function marcarValorQuitado(id) {
+            if (!confirm('Tem certeza que deseja marcar este valor como quitado?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('valoresAbertos').doc(id).update({
+                    status: 'quitado',
+                    dataQuitacao: new Date()
+                });
+                
+                await loadFinanceiroData();
+                showToast('Valor marcado como quitado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error marking valor quitado:', error);
+                showToast('Erro ao marcar como quitado', 'error');
             } finally {
                 hideLoading();
             }
@@ -2956,7 +3150,6 @@
                     dataCriacao: new Date()
                 });
                 
-                // Clear form
                 const pizzaSelect = document.getElementById(`pizzaSelect-${colaboradorId}`);
                 if (pizzaSelect) pizzaSelect.value = '';
                 
@@ -3066,6 +3259,7 @@
 
         function applyFinanceiroFilters() {
             showToast('Filtros aplicados com sucesso!', 'success');
+            loadFinanceiroData();
         }
 
         // Initialize
