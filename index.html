@@ -739,7 +739,7 @@
 
         .checklist-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
             padding: 10px;
             border: 1px solid var(--gray-200);
@@ -757,7 +757,7 @@
         .checklist-item .drag-handle {
             color: var(--gray-400);
             cursor: move;
-            padding: 0 5px;
+            padding: 5px;
         }
 
         .checklist-item .drag-handle:hover {
@@ -768,13 +768,11 @@
             width: 18px;
             height: 18px;
             cursor: pointer;
+            margin-top: 3px;
         }
 
         .checklist-item .item-content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
         }
 
         .checklist-item .item-name {
@@ -783,6 +781,7 @@
             padding: 4px 8px;
             border-radius: 4px;
             transition: background 0.2s ease;
+            display: inline-block;
         }
 
         .checklist-item .item-name:hover {
@@ -795,14 +794,17 @@
         }
 
         .checklist-item .item-description {
-            font-size: 0.85rem;
-            color: var(--secondary);
-            padding: 6px 8px;
+            font-size: 0.9rem;
+            color: var(--dark);
+            padding: 8px;
             background: var(--gray-100);
             border-radius: 4px;
+            margin-top: 5px;
             border: 1px solid var(--gray-200);
-            cursor: text;
             width: 100%;
+            min-height: 60px;
+            resize: vertical;
+            cursor: text;
         }
 
         .checklist-item .item-description:focus {
@@ -838,52 +840,28 @@
             color: var(--danger);
         }
 
-        .checklist-item-actions button.description:hover {
-            color: var(--success);
-        }
-
         .add-checklist-item {
             margin-top: 15px;
             display: flex;
-            flex-direction: column;
             gap: 10px;
             padding: 15px;
             background: var(--gray-100);
             border-radius: 8px;
         }
 
-        .add-checklist-item-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .add-checklist-item-row input[type="text"] {
-            flex: 2;
+        .add-checklist-item input[type="text"] {
+            flex: 1;
             padding: 8px 12px;
             border: 1px solid var(--gray-200);
             border-radius: 4px;
         }
 
-        .add-checklist-item-row input[type="text"]:focus {
+        .add-checklist-item input[type="text"]:focus {
             outline: none;
             border-color: var(--primary);
         }
 
-        .add-checklist-item-row textarea {
-            flex: 3;
-            padding: 8px 12px;
-            border: 1px solid var(--gray-200);
-            border-radius: 4px;
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .add-checklist-item-row textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .add-checklist-item-row button {
+        .add-checklist-item button {
             padding: 8px 16px;
             background: var(--primary);
             color: white;
@@ -894,7 +872,7 @@
             white-space: nowrap;
         }
 
-        .add-checklist-item-row button:hover {
+        .add-checklist-item button:hover {
             background: var(--primary-dark);
         }
 
@@ -3208,7 +3186,7 @@
                         <div class="item-content">
                             <span class="item-name ${item.checked ? 'checked' : ''}" ondblclick="editChecklistItemName('${colaboradorId}', ${index})">${item.nome}</span>
                             <textarea class="item-description" 
-                                      placeholder="Descrição do texto a ser publicado..." 
+                                      placeholder="Texto do aniversário a ser publicado nos canais..." 
                                       onchange="updateChecklistItemDescription('${colaboradorId}', ${index}, this.value)">${item.descricao || ''}</textarea>
                         </div>
                         <div class="checklist-item-actions">
@@ -3227,13 +3205,10 @@
             
             html += `
                 <div class="add-checklist-item">
-                    <div class="add-checklist-item-row">
-                        <input type="text" placeholder="Nome do item..." id="newItemName-${colaboradorId}">
-                        <textarea placeholder="Descrição do texto..." id="newItemDesc-${colaboradorId}"></textarea>
-                        <button onclick="addChecklistItem('${colaboradorId}')">
-                            <i class="fas fa-plus"></i> Adicionar
-                        </button>
-                    </div>
+                    <input type="text" placeholder="Nome do item..." id="newItemName-${colaboradorId}">
+                    <button onclick="addChecklistItem('${colaboradorId}')">
+                        <i class="fas fa-plus"></i> Adicionar
+                    </button>
                 </div>
                 
                 <div class="checklist-footer">
@@ -3459,9 +3434,7 @@
 
         async function addChecklistItem(colaboradorId) {
             const nameInput = document.getElementById(`newItemName-${colaboradorId}`);
-            const descInput = document.getElementById(`newItemDesc-${colaboradorId}`);
             const itemName = nameInput.value.trim();
-            const itemDesc = descInput.value.trim();
             
             if (!itemName) {
                 showToast('Digite um nome para o item', 'error');
@@ -3486,7 +3459,7 @@
                 itens.push({
                     id: Date.now().toString(),
                     nome: itemName,
-                    descricao: itemDesc,
+                    descricao: '',
                     checked: false
                 });
                 
@@ -3506,7 +3479,6 @@
                 }
                 
                 nameInput.value = '';
-                descInput.value = '';
                 showToast('Item adicionado com sucesso!', 'success');
             } catch (error) {
                 console.error('Error adding checklist item:', error);
@@ -3577,11 +3549,11 @@
                         dataAtualizacao: new Date()
                     });
                     
-                    showToast('Descrição atualizada com sucesso!', 'success');
+                    showToast('Texto atualizado com sucesso!', 'success');
                 }
             } catch (error) {
                 console.error('Error updating checklist description:', error);
-                showToast('Erro ao atualizar descrição', 'error');
+                showToast('Erro ao atualizar texto', 'error');
             } finally {
                 hideLoading();
             }
