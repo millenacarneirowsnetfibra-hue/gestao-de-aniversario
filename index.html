@@ -3684,7 +3684,7 @@
             }
         }
 
-        // Load Empresa (mantido igual, mas com ordenação similar)
+        // Load Empresa - CORRIGIDO: Formulário de pizza com campos separados por tipo
         async function loadEmpresa(container) {
             await loadEmpresasDropDowns();
             
@@ -3978,6 +3978,7 @@
                         </div>
                     </div>
                     
+                    <!-- Campo para Pizza Inteira - aparece apenas quando selecionado inteira -->
                     <div class="pizza-order-field full-width pizza-fields pizza-inteira-${colaboradorId} active">
                         <label>Pizza</label>
                         <select id="pizzaSelect1-${colaboradorId}">
@@ -3986,6 +3987,7 @@
                         </select>
                     </div>
                     
+                    <!-- Campos para Meia a Meia - aparecem apenas quando selecionado meia -->
                     <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}">
                         <label>1ª Metade</label>
                         <select id="pizzaSelect1-${colaboradorId}">
@@ -4061,10 +4063,12 @@
         function togglePizzaFields(colaboradorId) {
             const tipo = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
             
+            // Esconder todos os campos de pizza
             document.querySelectorAll(`.pizza-fields`).forEach(el => {
                 el.classList.remove('active');
             });
             
+            // Mostrar apenas os campos do tipo selecionado
             if (tipo === 'inteira') {
                 document.querySelectorAll(`.pizza-inteira-${colaboradorId}`).forEach(el => {
                     el.classList.add('active');
