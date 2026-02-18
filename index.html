@@ -298,29 +298,34 @@
             background: var(--gray-100);
             border-bottom: 1px solid var(--gray-200);
             overflow-x: auto;
+            padding: 10px;
+            gap: 10px;
         }
 
         .tab-btn {
-            padding: 15px 25px;
-            background: none;
-            border: none;
+            padding: 12px 20px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--secondary);
             transition: all 0.2s ease;
-            border-bottom: 3px solid transparent;
-            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .tab-btn:hover {
+            background: var(--gray-100);
+            border-color: var(--primary);
             color: var(--primary);
-            background: rgba(37, 99, 235, 0.05);
         }
 
         .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-            font-weight: 500;
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
         }
 
         .tab-content {
@@ -330,6 +335,103 @@
 
         .tab-content.active {
             display: block;
+        }
+
+        /* Add Button */
+        .add-button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .btn-add {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .modal-header h3 {
+            color: var(--dark);
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            color: var(--gray-400);
+            font-size: 1.3rem;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--dark);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid var(--gray-200);
         }
 
         /* Filters */
@@ -1195,6 +1297,143 @@
         </div>
     </div>
 
+    <!-- Cadastro Modals -->
+    <div class="modal" id="modalColaborador">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> <span id="modalColaboradorTitle">Novo Colaborador</span></h3>
+                <i class="fas fa-times modal-close" onclick="closeModal('colaborador')"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nome Completo *</label>
+                        <input type="text" id="modalColabNome" placeholder="Nome completo">
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Nascimento *</label>
+                        <input type="date" id="modalColabNascimento">
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Admissão *</label>
+                        <input type="date" id="modalColabAdmissao">
+                    </div>
+                    <div class="form-group">
+                        <label>Cidade *</label>
+                        <select id="modalColabCidade">
+                            <option value="Itanhaém">Itanhaém</option>
+                            <option value="Peruíbe">Peruíbe</option>
+                            <option value="Mongaguá">Mongaguá</option>
+                            <option value="Outra">Outra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Empresa *</label>
+                        <select id="modalColabEmpresa">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento *</label>
+                        <select id="modalColabDepartamento">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select id="modalColabStatus">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('colaborador')">Cancelar</button>
+                <button class="btn btn-success" onclick="saveColaboradorModal()">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalEmpresa">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-building"></i> Nova Empresa</h3>
+                <i class="fas fa-times modal-close" onclick="closeModal('empresa')"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nome da Empresa *</label>
+                    <input type="text" id="modalEmpresaNome" placeholder="Nome da empresa">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('empresa')">Cancelar</button>
+                <button class="btn btn-success" onclick="saveEmpresaModal()">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalDepartamento">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-sitemap"></i> Novo Departamento</h3>
+                <i class="fas fa-times modal-close" onclick="closeModal('departamento')"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nome do Departamento *</label>
+                    <input type="text" id="modalDepartamentoNome" placeholder="Nome do departamento">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('departamento')">Cancelar</button>
+                <button class="btn btn-success" onclick="saveDepartamentoModal()">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalPizza">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-pizza-slice"></i> Nova Pizza</h3>
+                <i class="fas fa-times modal-close" onclick="closeModal('pizza')"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nome da Pizza *</label>
+                        <input type="text" id="modalPizzaNome" placeholder="Ex: Calabresa">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="modalPizzaDescricao" placeholder="Ex: Molho, mussarela, calabresa...">
+                    </div>
+                    <div class="form-group">
+                        <label>Pizzaria *</label>
+                        <input type="text" id="modalPizzaPizzaria" placeholder="Ex: Pizza Hut">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (R$) *</label>
+                        <input type="number" id="modalPizzaValor" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('pizza')">Cancelar</button>
+                <button class="btn btn-success" onclick="savePizzaModal()">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -1280,6 +1519,7 @@
         let pizzas = [];
         let valoresAbertos = [];
         let currentPedidoId = null;
+        let editingColaboradorId = null;
 
         // Utility Functions
         function showLoading() {
@@ -1456,6 +1696,83 @@
             const aniversarioEsteAno = new Date(hoje.getFullYear(), dataAdmissao.getMonth(), dataAdmissao.getDate());
             
             return aniversarioEsteAno < hoje;
+        }
+
+        // Modal Functions
+        function openModal(tipo, editId = null) {
+            if (tipo === 'colaborador') {
+                document.getElementById('modalColaborador').classList.add('active');
+                
+                if (editId) {
+                    editingColaboradorId = editId;
+                    document.getElementById('modalColaboradorTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Colaborador';
+                    
+                    const col = colaboradores.find(c => c.id === editId);
+                    if (col) {
+                        document.getElementById('modalColabNome').value = col.nome || '';
+                        document.getElementById('modalColabNascimento').value = col.dataNascimento || '';
+                        document.getElementById('modalColabAdmissao').value = col.dataAdmissao || '';
+                        document.getElementById('modalColabCidade').value = col.cidade || 'Itanhaém';
+                        document.getElementById('modalColabEmpresa').value = col.empresaId || '';
+                        document.getElementById('modalColabDepartamento').value = col.departamentoId || '';
+                        document.getElementById('modalColabStatus').value = col.status || 'Ativo';
+                    }
+                } else {
+                    editingColaboradorId = null;
+                    document.getElementById('modalColaboradorTitle').innerHTML = '<i class="fas fa-user-plus"></i> Novo Colaborador';
+                    document.getElementById('modalColabNome').value = '';
+                    document.getElementById('modalColabNascimento').value = '';
+                    document.getElementById('modalColabAdmissao').value = '';
+                    document.getElementById('modalColabCidade').value = 'Itanhaém';
+                    document.getElementById('modalColabEmpresa').value = '';
+                    document.getElementById('modalColabDepartamento').value = '';
+                    document.getElementById('modalColabStatus').value = 'Ativo';
+                }
+                
+                // Carregar empresas e departamentos nos selects
+                const empresaSelect = document.getElementById('modalColabEmpresa');
+                empresaSelect.innerHTML = '<option value="">Selecione...</option>';
+                empresas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(emp => {
+                    empresaSelect.innerHTML += `<option value="${emp.id}">${emp.nome}</option>`;
+                });
+                
+                const deptoSelect = document.getElementById('modalColabDepartamento');
+                deptoSelect.innerHTML = '<option value="">Selecione...</option>';
+                departamentos.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(dep => {
+                    deptoSelect.innerHTML += `<option value="${dep.id}">${dep.nome}</option>`;
+                });
+            }
+            else if (tipo === 'empresa') {
+                document.getElementById('modalEmpresa').classList.add('active');
+                document.getElementById('modalEmpresaNome').value = '';
+            }
+            else if (tipo === 'departamento') {
+                document.getElementById('modalDepartamento').classList.add('active');
+                document.getElementById('modalDepartamentoNome').value = '';
+            }
+            else if (tipo === 'pizza') {
+                document.getElementById('modalPizza').classList.add('active');
+                document.getElementById('modalPizzaNome').value = '';
+                document.getElementById('modalPizzaDescricao').value = '';
+                document.getElementById('modalPizzaPizzaria').value = '';
+                document.getElementById('modalPizzaValor').value = '';
+            }
+        }
+
+        function closeModal(tipo) {
+            if (tipo === 'colaborador') {
+                document.getElementById('modalColaborador').classList.remove('active');
+                editingColaboradorId = null;
+            }
+            else if (tipo === 'empresa') {
+                document.getElementById('modalEmpresa').classList.remove('active');
+            }
+            else if (tipo === 'departamento') {
+                document.getElementById('modalDepartamento').classList.remove('active');
+            }
+            else if (tipo === 'pizza') {
+                document.getElementById('modalPizza').classList.remove('active');
+            }
         }
 
         // Status Modal Functions
@@ -2058,7 +2375,7 @@
                         <label>Pizza</label>
                         <select id="pizzaSelect-${colaboradorId}">
                             <option value="">Selecione uma pizza...</option>
-                            ${pizzas.map(p => `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`).join('')}
+                            ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`).join('')}
                         </select>
                     </div>
                     
@@ -2488,6 +2805,12 @@
                     </div>
                     
                     <div id="tabColaboradores" class="tab-content active">
+                        <div class="add-button-container">
+                            <button class="btn-add" onclick="openModal('colaborador')">
+                                <i class="fas fa-plus-circle"></i> Novo Colaborador
+                            </button>
+                        </div>
+                        
                         <div class="filters-container">
                             <div class="filters-header" onclick="toggleFilters('colab')">
                                 <span><i class="fas fa-filter"></i> Filtros</span>
@@ -2521,61 +2844,6 @@
                             </div>
                         </div>
                         
-                        <div class="form-container">
-                            <div class="form-title">
-                                <i class="fas fa-user-plus"></i> Novo Colaborador
-                            </div>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Nome Completo</label>
-                                    <input type="text" id="colabNome" placeholder="Nome completo">
-                                </div>
-                                <div class="form-group">
-                                    <label>Data de Nascimento</label>
-                                    <input type="date" id="colabNascimento">
-                                </div>
-                                <div class="form-group">
-                                    <label>Data de Admissão</label>
-                                    <input type="date" id="colabAdmissao">
-                                </div>
-                                <div class="form-group">
-                                    <label>Cidade</label>
-                                    <select id="colabCidade">
-                                        <option value="Itanhaém">Itanhaém</option>
-                                        <option value="Peruíbe">Peruíbe</option>
-                                        <option value="Mongaguá">Mongaguá</option>
-                                        <option value="Outra">Outra</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Empresa</label>
-                                    <select id="colabEmpresa">
-                                        <option value="">Selecione...</option>
-                                        ${empresas.map(e => `<option value="${e.id}">${e.nome}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Departamento</label>
-                                    <select id="colabDepartamento">
-                                        <option value="">Selecione...</option>
-                                        ${departamentos.map(d => `<option value="${d.id}">${d.nome}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <select id="colabStatus">
-                                        <option value="Ativo">Ativo</option>
-                                        <option value="Inativo">Inativo</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="saveColaborador()">
-                                    <i class="fas fa-save"></i> Salvar Colaborador
-                                </button>
-                            </div>
-                        </div>
-                        
                         <div class="table-container">
                             <h3 style="margin-bottom: 20px;">Lista de Colaboradores</h3>
                             <table id="colaboradoresTable">
@@ -2597,6 +2865,12 @@
                     </div>
                     
                     <div id="tabEmpresas" class="tab-content">
+                        <div class="add-button-container">
+                            <button class="btn-add" onclick="openModal('empresa')">
+                                <i class="fas fa-plus-circle"></i> Nova Empresa
+                            </button>
+                        </div>
+                        
                         <div class="filters-container">
                             <div class="filters-header" onclick="toggleFilters('emp')">
                                 <span><i class="fas fa-filter"></i> Filtros</span>
@@ -2609,23 +2883,6 @@
                                         <input type="text" id="filtroNomeEmp" placeholder="Buscar por nome...">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-container">
-                            <div class="form-title">
-                                <i class="fas fa-building"></i> Nova Empresa
-                            </div>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Nome da Empresa</label>
-                                    <input type="text" id="empresaNome" placeholder="Nome da empresa">
-                                </div>
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="saveEmpresa()">
-                                    <i class="fas fa-save"></i> Salvar Empresa
-                                </button>
                             </div>
                         </div>
                         
@@ -2645,6 +2902,12 @@
                     </div>
                     
                     <div id="tabDepartamentos" class="tab-content">
+                        <div class="add-button-container">
+                            <button class="btn-add" onclick="openModal('departamento')">
+                                <i class="fas fa-plus-circle"></i> Novo Departamento
+                            </button>
+                        </div>
+                        
                         <div class="filters-container">
                             <div class="filters-header" onclick="toggleFilters('dep')">
                                 <span><i class="fas fa-filter"></i> Filtros</span>
@@ -2657,23 +2920,6 @@
                                         <input type="text" id="filtroNomeDep" placeholder="Buscar por nome...">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-container">
-                            <div class="form-title">
-                                <i class="fas fa-sitemap"></i> Novo Departamento
-                            </div>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Nome do Departamento</label>
-                                    <input type="text" id="departamentoNome" placeholder="Nome do departamento">
-                                </div>
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="saveDepartamento()">
-                                    <i class="fas fa-save"></i> Salvar Departamento
-                                </button>
                             </div>
                         </div>
                         
@@ -2693,6 +2939,12 @@
                     </div>
                     
                     <div id="tabPizzas" class="tab-content">
+                        <div class="add-button-container">
+                            <button class="btn-add" onclick="openModal('pizza')">
+                                <i class="fas fa-plus-circle"></i> Nova Pizza
+                            </button>
+                        </div>
+                        
                         <div class="filters-container">
                             <div class="filters-header" onclick="toggleFilters('pizza')">
                                 <span><i class="fas fa-filter"></i> Filtros</span>
@@ -2709,35 +2961,6 @@
                                         <input type="text" id="filtroPizzaria" placeholder="Buscar por pizzaria...">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-container">
-                            <div class="form-title">
-                                <i class="fas fa-plus-circle"></i> Nova Pizza
-                            </div>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Nome da Pizza</label>
-                                    <input type="text" id="pizzaNome" placeholder="Ex: Calabresa">
-                                </div>
-                                <div class="form-group">
-                                    <label>Descrição</label>
-                                    <input type="text" id="pizzaDescricao" placeholder="Ex: Molho, mussarela, calabresa...">
-                                </div>
-                                <div class="form-group">
-                                    <label>Pizzaria</label>
-                                    <input type="text" id="pizzaPizzaria" placeholder="Ex: Pizza Hut">
-                                </div>
-                                <div class="form-group">
-                                    <label>Valor (R$)</label>
-                                    <input type="number" id="pizzaValor" step="0.01" min="0" placeholder="0.00">
-                                </div>
-                            </div>
-                            <div style="margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="savePizza()">
-                                    <i class="fas fa-save"></i> Salvar Pizza
-                                </button>
                             </div>
                         </div>
                         
@@ -3095,12 +3318,132 @@
             }
         }
 
-        // Pizza Functions
-        async function savePizza() {
-            const nome = document.getElementById('pizzaNome').value.trim();
-            const descricao = document.getElementById('pizzaDescricao').value.trim();
-            const pizzaria = document.getElementById('pizzaPizzaria').value.trim();
-            const valor = parseFloat(document.getElementById('pizzaValor').value);
+        // Modal Save Functions
+        async function saveColaboradorModal() {
+            const nome = document.getElementById('modalColabNome').value.trim();
+            const dataNascimento = document.getElementById('modalColabNascimento').value;
+            const dataAdmissao = document.getElementById('modalColabAdmissao').value;
+            const cidade = document.getElementById('modalColabCidade').value;
+            const empresaId = document.getElementById('modalColabEmpresa').value;
+            const departamentoId = document.getElementById('modalColabDepartamento').value;
+            const status = document.getElementById('modalColabStatus').value;
+            
+            if (!nome || !dataNascimento || !dataAdmissao || !cidade || !empresaId || !departamentoId) {
+                showToast('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+            
+            const empresa = empresas.find(e => e.id === empresaId);
+            const departamento = departamentos.find(d => d.id === departamentoId);
+            
+            showLoading();
+            try {
+                if (editingColaboradorId) {
+                    const dataInativacao = status === 'Inativo' ? new Date() : null;
+                    
+                    await db.collection('colaboradores').doc(editingColaboradorId).update({
+                        nome,
+                        dataNascimento,
+                        dataAdmissao,
+                        cidade,
+                        empresaId,
+                        empresaNome: empresa ? empresa.nome : '',
+                        departamentoId,
+                        departamentoNome: departamento ? departamento.nome : '',
+                        status,
+                        dataInativacao,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    if (status === 'Inativo') {
+                        await criarValorAbertoParaInativo(editingColaboradorId, dataInativacao);
+                    }
+                    
+                    showToast('Colaborador atualizado com sucesso!', 'success');
+                } else {
+                    await db.collection('colaboradores').add({
+                        nome,
+                        dataNascimento,
+                        dataAdmissao,
+                        cidade,
+                        empresaId,
+                        empresaNome: empresa ? empresa.nome : '',
+                        departamentoId,
+                        departamentoNome: departamento ? departamento.nome : '',
+                        status,
+                        dataCriacao: new Date()
+                    });
+                    
+                    showToast('Colaborador cadastrado com sucesso!', 'success');
+                }
+                
+                closeModal('colaborador');
+                await loadColaboradoresList();
+            } catch (error) {
+                console.error('Error saving colaborador:', error);
+                showToast('Erro ao salvar colaborador', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function saveEmpresaModal() {
+            const nome = document.getElementById('modalEmpresaNome').value.trim();
+            
+            if (!nome) {
+                showToast('Digite o nome da empresa', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                await db.collection('empresas').add({
+                    nome,
+                    dataCriacao: new Date()
+                });
+                
+                closeModal('empresa');
+                await loadEmpresasList();
+                showToast('Empresa cadastrada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error saving empresa:', error);
+                showToast('Erro ao cadastrar empresa', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function saveDepartamentoModal() {
+            const nome = document.getElementById('modalDepartamentoNome').value.trim();
+            
+            if (!nome) {
+                showToast('Digite o nome do departamento', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                await db.collection('departamentos').add({
+                    nome,
+                    dataCriacao: new Date()
+                });
+                
+                closeModal('departamento');
+                await loadDepartamentosList();
+                showToast('Departamento cadastrado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error saving departamento:', error);
+                showToast('Erro ao cadastrar departamento', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function savePizzaModal() {
+            const nome = document.getElementById('modalPizzaNome').value.trim();
+            const descricao = document.getElementById('modalPizzaDescricao').value.trim();
+            const pizzaria = document.getElementById('modalPizzaPizzaria').value.trim();
+            const valor = parseFloat(document.getElementById('modalPizzaValor').value);
             
             if (!nome || !pizzaria || !valor) {
                 showToast('Preencha todos os campos obrigatórios', 'error');
@@ -3117,11 +3460,7 @@
                     dataCriacao: new Date()
                 });
                 
-                document.getElementById('pizzaNome').value = '';
-                document.getElementById('pizzaDescricao').value = '';
-                document.getElementById('pizzaPizzaria').value = '';
-                document.getElementById('pizzaValor').value = '';
-                
+                closeModal('pizza');
                 await loadPizzasList();
                 showToast('Pizza cadastrada com sucesso!', 'success');
             } catch (error) {
@@ -3132,111 +3471,15 @@
             }
         }
 
-        async function editPizza(id) {
-            const pizza = pizzas.find(p => p.id === id);
-            if (!pizza) return;
-            
-            const novoNome = prompt('Novo nome da pizza:', pizza.nome);
-            if (!novoNome) return;
-            
-            const novaDescricao = prompt('Nova descrição:', pizza.descricao || '');
-            const novaPizzaria = prompt('Nova pizzaria:', pizza.pizzaria);
-            if (!novaPizzaria) return;
-            
-            const novoValor = parseFloat(prompt('Novo valor (R$):', pizza.valor));
-            if (isNaN(novoValor)) return;
-            
-            showLoading();
-            try {
-                await db.collection('pizzas').doc(id).update({
-                    nome: novoNome,
-                    descricao: novaDescricao,
-                    pizzaria: novaPizzaria,
-                    valor: novoValor
-                });
-                
-                await loadPizzasList();
-                showToast('Pizza atualizada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error editing pizza:', error);
-                showToast('Erro ao atualizar pizza', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deletePizza(id) {
-            if (!confirm('Tem certeza que deseja excluir esta pizza?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('pizzas').doc(id).delete();
-                await loadPizzasList();
-                showToast('Pizza excluída com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error deleting pizza:', error);
-                showToast('Erro ao excluir pizza', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
         // Colaborador Functions
-        async function saveColaborador() {
-            const nome = document.getElementById('colabNome').value.trim();
-            const dataNascimento = document.getElementById('colabNascimento').value;
-            const dataAdmissao = document.getElementById('colabAdmissao').value;
-            const cidade = document.getElementById('colabCidade').value;
-            const empresaId = document.getElementById('colabEmpresa').value;
-            const departamentoId = document.getElementById('colabDepartamento').value;
-            const status = document.getElementById('colabStatus').value;
-            
-            if (!nome || !dataNascimento || !dataAdmissao || !cidade || !empresaId || !departamentoId) {
-                showToast('Preencha todos os campos obrigatórios', 'error');
-                return;
-            }
-            
-            const empresa = empresas.find(e => e.id === empresaId);
-            const departamento = departamentos.find(d => d.id === departamentoId);
-            
-            showLoading();
-            try {
-                await db.collection('colaboradores').add({
-                    nome,
-                    dataNascimento,
-                    dataAdmissao,
-                    cidade,
-                    empresaId,
-                    empresaNome: empresa ? empresa.nome : '',
-                    departamentoId,
-                    departamentoNome: departamento ? departamento.nome : '',
-                    status,
-                    dataCriacao: new Date()
-                });
-                
-                document.getElementById('colabNome').value = '';
-                document.getElementById('colabNascimento').value = '';
-                document.getElementById('colabAdmissao').value = '';
-                document.getElementById('colabCidade').value = 'Itanhaém';
-                document.getElementById('colabEmpresa').value = '';
-                document.getElementById('colabDepartamento').value = '';
-                document.getElementById('colabStatus').value = 'Ativo';
-                
-                await loadColaboradoresList();
-                showToast('Colaborador cadastrado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving colaborador:', error);
-                showToast('Erro ao cadastrar colaborador', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
         async function loadColaboradoresList() {
             showLoading();
             try {
                 const snapshot = await db.collection('colaboradores').get();
                 colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Ordenar alfabeticamente
+                colaboradores.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
                 
                 const tbody = document.getElementById('colaboradoresTableBody');
                 if (!tbody) return;
@@ -3260,7 +3503,7 @@
                         <td>${col.departamentoNome || '-'}</td>
                         <td><span class="badge ${col.status === 'Ativo' ? 'active' : 'inactive'}">${col.status || 'Inativo'}</span></td>
                         <td class="action-buttons">
-                            <button class="edit" onclick="editColaborador('${col.id}')">
+                            <button class="edit" onclick="openModal('colaborador', '${col.id}')">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="delete" onclick="deleteColaborador('${col.id}')">
@@ -3275,40 +3518,6 @@
             } catch (error) {
                 console.error('Error loading colaboradores:', error);
                 showToast('Erro ao carregar colaboradores', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function editColaborador(id) {
-            const col = colaboradores.find(c => c.id === id);
-            if (!col) return;
-            
-            const novoNome = prompt('Novo nome:', col.nome);
-            if (!novoNome) return;
-            
-            const novoStatus = prompt('Novo status (Ativo/Inativo):', col.status);
-            if (!novoStatus || (novoStatus !== 'Ativo' && novoStatus !== 'Inativo')) return;
-            
-            showLoading();
-            try {
-                const dataInativacao = novoStatus === 'Inativo' ? new Date() : null;
-                
-                await db.collection('colaboradores').doc(id).update({
-                    nome: novoNome,
-                    status: novoStatus,
-                    dataInativacao
-                });
-                
-                if (novoStatus === 'Inativo') {
-                    await criarValorAbertoParaInativo(id, dataInativacao);
-                }
-                
-                await loadColaboradoresList();
-                showToast('Colaborador atualizado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error editing colaborador:', error);
-                showToast('Erro ao atualizar colaborador', 'error');
             } finally {
                 hideLoading();
             }
@@ -3344,37 +3553,14 @@
         }
 
         // Empresa Functions
-        async function saveEmpresa() {
-            const nome = document.getElementById('empresaNome').value.trim();
-            
-            if (!nome) {
-                showToast('Digite o nome da empresa', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                await db.collection('empresas').add({
-                    nome,
-                    dataCriacao: new Date()
-                });
-                
-                document.getElementById('empresaNome').value = '';
-                await loadEmpresasList();
-                showToast('Empresa cadastrada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving empresa:', error);
-                showToast('Erro ao cadastrar empresa', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
         async function loadEmpresasList() {
             showLoading();
             try {
                 const snapshot = await db.collection('empresas').get();
                 empresas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Ordenar alfabeticamente
+                empresas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
                 
                 const tbody = document.getElementById('empresasTableBody');
                 if (!tbody) return;
@@ -3447,37 +3633,14 @@
         }
 
         // Departamento Functions
-        async function saveDepartamento() {
-            const nome = document.getElementById('departamentoNome').value.trim();
-            
-            if (!nome) {
-                showToast('Digite o nome do departamento', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                await db.collection('departamentos').add({
-                    nome,
-                    dataCriacao: new Date()
-                });
-                
-                document.getElementById('departamentoNome').value = '';
-                await loadDepartamentosList();
-                showToast('Departamento cadastrado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving departamento:', error);
-                showToast('Erro ao cadastrar departamento', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
         async function loadDepartamentosList() {
             showLoading();
             try {
                 const snapshot = await db.collection('departamentos').get();
                 departamentos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Ordenar alfabeticamente
+                departamentos.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
                 
                 const tbody = document.getElementById('departamentosTableBody');
                 if (!tbody) return;
@@ -3544,6 +3707,98 @@
             } catch (error) {
                 console.error('Error deleting departamento:', error);
                 showToast('Erro ao excluir departamento', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Pizza Functions
+        async function loadPizzasList() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('pizzas').get();
+                pizzas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Ordenar alfabeticamente
+                pizzas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+                
+                const tbody = document.getElementById('pizzasTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                pizzas.forEach(pizza => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${pizza.nome || '-'}</td>
+                        <td>${pizza.descricao || '-'}</td>
+                        <td>${pizza.pizzaria || '-'}</td>
+                        <td>R$ ${parseFloat(pizza.valor || 0).toFixed(2)}</td>
+                        <td class="action-buttons">
+                            <button class="edit" onclick="editPizza('${pizza.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete" onclick="deletePizza('${pizza.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                filterPizzas();
+            } catch (error) {
+                console.error('Error loading pizzas:', error);
+                showToast('Erro ao carregar pizzas', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function editPizza(id) {
+            const pizza = pizzas.find(p => p.id === id);
+            if (!pizza) return;
+            
+            const novoNome = prompt('Novo nome da pizza:', pizza.nome);
+            if (!novoNome) return;
+            
+            const novaDescricao = prompt('Nova descrição:', pizza.descricao || '');
+            const novaPizzaria = prompt('Nova pizzaria:', pizza.pizzaria);
+            if (!novaPizzaria) return;
+            
+            const novoValor = parseFloat(prompt('Novo valor (R$):', pizza.valor));
+            if (isNaN(novoValor)) return;
+            
+            showLoading();
+            try {
+                await db.collection('pizzas').doc(id).update({
+                    nome: novoNome,
+                    descricao: novaDescricao,
+                    pizzaria: novaPizzaria,
+                    valor: novoValor
+                });
+                
+                await loadPizzasList();
+                showToast('Pizza atualizada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error editing pizza:', error);
+                showToast('Erro ao atualizar pizza', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deletePizza(id) {
+            if (!confirm('Tem certeza que deseja excluir esta pizza?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('pizzas').doc(id).delete();
+                await loadPizzasList();
+                showToast('Pizza excluída com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting pizza:', error);
+                showToast('Erro ao excluir pizza', 'error');
             } finally {
                 hideLoading();
             }
@@ -3655,46 +3910,6 @@
                 }
             } catch (error) {
                 console.error('Error creating valor aberto:', error);
-            }
-        }
-
-        // Pizza List Functions
-        async function loadPizzasList() {
-            showLoading();
-            try {
-                const snapshot = await db.collection('pizzas').get();
-                pizzas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                const tbody = document.getElementById('pizzasTableBody');
-                if (!tbody) return;
-                
-                tbody.innerHTML = '';
-                
-                pizzas.forEach(pizza => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${pizza.nome || '-'}</td>
-                        <td>${pizza.descricao || '-'}</td>
-                        <td>${pizza.pizzaria || '-'}</td>
-                        <td>R$ ${parseFloat(pizza.valor || 0).toFixed(2)}</td>
-                        <td class="action-buttons">
-                            <button class="edit" onclick="editPizza('${pizza.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete" onclick="deletePizza('${pizza.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                
-                filterPizzas();
-            } catch (error) {
-                console.error('Error loading pizzas:', error);
-                showToast('Erro ao carregar pizzas', 'error');
-            } finally {
-                hideLoading();
             }
         }
 
