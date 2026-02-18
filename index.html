@@ -384,9 +384,14 @@
             color: var(--gray-600);
         }
 
-        .person-card.past-birthday .city-badge {
-            background-color: var(--gray-400);
-            color: var(--gray-700);
+        .person-card.mongagua-alert {
+            border-left: 4px solid var(--warning);
+            background-color: #fff3cd;
+        }
+
+        .person-card.mongagua-alert .city-badge {
+            background-color: var(--warning);
+            color: var(--dark);
         }
 
         .person-card:hover {
@@ -426,14 +431,9 @@
             font-weight: 500;
         }
 
-        .city-badge.outside {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
         .city-badge.mongagua {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--warning);
+            color: var(--dark);
         }
 
         .date-badge {
@@ -634,6 +634,7 @@
             display: flex;
             gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .radio-group label {
@@ -695,6 +696,11 @@
         .badge.inactive {
             background: #fee2e2;
             color: #991b1b;
+        }
+
+        .badge.warning {
+            background: #fff3cd;
+            color: #856404;
         }
 
         .action-buttons {
@@ -820,6 +826,15 @@
 
         .btn-success:hover {
             background: #16a34a;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e68900;
         }
 
         /* Responsive */
@@ -1375,7 +1390,7 @@
                     if (aPassou && !bPassou) return 1; // a vai para o final
                     if (!aPassou && bPassou) return -1; // b vai para o final
                     
-                    // Ambos não passaram ou ambos passaram - ordena por dias
+                    // Ambos não passaram ou ambos passados - ordena por dias
                     return diasA - diasB;
                 });
                 
@@ -1599,15 +1614,20 @@
             
             const dataAdmissao = parseDateISO(colaborador.dataAdmissao) || new Date(colaborador.dataAdmissao);
             const dataFormatada = formatDateBR(dataAdmissao);
+            const dataCurta = formatDateShortBR(dataAdmissao);
             const anosEmpresa = new Date().getFullYear() - dataAdmissao.getFullYear();
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
-            const isOutside = !colaborador.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(colaborador.cidade);
             
             // Verifica se o aniversário já passou
             const pastAnniversary = isPastCompanyAnniversary(dataAdmissao);
             if (pastAnniversary) {
                 card.classList.add('past-birthday');
+            }
+            
+            // Adiciona alerta visual para Mongaguá
+            if (isMongagua) {
+                card.classList.add('mongagua-alert');
             }
             
             card.innerHTML = `
@@ -1618,10 +1638,12 @@
                         <p><i class="fas fa-map-marker-alt"></i> ${colaborador.cidade || 'Não informada'}</p>
                         <p><i class="fas fa-calendar-alt"></i> ${dataFormatada} (${anosEmpresa} anos)</p>
                     </div>
-                    <span class="city-badge ${isMongagua ? 'mongagua' : isOutside ? 'outside' : ''}">
-                        ${isMongagua ? 'Mongaguá ⚠️' : isOutside ? 'Fora da Região' : 'Região'}
+                    <span class="date-badge">
+                        ${dataCurta}
                     </span>
                 </div>
+                
+                ${isMongagua ? '<div class="badge warning" style="margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i> Verificar disponibilidade de entrega</div>' : ''}
                 
                 <div class="checklist-container">
                     <div class="checklist-header" onclick="toggleChecklist('${colaborador.id}')">
@@ -1729,7 +1751,7 @@
                         <label>Pizza</label>
                         <select id="pizzaSelect-${colaboradorId}">
                             <option value="">Selecione uma pizza...</option>
-                            ${pizzas.map(p => `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${p.valor})</option>`).join('')}
+                            ${pizzas.map(p => `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`).join('')}
                         </select>
                     </div>
                     
@@ -1749,7 +1771,6 @@
                             <option value="Itanhaém">Itanhaém</option>
                             <option value="Peruíbe">Peruíbe</option>
                             <option value="Mongaguá">Mongaguá</option>
-                            <option value="Outra">Outra</option>
                         </select>
                     </div>
                     
@@ -1769,6 +1790,9 @@
                             </label>
                             <label>
                                 <input type="radio" name="borda-${colaboradorId}" value="catupiry"> Catupiry
+                            </label>
+                            <label>
+                                <input type="radio" name="borda-${colaboradorId}" value="sem"> Sem recheio
                             </label>
                         </div>
                     </div>
@@ -1849,21 +1873,6 @@
                 </div>
                 
                 <div class="dashboard-cards" id="financeiroCards"></div>
-                
-                <div class="charts-container">
-                    <div class="chart-card">
-                        <h3>Gastos por Pizzaria</h3>
-                        <div class="chart-placeholder"></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Evolução Mensal</h3>
-                        <div class="chart-placeholder"></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Top 5 Pizzas Mais Pedidas</h3>
-                        <div class="chart-placeholder"></div>
-                    </div>
-                </div>
                 
                 <div class="table-container">
                     <h3 style="margin-bottom: 20px;">Histórico de Pedidos</h3>
@@ -2941,7 +2950,7 @@
                     horarioEntrega,
                     local,
                     enderecoCompleto,
-                    borda,
+                    borda: borda || 'sem',
                     observacoes,
                     status: 'pendente',
                     dataCriacao: new Date()
