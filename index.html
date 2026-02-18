@@ -374,14 +374,19 @@
             position: relative;
         }
 
-        .person-card.past-birthday {
+        .person-card.inactive {
             background-color: var(--gray-200);
             opacity: 0.8;
+            border-left: 4px solid var(--danger);
         }
 
-        .person-card.past-birthday .person-info h4,
-        .person-card.past-birthday .person-info p {
+        .person-card.inactive .person-info h4,
+        .person-card.inactive .person-info p {
             color: var(--gray-600);
+        }
+
+        .person-card.past-birthday {
+            background-color: var(--gray-100);
         }
 
         .person-card.mongagua-alert {
@@ -443,6 +448,16 @@
             font-weight: 500;
             background: var(--primary);
             color: white;
+        }
+
+        .inactive-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: var(--danger);
+            color: white;
+            margin-left: 8px;
         }
 
         /* Checklist */
@@ -1326,19 +1341,21 @@
                 
                 const currentMonth = new Date().getMonth() + 1;
                 const aniversariantesVida = colaboradores.filter(col => {
+                    if (col.status !== 'Ativo') return false;
                     if (!col.dataNascimento) return false;
                     const nascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
                     return nascimento.getMonth() + 1 === currentMonth;
                 }).length;
                 
                 const aniversariantesEmpresa = colaboradores.filter(col => {
+                    if (col.status !== 'Ativo') return false;
                     if (!col.dataAdmissao) return false;
                     const admissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
                     return admissao.getMonth() + 1 === currentMonth;
                 }).length;
                 
                 const foraRegiao = colaboradores.filter(col => 
-                    col.cidade && !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(col.cidade)
+                    col.status === 'Ativo' && col.cidade && !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(col.cidade)
                 ).length;
 
                 container.innerHTML = `
@@ -1434,9 +1451,9 @@
                             <div class="filter-group">
                                 <label>Status</label>
                                 <select id="filtroStatusVida">
+                                    <option value="ativos">Ativos</option>
+                                    <option value="inativos">Inativos</option>
                                     <option value="todos">Todos</option>
-                                    <option value="proximos">Próximos</option>
-                                    <option value="passados">Passados</option>
                                 </select>
                             </div>
                         </div>
@@ -1445,12 +1462,6 @@
                 
                 <div class="cards-list" id="vidaCardsList"></div>
             `;
-
-            const currentMonth = new Date().getMonth() + 1;
-            const mesFilter = document.getElementById('filtroMesVida');
-            if (mesFilter) {
-                mesFilter.value = currentMonth.toString();
-            }
 
             const filtroNome = document.getElementById('filtroNomeVida');
             const filtroMes = document.getElementById('filtroMesVida');
@@ -1474,22 +1485,9 @@
                 const snapshot = await db.collection('colaboradores').get();
                 const colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                const colaboradoresOrdenados = [...colaboradores].sort((a, b) => {
-                    const diasA = getDaysUntilNextBirthday(a.dataNascimento);
-                    const diasB = getDaysUntilNextBirthday(b.dataNascimento);
-                    
-                    const aPassou = isPastBirthday(a.dataNascimento);
-                    const bPassou = isPastBirthday(b.dataNascimento);
-                    
-                    if (aPassou && !bPassou) return 1;
-                    if (!aPassou && bPassou) return -1;
-                    
-                    return diasA - diasB;
-                });
-                
                 container.innerHTML = '';
                 
-                for (const col of colaboradoresOrdenados) {
+                for (const col of colaboradores) {
                     const checklistSnapshot = await db.collection('checklists')
                         .where('colaboradorId', '==', col.id)
                         .where('tipo', '==', 'vida')
@@ -1517,21 +1515,28 @@
             const card = document.createElement('div');
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
+            card.dataset.status = colaborador.status || 'Ativo';
             
             const dataNascimento = parseDateISO(colaborador.dataNascimento) || new Date(colaborador.dataNascimento);
             const dataFormatada = formatDateBR(dataNascimento);
             const dataCurta = formatDateShortBR(dataNascimento);
             const idade = calculateAge(dataNascimento);
             
+            if (colaborador.status === 'Inativo') {
+                card.classList.add('inactive');
+            }
+            
             const pastBirthday = isPastBirthday(dataNascimento);
-            if (pastBirthday) {
+            if (pastBirthday && colaborador.status === 'Ativo') {
                 card.classList.add('past-birthday');
             }
             
             card.innerHTML = `
                 <div class="person-card-header">
                     <div class="person-info">
-                        <h4>${colaborador.nome || 'Sem nome'}</h4>
+                        <h4>${colaborador.nome || 'Sem nome'}
+                            ${colaborador.status === 'Inativo' ? '<span class="inactive-badge"><i class="fas fa-user-slash"></i> Inativo</span>' : ''}
+                        </h4>
                         <p><i class="fas fa-sitemap"></i> ${colaborador.departamentoNome || 'Sem departamento'}</p>
                         <p><i class="fas fa-map-marker-alt"></i> ${colaborador.cidade || 'Não informada'}</p>
                         <p><i class="fas fa-birthday-cake"></i> ${dataFormatada} (${idade} anos)</p>
@@ -1601,9 +1606,9 @@
                             <div class="filter-group">
                                 <label>Status</label>
                                 <select id="filtroStatusEmpresa">
+                                    <option value="ativos">Ativos</option>
+                                    <option value="inativos">Inativos</option>
                                     <option value="todos">Todos</option>
-                                    <option value="proximos">Próximos</option>
-                                    <option value="passados">Passados</option>
                                 </select>
                             </div>
                         </div>
@@ -1612,12 +1617,6 @@
                 
                 <div class="cards-list" id="empresaCardsList"></div>
             `;
-
-            const currentMonth = new Date().getMonth() + 1;
-            const mesFilter = document.getElementById('filtroMesEmpresa');
-            if (mesFilter) {
-                mesFilter.value = currentMonth.toString();
-            }
 
             const filtroNome = document.getElementById('filtroNomeEmpresa');
             const filtroMes = document.getElementById('filtroMesEmpresa');
@@ -1641,35 +1640,9 @@
                 const snapshot = await db.collection('colaboradores').get();
                 const colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                const currentMonth = new Date().getMonth() + 1;
-                const colaboradoresDoMes = colaboradores.filter(col => {
-                    if (!col.dataAdmissao) return false;
-                    const admissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                    return admissao.getMonth() + 1 === currentMonth;
-                });
-                
-                const colaboradoresOrdenados = [...colaboradoresDoMes].sort((a, b) => {
-                    const diasA = getDaysUntilNextCompanyAnniversary(a.dataAdmissao);
-                    const diasB = getDaysUntilNextCompanyAnniversary(b.dataAdmissao);
-                    
-                    const aPassou = isPastCompanyAnniversary(a.dataAdmissao);
-                    const bPassou = isPastCompanyAnniversary(b.dataAdmissao);
-                    
-                    if (aPassou && !bPassou) return 1;
-                    if (!aPassou && bPassou) return -1;
-                    
-                    if (!aPassou && !bPassou) return diasA - diasB;
-                    
-                    const dataA = new Date(a.dataAdmissao);
-                    const dataB = new Date(b.dataAdmissao);
-                    const anivA = new Date(2024, dataA.getMonth(), dataA.getDate());
-                    const anivB = new Date(2024, dataB.getMonth(), dataB.getDate());
-                    return anivB - anivA;
-                });
-                
                 container.innerHTML = '';
                 
-                for (const col of colaboradoresOrdenados) {
+                for (const col of colaboradores) {
                     const checklistSnapshot = await db.collection('checklists')
                         .where('colaboradorId', '==', col.id)
                         .where('tipo', '==', 'empresa')
@@ -1683,6 +1656,8 @@
                     const card = createEmpresaCard(col, checklist);
                     container.appendChild(card);
                 }
+                
+                filterEmpresa();
             } catch (error) {
                 console.error('Error loading empresa cards:', error);
                 showToast('Erro ao carregar aniversariantes', 'error');
@@ -1695,6 +1670,7 @@
             const card = document.createElement('div');
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
+            card.dataset.status = colaborador.status || 'Ativo';
             
             const dataAdmissao = parseDateISO(colaborador.dataAdmissao) || new Date(colaborador.dataAdmissao);
             const dataFormatada = formatDateBR(dataAdmissao);
@@ -1703,19 +1679,25 @@
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
             
+            if (colaborador.status === 'Inativo') {
+                card.classList.add('inactive');
+            }
+            
             const pastAnniversary = isPastCompanyAnniversary(dataAdmissao);
-            if (pastAnniversary) {
+            if (pastAnniversary && colaborador.status === 'Ativo') {
                 card.classList.add('past-birthday');
             }
             
-            if (isMongagua) {
+            if (isMongagua && colaborador.status === 'Ativo') {
                 card.classList.add('mongagua-alert');
             }
             
             card.innerHTML = `
                 <div class="person-card-header">
                     <div class="person-info">
-                        <h4>${colaborador.nome || 'Sem nome'}</h4>
+                        <h4>${colaborador.nome || 'Sem nome'}
+                            ${colaborador.status === 'Inativo' ? '<span class="inactive-badge"><i class="fas fa-user-slash"></i> Inativo</span>' : ''}
+                        </h4>
                         <p><i class="fas fa-sitemap"></i> ${colaborador.departamentoNome || 'Sem departamento'}</p>
                         <p><i class="fas fa-map-marker-alt"></i> ${colaborador.cidade || 'Não informada'}</p>
                         <p><i class="fas fa-calendar-alt"></i> ${dataFormatada} (${anosEmpresa} anos)</p>
@@ -1725,7 +1707,7 @@
                     </span>
                 </div>
                 
-                ${isMongagua ? '<div class="badge warning" style="margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i> Verificar disponibilidade de entrega</div>' : ''}
+                ${isMongagua && colaborador.status === 'Ativo' ? '<div class="badge warning" style="margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i> Verificar disponibilidade de entrega</div>' : ''}
                 
                 <div class="checklist-container">
                     <div class="checklist-header" onclick="toggleChecklist('${colaborador.id}')">
@@ -2025,8 +2007,6 @@
                         const dataEntrega = pedido.dataEntrega.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
                         const hoje = new Date();
                         
-                        // Se a data de entrega já passou e o colaborador foi inativado depois, manter
-                        // Se a data de entrega não chegou e o colaborador foi inativado antes, manter
                         if (dataEntrega < hoje && colaborador.dataInativacao && colaborador.dataInativacao > dataEntrega) {
                             valoresAbertosAtualizados.push(valor);
                         } else if (dataEntrega >= hoje && colaborador.dataInativacao && colaborador.dataInativacao < hoje) {
@@ -2112,7 +2092,6 @@
                             
                             const isInativo = colaborador && colaborador.status === 'Inativo';
                             
-                            // Calcular total baseado nos itens
                             let totalAtual = valor.valor;
                             const itens = valor.itens || [];
                             
@@ -2205,13 +2184,18 @@
                                 <td>${pedido.dataEntregaBR || formatDateBR(pedido.dataEntrega) || '-'}</td>
                                 <td>R$ ${pizza ? parseFloat(pizza.valor).toFixed(2) : '0.00'}</td>
                                 <td>
-                                    <span class="badge ${pedido.status === 'entregue' ? 'entregue' : pedido.status === 'cancelado' ? 'cancelado' : 'pendente'}">
-                                        ${pedido.status || 'pendente'}
-                                    </span>
+                                    <select class="status-select" onchange="atualizarStatusPedido('${pedido.id}', this.value)" style="padding: 4px; border-radius: 4px; border: 1px solid var(--gray-200);">
+                                        <option value="pendente" ${pedido.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                                        <option value="entregue" ${pedido.status === 'entregue' ? 'selected' : ''}>Entregue</option>
+                                        <option value="cancelado" ${pedido.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                                    </select>
                                 </td>
                                 <td class="action-buttons">
-                                    <button class="edit" onclick="editarStatusPedido('${pedido.id}')">
-                                        <i class="fas fa-edit"></i> Status
+                                    <button class="edit" onclick="editarPedido('${pedido.id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete" onclick="excluirPedido('${pedido.id}')">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
                             `;
@@ -2319,16 +2303,7 @@
             }
         }
 
-        async function editarStatusPedido(pedidoId) {
-            const novoStatus = prompt('Digite o novo status (pendente/entregue/cancelado):');
-            
-            if (!novoStatus) return;
-            
-            if (!['pendente', 'entregue', 'cancelado'].includes(novoStatus)) {
-                showToast('Status inválido. Use: pendente, entregue ou cancelado', 'error');
-                return;
-            }
-            
+        async function atualizarStatusPedido(pedidoId, novoStatus) {
             showLoading();
             try {
                 await db.collection('pedidos').doc(pedidoId).update({
@@ -2336,11 +2311,30 @@
                     dataAtualizacao: new Date()
                 });
                 
-                await loadFinanceiroData();
                 showToast('Status atualizado com sucesso!', 'success');
             } catch (error) {
                 console.error('Error updating pedido status:', error);
                 showToast('Erro ao atualizar status', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function editarPedido(pedidoId) {
+            showToast('Funcionalidade de edição em desenvolvimento', 'info');
+        }
+
+        async function excluirPedido(pedidoId) {
+            if (!confirm('Tem certeza que deseja excluir este pedido?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('pedidos').doc(pedidoId).delete();
+                await loadFinanceiroData();
+                showToast('Pedido excluído com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting pedido:', error);
+                showToast('Erro ao excluir pedido', 'error');
             } finally {
                 hideLoading();
             }
@@ -3163,7 +3157,6 @@
                             const pizza = pizzaDoc.data();
                             const dataEntrega = pedido.dataEntrega.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
                             
-                            // Verificar se deve criar valor em aberto baseado nas regras
                             const hoje = new Date();
                             let deveCriar = false;
                             
@@ -3393,7 +3386,7 @@
             const nome = document.getElementById('filtroNomeVida')?.value?.toLowerCase() || '';
             const mes = document.getElementById('filtroMesVida')?.value;
             const ano = document.getElementById('filtroAnoVida')?.value;
-            const status = document.getElementById('filtroStatusVida')?.value;
+            const statusFilter = document.getElementById('filtroStatusVida')?.value;
             
             const cards = document.querySelectorAll('#vidaCardsList .person-card');
             
@@ -3401,8 +3394,12 @@
                 const nomeColaborador = card.querySelector('h4').textContent.toLowerCase();
                 const dataText = card.querySelector('.person-info p:last-child').textContent;
                 const dataMatch = dataText.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                const colaboradorStatus = card.dataset.status;
                 
                 let show = true;
+                
+                if (statusFilter === 'ativos' && colaboradorStatus === 'Inativo') show = false;
+                if (statusFilter === 'inativos' && colaboradorStatus === 'Ativo') show = false;
                 
                 if (nome && !nomeColaborador.includes(nome)) show = false;
                 
@@ -3414,14 +3411,6 @@
                 if (ano && dataMatch) {
                     const anoCard = parseInt(dataMatch[3]);
                     if (anoCard !== parseInt(ano)) show = false;
-                }
-                
-                if (status && status !== 'todos' && dataMatch) {
-                    const hoje = new Date();
-                    const dataAniversario = new Date(hoje.getFullYear(), parseInt(dataMatch[2]) - 1, parseInt(dataMatch[1]));
-                    
-                    if (status === 'proximos' && dataAniversario < hoje) show = false;
-                    if (status === 'passados' && dataAniversario >= hoje) show = false;
                 }
                 
                 card.style.display = show ? 'block' : 'none';
@@ -3432,7 +3421,7 @@
             const nome = document.getElementById('filtroNomeEmpresa')?.value?.toLowerCase() || '';
             const mes = document.getElementById('filtroMesEmpresa')?.value;
             const ano = document.getElementById('filtroAnoEmpresa')?.value;
-            const status = document.getElementById('filtroStatusEmpresa')?.value;
+            const statusFilter = document.getElementById('filtroStatusEmpresa')?.value;
             
             const cards = document.querySelectorAll('#empresaCardsList .person-card');
             
@@ -3440,8 +3429,12 @@
                 const nomeColaborador = card.querySelector('h4').textContent.toLowerCase();
                 const dataText = card.querySelector('.person-info p:last-child').textContent;
                 const dataMatch = dataText.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                const colaboradorStatus = card.dataset.status;
                 
                 let show = true;
+                
+                if (statusFilter === 'ativos' && colaboradorStatus === 'Inativo') show = false;
+                if (statusFilter === 'inativos' && colaboradorStatus === 'Ativo') show = false;
                 
                 if (nome && !nomeColaborador.includes(nome)) show = false;
                 
@@ -3453,14 +3446,6 @@
                 if (ano && dataMatch) {
                     const anoCard = parseInt(dataMatch[3]);
                     if (anoCard !== parseInt(ano)) show = false;
-                }
-                
-                if (status && status !== 'todos' && dataMatch) {
-                    const hoje = new Date();
-                    const dataAdmissao = new Date(hoje.getFullYear(), parseInt(dataMatch[2]) - 1, parseInt(dataMatch[1]));
-                    
-                    if (status === 'proximos' && dataAdmissao < hoje) show = false;
-                    if (status === 'passados' && dataAdmissao >= hoje) show = false;
                 }
                 
                 card.style.display = show ? 'block' : 'none';
