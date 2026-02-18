@@ -1704,6 +1704,7 @@
         let editingColaboradorId = null;
         let charts = {};
         let reportTimeout = null;
+        let dashboardFilterTimeout = null;
 
         // Utility Functions
         function showLoading() {
@@ -2023,7 +2024,7 @@
                 if (currentSection === 'financeiro') {
                     await loadFinanceiroData();
                 } else if (currentSection === 'relatorios') {
-                    await filtrarRelatorioAuto();
+                    await aplicarFiltroRelatorio();
                 }
                 
                 showToast('Status atualizado com sucesso!', 'success');
@@ -2132,6 +2133,34 @@
                             </button>
                         </div>
                         
+                        <!-- Filtro de Período Global do Dashboard -->
+                        <div class="filters-container" style="margin: 10px;">
+                            <div class="filters-header expanded" onclick="toggleFilters('dashboardPeriodo')">
+                                <span><i class="fas fa-calendar-alt"></i> Filtro de Período</span>
+                                <i class="fas fa-chevron-down" id="dashboardPeriodoFiltersIcon" style="transform: rotate(180deg);"></i>
+                            </div>
+                            <div class="filters-content expanded" id="dashboardPeriodoFiltersContent">
+                                <div class="filters-grid">
+                                    <div class="filter-group">
+                                        <label>Data Inicial (DD/MM/AAAA)</label>
+                                        <input type="text" id="dashboardFiltroInicio" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Data Final (DD/MM/AAAA)</label>
+                                        <input type="text" id="dashboardFiltroFim" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                                    <button class="btn btn-primary btn-sm" onclick="aplicarFiltroDashboard()">
+                                        <i class="fas fa-filter"></i> Aplicar Filtro
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" onclick="limparFiltroDashboard()">
+                                        <i class="fas fa-undo"></i> Limpar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div id="dashboardVida" class="dashboard-tab-content active"></div>
                         <div id="dashboardEmpresa" class="dashboard-tab-content"></div>
                         <div id="dashboardFinanceiro" class="dashboard-tab-content"></div>
@@ -2139,6 +2168,24 @@
                         <div id="dashboardColaboradores" class="dashboard-tab-content"></div>
                     </div>
                 `;
+
+                // Adicionar listeners para atualização automática com delay
+                const inicioInput = document.getElementById('dashboardFiltroInicio');
+                const fimInput = document.getElementById('dashboardFiltroFim');
+                
+                if (inicioInput) {
+                    inicioInput.addEventListener('input', () => {
+                        if (dashboardFilterTimeout) clearTimeout(dashboardFilterTimeout);
+                        dashboardFilterTimeout = setTimeout(() => aplicarFiltroDashboard(), 1000);
+                    });
+                }
+                
+                if (fimInput) {
+                    fimInput.addEventListener('input', () => {
+                        if (dashboardFilterTimeout) clearTimeout(dashboardFilterTimeout);
+                        dashboardFilterTimeout = setTimeout(() => aplicarFiltroDashboard(), 1000);
+                    });
+                }
                 
                 await Promise.all([
                     loadDashboardVida(),
@@ -2162,22 +2209,102 @@
             document.getElementById(`dashboard${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
         }
 
+        function toggleFilters(section) {
+            const content = document.getElementById(`${section}FiltersContent`);
+            const icon = document.getElementById(`${section}FiltersIcon`);
+            
+            if (content && icon) {
+                content.classList.toggle('expanded');
+                icon.style.transform = content.classList.contains('expanded') ? 'rotate(180deg)' : '';
+            }
+        }
+
+        function aplicarFiltroDashboard() {
+            const dataInicio = document.getElementById('dashboardFiltroInicio')?.value;
+            const dataFim = document.getElementById('dashboardFiltroFim')?.value;
+            
+            if (dataInicio && !validateDateBR(dataInicio)) {
+                showToast('Data inicial inválida', 'error');
+                return;
+            }
+            
+            if (dataFim && !validateDateBR(dataFim)) {
+                showToast('Data final inválida', 'error');
+                return;
+            }
+            
+            showToast('Filtro aplicado com sucesso!', 'success');
+            
+            // Recarregar todas as abas com o filtro aplicado
+            loadDashboardVida();
+            loadDashboardEmpresa();
+            loadDashboardFinanceiro();
+            loadDashboardPedidos();
+            loadDashboardColaboradores();
+        }
+
+        function limparFiltroDashboard() {
+            document.getElementById('dashboardFiltroInicio').value = '';
+            document.getElementById('dashboardFiltroFim').value = '';
+            aplicarFiltroDashboard();
+        }
+
+        function getFiltroPeriodo() {
+            const inicioStr = document.getElementById('dashboardFiltroInicio')?.value;
+            const fimStr = document.getElementById('dashboardFiltroFim')?.value;
+            
+            return {
+                inicio: inicioStr && validateDateBR(inicioStr) ? parseDateBR(inicioStr) : null,
+                fim: fimStr && validateDateBR(fimStr) ? parseDateBR(fimStr) : null
+            };
+        }
+
+        function filtrarPorPeriodo(data, campoData) {
+            const { inicio, fim } = getFiltroPeriodo();
+            if (!inicio && !fim) return true;
+            
+            const dataItem = new Date(data);
+            
+            if (inicio && dataItem < inicio) return false;
+            if (fim && dataItem > fim) return false;
+            
+            return true;
+        }
+
         async function loadDashboardVida() {
             const container = document.getElementById('dashboardVida');
+            if (!container) return;
+            
+            const { inicio, fim } = getFiltroPeriodo();
             
             const colaboradoresAtivos = colaboradores.filter(c => c.status === 'Ativo');
-            const currentMonth = new Date().getMonth() + 1;
             
+            // Filtrar aniversariantes por período se aplicável
             const aniversariantesVida = colaboradoresAtivos.filter(col => {
                 if (!col.dataNascimento) return false;
-                const nascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
-                return nascimento.getMonth() + 1 === currentMonth;
+                const dataNasc = new Date(col.dataNascimento);
+                
+                if (inicio || fim) {
+                    // Criar data do aniversário no ano do período
+                    const anoInicio = inicio ? inicio.getFullYear() : new Date().getFullYear();
+                    const anoFim = fim ? fim.getFullYear() : anoInicio;
+                    
+                    const dataAnivInicio = new Date(anoInicio, dataNasc.getMonth(), dataNasc.getDate());
+                    const dataAnivFim = new Date(anoFim, dataNasc.getMonth(), dataNasc.getDate());
+                    
+                    const dentroPeriodo = (inicio && dataAnivInicio >= inicio) || (fim && dataAnivFim <= fim);
+                    return dentroPeriodo;
+                }
+                
+                // Sem filtro: mostrar apenas mês atual
+                const hoje = new Date();
+                return dataNasc.getMonth() === hoje.getMonth();
             });
             
             const aniversariosPorMes = Array(12).fill(0);
             colaboradoresAtivos.forEach(c => {
                 if (c.dataNascimento) {
-                    const nasc = parseDateISO(c.dataNascimento) || new Date(c.dataNascimento);
+                    const nasc = new Date(c.dataNascimento);
                     aniversariosPorMes[nasc.getMonth()]++;
                 }
             });
@@ -2191,7 +2318,7 @@
                 <div class="cards-grid">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Aniversariantes do Mês</h3>
+                            <h3>${inicio || fim ? 'Aniversariantes no Período' : 'Aniversariantes do Mês'}</h3>
                             <i class="fas fa-child"></i>
                         </div>
                         <div class="card-value">${aniversariantesVida.length}</div>
@@ -2233,7 +2360,7 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <h3><i class="fas fa-map-marker-alt"></i> Distribuição por Cidade (Mês Atual)</h3>
+                        <h3><i class="fas fa-map-marker-alt"></i> Distribuição por Cidade ${inicio || fim ? '(Período Selecionado)' : '(Mês Atual)'}</h3>
                     </div>
                     <div style="height: 300px;">
                         <canvas id="dashboardVidaCidadesChart"></canvas>
@@ -2289,20 +2416,36 @@
 
         async function loadDashboardEmpresa() {
             const container = document.getElementById('dashboardEmpresa');
+            if (!container) return;
+            
+            const { inicio, fim } = getFiltroPeriodo();
             
             const colaboradoresAtivos = colaboradores.filter(c => c.status === 'Ativo');
-            const currentMonth = new Date().getMonth() + 1;
             
+            // Filtrar aniversariantes de empresa por período
             const aniversariantesEmpresa = colaboradoresAtivos.filter(col => {
                 if (!col.dataAdmissao) return false;
-                const admissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                return admissao.getMonth() + 1 === currentMonth;
+                const dataAdm = new Date(col.dataAdmissao);
+                
+                if (inicio || fim) {
+                    const anoInicio = inicio ? inicio.getFullYear() : new Date().getFullYear();
+                    const anoFim = fim ? fim.getFullYear() : anoInicio;
+                    
+                    const dataAnivInicio = new Date(anoInicio, dataAdm.getMonth(), dataAdm.getDate());
+                    const dataAnivFim = new Date(anoFim, dataAdm.getMonth(), dataAdm.getDate());
+                    
+                    const dentroPeriodo = (inicio && dataAnivInicio >= inicio) || (fim && dataAnivFim <= fim);
+                    return dentroPeriodo;
+                }
+                
+                const hoje = new Date();
+                return dataAdm.getMonth() === hoje.getMonth();
             });
             
             const aniversariosPorMes = Array(12).fill(0);
             colaboradoresAtivos.forEach(c => {
                 if (c.dataAdmissao) {
-                    const adm = parseDateISO(c.dataAdmissao) || new Date(c.dataAdmissao);
+                    const adm = new Date(c.dataAdmissao);
                     aniversariosPorMes[adm.getMonth()]++;
                 }
             });
@@ -2316,7 +2459,7 @@
                 <div class="cards-grid">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Aniversariantes do Mês</h3>
+                            <h3>${inicio || fim ? 'Aniversariantes no Período' : 'Aniversariantes do Mês'}</h3>
                             <i class="fas fa-building"></i>
                         </div>
                         <div class="card-value">${aniversariantesEmpresa.length}</div>
@@ -2332,7 +2475,7 @@
                     
                     <div class="card">
                         <div class="card-header">
-                            <h3>Mongaguá (Mês)</h3>
+                            <h3>Mongaguá (Período)</h3>
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="card-value">${aniversariantesEmpresa.filter(c => c.cidade === 'Mongaguá').length}</div>
@@ -2358,7 +2501,7 @@
                 
                 <div class="card">
                     <div class="card-header">
-                        <h3><i class="fas fa-map-marker-alt"></i> Distribuição por Cidade (Mês Atual)</h3>
+                        <h3><i class="fas fa-map-marker-alt"></i> Distribuição por Cidade ${inicio || fim ? '(Período Selecionado)' : '(Mês Atual)'}</h3>
                     </div>
                     <div style="height: 300px;">
                         <canvas id="dashboardEmpresaCidadesChart"></canvas>
@@ -2414,10 +2557,20 @@
 
         async function loadDashboardFinanceiro() {
             const container = document.getElementById('dashboardFinanceiro');
+            if (!container) return;
             
-            const pedidosEntregues = pedidos.filter(p => p.status === 'entregue');
-            const pedidosPendentes = pedidos.filter(p => p.status === 'pendente');
-            const pedidosCancelados = pedidos.filter(p => p.status === 'cancelado');
+            const { inicio, fim } = getFiltroPeriodo();
+            
+            // Filtrar pedidos por período de entrega
+            const pedidosFiltrados = pedidos.filter(ped => {
+                if (!ped.dataEntrega) return false;
+                const dataEntrega = ped.dataEntrega.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
+                return filtrarPorPeriodo(dataEntrega);
+            });
+            
+            const pedidosEntregues = pedidosFiltrados.filter(p => p.status === 'entregue');
+            const pedidosPendentes = pedidosFiltrados.filter(p => p.status === 'pendente');
+            const pedidosCancelados = pedidosFiltrados.filter(p => p.status === 'cancelado');
             
             let totalGasto = 0;
             const gastosPorMes = Array(12).fill(0);
@@ -2434,7 +2587,7 @@
             });
             
             const pizzarias = new Set();
-            pedidos.forEach(ped => {
+            pedidosFiltrados.forEach(ped => {
                 const pizza = pizzas.find(pz => pz.id === ped.pizzaId);
                 if (pizza) pizzarias.add(pizza.pizzaria);
             });
@@ -2443,7 +2596,7 @@
                 <div class="cards-grid">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Gasto Total</h3>
+                            <h3>Gasto no Período</h3>
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="card-value">R$ ${totalGasto.toFixed(2)}</div>
@@ -2451,7 +2604,15 @@
                     
                     <div class="card">
                         <div class="card-header">
-                            <h3>Pedidos Entregues</h3>
+                            <h3>Pedidos no Período</h3>
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="card-value">${pedidosFiltrados.length}</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Entregues</h3>
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="card-value">${pedidosEntregues.length}</div>
@@ -2459,18 +2620,10 @@
                     
                     <div class="card">
                         <div class="card-header">
-                            <h3>Pedidos Pendentes</h3>
+                            <h3>Pendentes</h3>
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="card-value">${pedidosPendentes.length}</div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Pizzarias Ativas</h3>
-                            <i class="fas fa-store"></i>
-                        </div>
-                        <div class="card-value">${pizzarias.size}</div>
                     </div>
                 </div>
                 
@@ -2544,12 +2697,22 @@
 
         async function loadDashboardPedidos() {
             const container = document.getElementById('dashboardPedidos');
+            if (!container) return;
+            
+            const { inicio, fim } = getFiltroPeriodo();
+            
+            // Filtrar pedidos por período
+            const pedidosFiltrados = pedidos.filter(ped => {
+                if (!ped.dataEntrega) return false;
+                const dataEntrega = ped.dataEntrega.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
+                return filtrarPorPeriodo(dataEntrega);
+            });
             
             const pedidosPorPizzaria = {};
             const pedidosPorCidade = {};
             const pedidosPorMes = Array(12).fill(0);
             
-            pedidos.forEach(ped => {
+            pedidosFiltrados.forEach(ped => {
                 const pizza = pizzas.find(pz => pz.id === ped.pizzaId);
                 if (pizza) {
                     pedidosPorPizzaria[pizza.pizzaria] = (pedidosPorPizzaria[pizza.pizzaria] || 0) + 1;
@@ -2568,7 +2731,7 @@
                             <h3>Total de Pedidos</h3>
                             <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <div class="card-value">${pedidos.length}</div>
+                        <div class="card-value">${pedidosFiltrados.length}</div>
                     </div>
                     
                     <div class="card">
@@ -2576,7 +2739,7 @@
                             <h3>Média Mensal</h3>
                             <i class="fas fa-calculator"></i>
                         </div>
-                        <div class="card-value">${(pedidos.length / 12).toFixed(1)}</div>
+                        <div class="card-value">${(pedidosFiltrados.length / 12).toFixed(1)}</div>
                     </div>
                     
                     <div class="card">
@@ -2667,6 +2830,9 @@
 
         async function loadDashboardColaboradores() {
             const container = document.getElementById('dashboardColaboradores');
+            if (!container) return;
+            
+            const { inicio, fim } = getFiltroPeriodo();
             
             const ativos = colaboradores.filter(c => c.status === 'Ativo');
             const inativos = colaboradores.filter(c => c.status === 'Inativo');
@@ -4393,17 +4559,6 @@
                 departamentos = departamentosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             } catch (error) {
                 console.error('Error loading dropdowns:', error);
-            }
-        }
-
-        // Toggle Functions
-        function toggleFilters(section) {
-            const content = document.getElementById(`${section}FiltersContent`);
-            const icon = document.getElementById(`${section}FiltersIcon`);
-            
-            if (content && icon) {
-                content.classList.toggle('expanded');
-                icon.style.transform = content.classList.contains('expanded') ? 'rotate(180deg)' : '';
             }
         }
 
