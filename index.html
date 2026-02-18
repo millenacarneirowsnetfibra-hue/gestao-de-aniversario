@@ -1713,9 +1713,13 @@
                         document.getElementById('modalColabNascimento').value = col.dataNascimento || '';
                         document.getElementById('modalColabAdmissao').value = col.dataAdmissao || '';
                         document.getElementById('modalColabCidade').value = col.cidade || 'Itanhaém';
-                        document.getElementById('modalColabEmpresa').value = col.empresaId || '';
-                        document.getElementById('modalColabDepartamento').value = col.departamentoId || '';
                         document.getElementById('modalColabStatus').value = col.status || 'Ativo';
+                        
+                        // Carregar empresas e departamentos primeiro
+                        carregarEmpresasDepartamentos().then(() => {
+                            document.getElementById('modalColabEmpresa').value = col.empresaId || '';
+                            document.getElementById('modalColabDepartamento').value = col.departamentoId || '';
+                        });
                     }
                 } else {
                     editingColaboradorId = null;
@@ -1727,20 +1731,9 @@
                     document.getElementById('modalColabEmpresa').value = '';
                     document.getElementById('modalColabDepartamento').value = '';
                     document.getElementById('modalColabStatus').value = 'Ativo';
+                    
+                    carregarEmpresasDepartamentos();
                 }
-                
-                // Carregar empresas e departamentos nos selects
-                const empresaSelect = document.getElementById('modalColabEmpresa');
-                empresaSelect.innerHTML = '<option value="">Selecione...</option>';
-                empresas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(emp => {
-                    empresaSelect.innerHTML += `<option value="${emp.id}">${emp.nome}</option>`;
-                });
-                
-                const deptoSelect = document.getElementById('modalColabDepartamento');
-                deptoSelect.innerHTML = '<option value="">Selecione...</option>';
-                departamentos.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(dep => {
-                    deptoSelect.innerHTML += `<option value="${dep.id}">${dep.nome}</option>`;
-                });
             }
             else if (tipo === 'empresa') {
                 document.getElementById('modalEmpresa').classList.add('active');
@@ -1757,6 +1750,37 @@
                 document.getElementById('modalPizzaPizzaria').value = '';
                 document.getElementById('modalPizzaValor').value = '';
             }
+        }
+
+        function carregarEmpresasDepartamentos() {
+            return new Promise(async (resolve) => {
+                try {
+                    // Carregar empresas
+                    const empresasSnapshot = await db.collection('empresas').get();
+                    empresas = empresasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    
+                    const empresaSelect = document.getElementById('modalColabEmpresa');
+                    empresaSelect.innerHTML = '<option value="">Selecione...</option>';
+                    empresas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(emp => {
+                        empresaSelect.innerHTML += `<option value="${emp.id}">${emp.nome}</option>`;
+                    });
+                    
+                    // Carregar departamentos
+                    const departamentosSnapshot = await db.collection('departamentos').get();
+                    departamentos = departamentosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    
+                    const deptoSelect = document.getElementById('modalColabDepartamento');
+                    deptoSelect.innerHTML = '<option value="">Selecione...</option>';
+                    departamentos.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(dep => {
+                        deptoSelect.innerHTML += `<option value="${dep.id}">${dep.nome}</option>`;
+                    });
+                    
+                    resolve();
+                } catch (error) {
+                    console.error('Error loading dropdowns:', error);
+                    resolve();
+                }
+            });
         }
 
         function closeModal(tipo) {
@@ -2835,9 +2859,9 @@
                                     <div class="filter-group">
                                         <label>Status</label>
                                         <select id="filtroStatusColab">
-                                            <option value="">Todos</option>
                                             <option value="Ativo">Ativos</option>
                                             <option value="Inativo">Inativos</option>
+                                            <option value="">Todos</option>
                                         </select>
                                     </div>
                                 </div>
@@ -3486,7 +3510,10 @@
                 
                 tbody.innerHTML = '';
                 
-                colaboradores.forEach(col => {
+                // Filtrar apenas ativos por padrão
+                const colaboradoresFiltrados = colaboradores.filter(col => col.status === 'Ativo');
+                
+                colaboradoresFiltrados.forEach(col => {
                     const isOutside = !col.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(col.cidade);
                     const row = document.createElement('tr');
                     if (isOutside) row.classList.add('outside-region');
