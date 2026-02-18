@@ -19,6 +19,10 @@
     <!-- FileSaver.js para salvar arquivos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     
+    <!-- jsPDF para exportar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -1569,7 +1573,7 @@
         <div class="sidebar-nav">
             <div class="nav-section">
                 <div class="nav-section-title">Principal</div>
-                <div class="nav-item" data-section="dashboard">
+                <div class="nav-item active" data-section="dashboard">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </div>
@@ -2048,11 +2052,14 @@
             }
         }
 
-        // Load Dashboard
+        // Load Dashboard (com gráficos)
         async function loadDashboard(container) {
             try {
                 const colaboradoresSnapshot = await db.collection('colaboradores').get();
                 const colaboradores = colaboradoresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const pedidosSnapshot = await db.collection('pedidos').get();
+                const pedidos = pedidosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 const pizzasSnapshot = await db.collection('pizzas').get();
                 const pizzasCount = pizzasSnapshot.size;
@@ -2075,6 +2082,26 @@
                 const foraRegiao = colaboradores.filter(col => 
                     col.status === 'Ativo' && col.cidade && !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(col.cidade)
                 ).length;
+                
+                // Dados para gráficos
+                const cidades = {};
+                colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
+                    cidades[c.cidade] = (cidades[c.cidade] || 0) + 1;
+                });
+                
+                const statusPedidos = {
+                    entregues: pedidos.filter(p => p.status === 'entregue').length,
+                    pendentes: pedidos.filter(p => p.status === 'pendente').length,
+                    cancelados: pedidos.filter(p => p.status === 'cancelado').length
+                };
+                
+                const aniversariosPorMes = Array(12).fill(0);
+                colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
+                    if (c.dataNascimento) {
+                        const nasc = parseDateISO(c.dataNascimento) || new Date(c.dataNascimento);
+                        aniversariosPorMes[nasc.getMonth()]++;
+                    }
+                });
 
                 container.innerHTML = `
                     <div class="dashboard-cards">
@@ -2111,17 +2138,103 @@
                         </div>
                     </div>
                     
-                    <div class="card">
+                    <div class="card" style="margin-bottom: 20px;">
                         <div class="card-header">
-                            <h3>Visão Geral do Mês</h3>
-                            <i class="fas fa-calendar"></i>
+                            <h3><i class="fas fa-map-marker-alt"></i> Distribuição por Cidade</h3>
                         </div>
-                        <div style="height: 300px; background: var(--gray-100); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
-                            <i class="fas fa-chart-bar" style="font-size: 3rem; opacity: 0.5;"></i>
-                            <span style="margin-left: 10px;">Gráfico em desenvolvimento</span>
+                        <div style="height: 300px;">
+                            <canvas id="cidadesDashboardChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-pie"></i> Status dos Pedidos</h3>
+                        </div>
+                        <div style="height: 300px;">
+                            <canvas id="statusDashboardChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-birthday-cake"></i> Aniversários por Mês</h3>
+                        </div>
+                        <div style="height: 300px;">
+                            <canvas id="aniversariosDashboardChart"></canvas>
                         </div>
                     </div>
                 `;
+                
+                // Inicializar gráficos após a renderização
+                setTimeout(() => {
+                    // Gráfico de Cidades
+                    const ctxCidades = document.getElementById('cidadesDashboardChart')?.getContext('2d');
+                    if (ctxCidades) {
+                        new Chart(ctxCidades, {
+                            type: 'pie',
+                            data: {
+                                labels: Object.keys(cidades),
+                                datasets: [{
+                                    data: Object.values(cidades),
+                                    backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { position: 'bottom' }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Gráfico de Status
+                    const ctxStatus = document.getElementById('statusDashboardChart')?.getContext('2d');
+                    if (ctxStatus) {
+                        new Chart(ctxStatus, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Entregues', 'Pendentes', 'Cancelados'],
+                                datasets: [{
+                                    data: [statusPedidos.entregues, statusPedidos.pendentes, statusPedidos.cancelados],
+                                    backgroundColor: ['#22c55e', '#f59e0b', '#ef4444']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { position: 'bottom' }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Gráfico de Aniversários
+                    const ctxAniversarios = document.getElementById('aniversariosDashboardChart')?.getContext('2d');
+                    if (ctxAniversarios) {
+                        new Chart(ctxAniversarios, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                                datasets: [{
+                                    label: 'Aniversários de Vida',
+                                    data: aniversariosPorMes,
+                                    backgroundColor: '#2563eb'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: { beginAtZero: true, stepSize: 1 }
+                                }
+                            }
+                        });
+                    }
+                }, 100);
             } catch (error) {
                 console.error('Error loading dashboard:', error);
                 container.innerHTML = '<div class="card"><p>Erro ao carregar dashboard</p></div>';
@@ -3259,869 +3372,380 @@
             });
         }
 
-        // Load Relatórios
+        // Load Relatórios (simplificado, sem gráficos)
         async function loadRelatorios(container) {
             await loadAllData();
             
             const hoje = new Date();
             const mesAtual = hoje.getMonth() + 1;
             const anoAtual = hoje.getFullYear();
-            
-            // Preparar dados para os relatórios
-            const colaboradoresAtivos = colaboradores.filter(c => c.status === 'Ativo');
-            const colaboradoresInativos = colaboradores.filter(c => c.status === 'Inativo');
-            
-            const pedidosEntregues = pedidos.filter(p => p.status === 'entregue');
-            const pedidosPendentes = pedidos.filter(p => p.status === 'pendente');
-            const pedidosCancelados = pedidos.filter(p => p.status === 'cancelado');
-            
-            const totalGasto = pedidosEntregues.reduce((acc, pedido) => {
-                const pizza = pizzas.find(p => p.id === pedido.pizzaId);
-                return acc + (pizza ? parseFloat(pizza.valor) : 0);
-            }, 0);
-            
-            // Dados por cidade
-            const cidades = {};
-            colaboradoresAtivos.forEach(c => {
-                cidades[c.cidade] = (cidades[c.cidade] || 0) + 1;
-            });
-            
-            // Dados por mês (aniversários)
-            const aniversariosPorMes = Array(12).fill(0);
-            const empresaPorMes = Array(12).fill(0);
-            
-            colaboradoresAtivos.forEach(c => {
-                if (c.dataNascimento) {
-                    const nasc = new Date(c.dataNascimento);
-                    aniversariosPorMes[nasc.getMonth()]++;
-                }
-                if (c.dataAdmissao) {
-                    const adm = new Date(c.dataAdmissao);
-                    empresaPorMes[adm.getMonth()]++;
-                }
-            });
-            
-            // Dados por pizzaria
-            const pizzariasMap = {};
-            pedidosEntregues.forEach(pedido => {
-                const pizza = pizzas.find(p => p.id === pedido.pizzaId);
-                if (pizza) {
-                    pizzariasMap[pizza.pizzaria] = (pizzariasMap[pizza.pizzaria] || 0) + 1;
-                }
-            });
 
             container.innerHTML = `
-                <div class="tabs-container">
-                    <div class="tabs-header">
-                        <button class="tab-btn active" onclick="switchReportTab('geral')">
-                            <i class="fas fa-chart-pie"></i> Visão Geral
-                        </button>
-                        <button class="tab-btn" onclick="switchReportTab('aniversarios')">
-                            <i class="fas fa-birthday-cake"></i> Aniversários
-                        </button>
-                        <button class="tab-btn" onclick="switchReportTab('financeiro')">
-                            <i class="fas fa-dollar-sign"></i> Financeiro
-                        </button>
-                        <button class="tab-btn" onclick="switchReportTab('pizzas')">
-                            <i class="fas fa-pizza-slice"></i> Pizzas
-                        </button>
-                        <button class="tab-btn" onclick="switchReportTab('colaboradores')">
-                            <i class="fas fa-users"></i> Colaboradores
-                        </button>
+                <div class="filters-container" id="relatorioFilters">
+                    <div class="filters-header" onclick="toggleFilters('relatorio')">
+                        <span><i class="fas fa-filter"></i> Filtros do Relatório</span>
+                        <i class="fas fa-chevron-down" id="relatorioFiltersIcon"></i>
                     </div>
-                    
-                    <!-- Relatório Geral -->
-                    <div id="reportGeral" class="tab-content active">
-                        <div class="report-actions">
-                            <button class="btn btn-primary" onclick="exportReport('geral', 'pdf')">
-                                <i class="fas fa-file-pdf"></i> Exportar PDF
-                            </button>
-                            <button class="btn btn-success" onclick="exportReport('geral', 'excel')">
-                                <i class="fas fa-file-excel"></i> Exportar Excel
-                            </button>
-                            <button class="btn btn-secondary" onclick="printReport('geral')">
-                                <i class="fas fa-print"></i> Imprimir
-                            </button>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-chart-line"></i> Indicadores Gerais</h3>
-                            </div>
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <div class="stat-value">${colaboradoresAtivos.length}</div>
-                                    <div class="stat-label">Colaboradores Ativos</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">${colaboradoresInativos.length}</div>
-                                    <div class="stat-label">Colaboradores Inativos</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">${pedidosEntregues.length}</div>
-                                    <div class="stat-label">Pedidos Entregues</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">R$ ${totalGasto.toFixed(2)}</div>
-                                    <div class="stat-label">Total Gasto</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-map-marker-alt"></i> Distribuição por Cidade</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="cidadesChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-chart-bar"></i> Status dos Pedidos</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="statusChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Relatório de Aniversários -->
-                    <div id="reportAniversarios" class="tab-content">
-                        <div class="report-period">
+                    <div class="filters-content" id="relatorioFiltersContent">
+                        <div class="filters-grid">
                             <div class="filter-group">
-                                <label>Ano</label>
-                                <input type="number" id="anoAniversarios" value="${anoAtual}">
+                                <label>Período Inicial (DD/MM/AAAA)</label>
+                                <input type="text" id="filtroPeriodoInicial" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
                             </div>
-                            <button class="btn btn-primary" onclick="updateAniversariosChart()">
-                                <i class="fas fa-sync"></i> Atualizar
-                            </button>
-                        </div>
-                        
-                        <div class="report-actions">
-                            <button class="btn btn-primary" onclick="exportReport('aniversarios', 'pdf')">
-                                <i class="fas fa-file-pdf"></i> Exportar PDF
-                            </button>
-                            <button class="btn btn-success" onclick="exportReport('aniversarios', 'excel')">
-                                <i class="fas fa-file-excel"></i> Exportar Excel
-                            </button>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-child"></i> Aniversários de Vida por Mês</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="vidaChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-building"></i> Aniversários de Empresa por Mês</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="empresaChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-calendar"></i> Próximos Aniversários</h3>
-                            </div>
-                            <div class="table-container">
-                                <table id="proximosAniversariosTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Colaborador</th>
-                                            <th>Tipo</th>
-                                            <th>Data</th>
-                                            <th>Dias</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="proximosAniversariosBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Relatório Financeiro -->
-                    <div id="reportFinanceiro" class="tab-content">
-                        <div class="report-period">
                             <div class="filter-group">
-                                <label>Mês Inicial</label>
-                                <select id="mesInicial">
-                                    <option value="1">Janeiro</option>
-                                    <option value="2">Fevereiro</option>
-                                    <option value="3">Março</option>
-                                    <option value="4">Abril</option>
-                                    <option value="5">Maio</option>
-                                    <option value="6">Junho</option>
-                                    <option value="7">Julho</option>
-                                    <option value="8">Agosto</option>
-                                    <option value="9">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
+                                <label>Período Final (DD/MM/AAAA)</label>
+                                <input type="text" id="filtroPeriodoFinal" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                            </div>
+                            <div class="filter-group">
+                                <label>Tipo de Relatório</label>
+                                <select id="filtroTipoRelatorio">
+                                    <option value="todos">Todos os Dados</option>
+                                    <option value="colaboradores">Colaboradores</option>
+                                    <option value="pedidos">Pedidos</option>
+                                    <option value="financeiro">Financeiro</option>
+                                    <option value="aniversarios">Aniversários</option>
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label>Ano Inicial</label>
-                                <input type="number" id="anoInicial" value="${anoAtual}">
-                            </div>
-                            <div class="filter-group">
-                                <label>Mês Final</label>
-                                <select id="mesFinal">
-                                    <option value="1">Janeiro</option>
-                                    <option value="2">Fevereiro</option>
-                                    <option value="3">Março</option>
-                                    <option value="4">Abril</option>
-                                    <option value="5">Maio</option>
-                                    <option value="6">Junho</option>
-                                    <option value="7">Julho</option>
-                                    <option value="8">Agosto</option>
-                                    <option value="9">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
+                                <label>Status</label>
+                                <select id="filtroStatusRelatorio">
+                                    <option value="">Todos</option>
+                                    <option value="Ativo">Ativo</option>
+                                    <option value="Inativo">Inativo</option>
+                                    <option value="entregue">Entregue</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="cancelado">Cancelado</option>
                                 </select>
                             </div>
-                            <div class="filter-group">
-                                <label>Ano Final</label>
-                                <input type="number" id="anoFinal" value="${anoAtual}">
-                            </div>
-                            <button class="btn btn-primary" onclick="updateFinanceiroChart()">
-                                <i class="fas fa-sync"></i> Atualizar
-                            </button>
                         </div>
-                        
-                        <div class="report-actions">
-                            <button class="btn btn-primary" onclick="exportReport('financeiro', 'pdf')">
-                                <i class="fas fa-file-pdf"></i> Exportar PDF
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button class="btn btn-primary" onclick="filtrarRelatorio()">
+                                <i class="fas fa-search"></i> Filtrar
                             </button>
-                            <button class="btn btn-success" onclick="exportReport('financeiro', 'excel')">
+                            <button class="btn btn-success" onclick="exportarRelatorio('excel')">
                                 <i class="fas fa-file-excel"></i> Exportar Excel
                             </button>
-                        </div>
-                        
-                        <div class="stats-grid" id="financeiroStats"></div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-chart-line"></i> Gastos por Mês</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="gastosChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-store"></i> Gastos por Pizzaria</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="pizzariasGastosChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Relatório de Pizzas -->
-                    <div id="reportPizzas" class="tab-content">
-                        <div class="report-actions">
-                            <button class="btn btn-primary" onclick="exportReport('pizzas', 'pdf')">
+                            <button class="btn btn-danger" onclick="exportarRelatorio('pdf')">
                                 <i class="fas fa-file-pdf"></i> Exportar PDF
                             </button>
-                            <button class="btn btn-success" onclick="exportReport('pizzas', 'excel')">
-                                <i class="fas fa-file-excel"></i> Exportar Excel
-                            </button>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-chart-pie"></i> Pizzas Mais Pedidas</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="pizzasChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-table"></i> Detalhamento de Pizzas</h3>
-                            </div>
-                            <div class="table-container">
-                                <table id="pizzasDetalheTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Pizza</th>
-                                            <th>Pizzaria</th>
-                                            <th>Valor</th>
-                                            <th>Pedidos</th>
-                                            <th>Total Gasto</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="pizzasDetalheBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Relatório de Colaboradores -->
-                    <div id="reportColaboradores" class="tab-content">
-                        <div class="report-actions">
-                            <button class="btn btn-primary" onclick="exportReport('colaboradores', 'pdf')">
-                                <i class="fas fa-file-pdf"></i> Exportar PDF
-                            </button>
-                            <button class="btn btn-success" onclick="exportReport('colaboradores', 'excel')">
-                                <i class="fas fa-file-excel"></i> Exportar Excel
-                            </button>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-chart-bar"></i> Colaboradores por Empresa</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="empresasChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-chart-bar"></i> Colaboradores por Departamento</h3>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="departamentosChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="report-card">
-                            <div class="report-card-header">
-                                <h3><i class="fas fa-table"></i> Lista de Colaboradores</h3>
-                            </div>
-                            <div class="table-container">
-                                <table id="colaboradoresRelatorioTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Nome</th>
-                                            <th>Empresa</th>
-                                            <th>Departamento</th>
-                                            <th>Cidade</th>
-                                            <th>Status</th>
-                                            <th>Idade</th>
-                                            <th>Tempo de Empresa</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="colaboradoresRelatorioBody"></tbody>
-                                </table>
-                            </div>
                         </div>
                     </div>
                 </div>
+                
+                <div class="table-container" id="relatorioTableContainer">
+                    <h3 style="margin-bottom: 20px;">Resultados do Relatório</h3>
+                    <div id="relatorioContent">
+                        <p style="text-align: center; color: var(--secondary); padding: 40px;">
+                            <i class="fas fa-chart-bar" style="font-size: 3rem; opacity: 0.5; margin-bottom: 10px; display: block;"></i>
+                            Selecione os filtros e clique em "Filtrar" para gerar o relatório
+                        </p>
+                    </div>
+                </div>
             `;
-
-            // Inicializar gráficos após a renderização
-            setTimeout(() => {
-                initGeralCharts(cidades, pedidosEntregues.length, pedidosPendentes.length, pedidosCancelados.length);
-                initAniversariosCharts(aniversariosPorMes, empresaPorMes);
-                initFinanceiroCharts();
-                initPizzasCharts(pizzariasMap);
-                initColaboradoresCharts();
-                carregarProximosAniversarios();
-                carregarDetalhePizzas();
-                carregarColaboradoresRelatorio();
-            }, 100);
         }
 
-        function switchReportTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        async function filtrarRelatorio() {
+            const periodoInicial = document.getElementById('filtroPeriodoInicial')?.value;
+            const periodoFinal = document.getElementById('filtroPeriodoFinal')?.value;
+            const tipoRelatorio = document.getElementById('filtroTipoRelatorio')?.value;
+            const statusFiltro = document.getElementById('filtroStatusRelatorio')?.value;
             
-            event.currentTarget.classList.add('active');
-            document.getElementById(`report${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
-        }
-
-        function initGeralCharts(cidades, entregues, pendentes, cancelados) {
-            // Destruir gráficos existentes
-            Object.values(charts).forEach(chart => {
-                if (chart) chart.destroy();
-            });
-            charts = {};
-
-            // Gráfico de Cidades
-            const ctxCidades = document.getElementById('cidadesChart')?.getContext('2d');
-            if (ctxCidades) {
-                charts.cidades = new Chart(ctxCidades, {
-                    type: 'pie',
-                    data: {
-                        labels: Object.keys(cidades),
-                        datasets: [{
-                            data: Object.values(cidades),
-                            backgroundColor: [
-                                '#2563eb',
-                                '#22c55e',
-                                '#f59e0b',
-                                '#ef4444',
-                                '#8b5cf6'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Gráfico de Status
-            const ctxStatus = document.getElementById('statusChart')?.getContext('2d');
-            if (ctxStatus) {
-                charts.status = new Chart(ctxStatus, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Entregues', 'Pendentes', 'Cancelados'],
-                        datasets: [{
-                            data: [entregues, pendentes, cancelados],
-                            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function initAniversariosCharts(vida, empresa) {
-            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            
-            const ctxVida = document.getElementById('vidaChart')?.getContext('2d');
-            if (ctxVida) {
-                charts.vida = new Chart(ctxVida, {
-                    type: 'bar',
-                    data: {
-                        labels: meses,
-                        datasets: [{
-                            label: 'Aniversários de Vida',
-                            data: vida,
-                            backgroundColor: '#2563eb'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                stepSize: 1
-                            }
-                        }
-                    }
-                });
-            }
-
-            const ctxEmpresa = document.getElementById('empresaChart')?.getContext('2d');
-            if (ctxEmpresa) {
-                charts.empresa = new Chart(ctxEmpresa, {
-                    type: 'bar',
-                    data: {
-                        labels: meses,
-                        datasets: [{
-                            label: 'Aniversários de Empresa',
-                            data: empresa,
-                            backgroundColor: '#22c55e'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                stepSize: 1
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function initFinanceiroCharts() {
-            // Implementar quando necessário
-        }
-
-        function initPizzasCharts(pizzariasMap) {
-            const ctxPizzas = document.getElementById('pizzasChart')?.getContext('2d');
-            if (ctxPizzas) {
-                charts.pizzas = new Chart(ctxPizzas, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(pizzariasMap),
-                        datasets: [{
-                            label: 'Quantidade de Pedidos',
-                            data: Object.values(pizzariasMap),
-                            backgroundColor: '#f59e0b'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                stepSize: 1
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function initColaboradoresCharts() {
-            // Dados por empresa
-            const empresasMap = {};
-            colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
-                empresasMap[c.empresaNome || 'Sem empresa'] = (empresasMap[c.empresaNome || 'Sem empresa'] || 0) + 1;
-            });
-            
-            const ctxEmpresas = document.getElementById('empresasChart')?.getContext('2d');
-            if (ctxEmpresas) {
-                charts.empresas = new Chart(ctxEmpresas, {
-                    type: 'pie',
-                    data: {
-                        labels: Object.keys(empresasMap),
-                        datasets: [{
-                            data: Object.values(empresasMap),
-                            backgroundColor: [
-                                '#2563eb',
-                                '#22c55e',
-                                '#f59e0b',
-                                '#ef4444',
-                                '#8b5cf6',
-                                '#ec4899'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Dados por departamento
-            const deptosMap = {};
-            colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
-                deptosMap[c.departamentoNome || 'Sem departamento'] = (deptosMap[c.departamentoNome || 'Sem departamento'] || 0) + 1;
-            });
-            
-            const ctxDeptos = document.getElementById('departamentosChart')?.getContext('2d');
-            if (ctxDeptos) {
-                charts.departamentos = new Chart(ctxDeptos, {
-                    type: 'pie',
-                    data: {
-                        labels: Object.keys(deptosMap),
-                        datasets: [{
-                            data: Object.values(deptosMap),
-                            backgroundColor: [
-                                '#2563eb',
-                                '#22c55e',
-                                '#f59e0b',
-                                '#ef4444',
-                                '#8b5cf6',
-                                '#ec4899'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function carregarProximosAniversarios() {
-            const tbody = document.getElementById('proximosAniversariosBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-            
-            const hoje = new Date();
-            const proximos = [];
-            
-            colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
-                if (c.dataNascimento) {
-                    const nasc = new Date(c.dataNascimento);
-                    const proxVida = getNextBirthday(nasc);
-                    const diasVida = getDaysUntilNextBirthday(nasc);
-                    
-                    if (diasVida <= 30) {
-                        proximos.push({
-                            nome: c.nome,
-                            tipo: 'Vida',
-                            data: proxVida,
-                            dias: diasVida
-                        });
-                    }
-                }
-                
-                if (c.dataAdmissao) {
-                    const adm = new Date(c.dataAdmissao);
-                    const proxEmpresa = getNextCompanyAnniversary(adm);
-                    const diasEmpresa = getDaysUntilNextCompanyAnniversary(adm);
-                    
-                    if (diasEmpresa <= 30) {
-                        proximos.push({
-                            nome: c.nome,
-                            tipo: 'Empresa',
-                            data: proxEmpresa,
-                            dias: diasEmpresa
-                        });
-                    }
-                }
-            });
-            
-            proximos.sort((a, b) => a.dias - b.dias);
-            
-            proximos.slice(0, 10).forEach(p => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${p.nome}</td>
-                    <td><span class="badge ${p.tipo === 'Vida' ? 'active' : 'warning'}">${p.tipo}</span></td>
-                    <td>${formatDateBR(p.data)}</td>
-                    <td>${p.dias} dias</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function carregarDetalhePizzas() {
-            const tbody = document.getElementById('pizzasDetalheBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-            
-            const pizzasDetalhe = pizzas.map(pizza => {
-                const pedidosPizza = pedidos.filter(p => p.pizzaId === pizza.id && p.status === 'entregue');
-                const total = pedidosPizza.length;
-                const valorTotal = total * parseFloat(pizza.valor);
-                
-                return {
-                    ...pizza,
-                    pedidos: total,
-                    valorTotal
-                };
-            }).sort((a, b) => b.pedidos - a.pedidos);
-            
-            pizzasDetalhe.forEach(p => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${p.nome}</td>
-                    <td>${p.pizzaria}</td>
-                    <td>R$ ${parseFloat(p.valor).toFixed(2)}</td>
-                    <td>${p.pedidos}</td>
-                    <td>R$ ${p.valorTotal.toFixed(2)}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function carregarColaboradoresRelatorio() {
-            const tbody = document.getElementById('colaboradoresRelatorioBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-            
-            colaboradores.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(c => {
-                const idade = c.dataNascimento ? calculateAge(c.dataNascimento) : '-';
-                const tempoEmpresa = c.dataAdmissao ? calculateAge(c.dataAdmissao) : '-';
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${c.nome || '-'}</td>
-                    <td>${c.empresaNome || '-'}</td>
-                    <td>${c.departamentoNome || '-'}</td>
-                    <td>${c.cidade || '-'}</td>
-                    <td><span class="badge ${c.status === 'Ativo' ? 'active' : 'inactive'}">${c.status || 'Inativo'}</span></td>
-                    <td>${idade} anos</td>
-                    <td>${tempoEmpresa} anos</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateAniversariosChart() {
-            const ano = parseInt(document.getElementById('anoAniversarios')?.value) || new Date().getFullYear();
-            
-            const vida = Array(12).fill(0);
-            const empresa = Array(12).fill(0);
-            
-            colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
-                if (c.dataNascimento) {
-                    const nasc = new Date(c.dataNascimento);
-                    vida[nasc.getMonth()]++;
-                }
-                if (c.dataAdmissao) {
-                    const adm = new Date(c.dataAdmissao);
-                    empresa[adm.getMonth()]++;
-                }
-            });
-            
-            if (charts.vida) {
-                charts.vida.data.datasets[0].data = vida;
-                charts.vida.update();
-            }
-            
-            if (charts.empresa) {
-                charts.empresa.data.datasets[0].data = empresa;
-                charts.empresa.update();
-            }
-            
-            showToast('Gráficos atualizados!', 'success');
-        }
-
-        function updateFinanceiroChart() {
-            const mesInicial = parseInt(document.getElementById('mesInicial')?.value) || 1;
-            const anoInicial = parseInt(document.getElementById('anoInicial')?.value) || new Date().getFullYear();
-            const mesFinal = parseInt(document.getElementById('mesFinal')?.value) || 12;
-            const anoFinal = parseInt(document.getElementById('anoFinal')?.value) || new Date().getFullYear();
-            
-            // Calcular gastos por mês no período
-            const gastosPorMes = [];
-            const labels = [];
-            
-            let dataInicial = new Date(anoInicial, mesInicial - 1, 1);
-            let dataFinal = new Date(anoFinal, mesFinal, 0);
-            
-            let dataAtual = new Date(dataInicial);
-            while (dataAtual <= dataFinal) {
-                const mes = dataAtual.getMonth() + 1;
-                const ano = dataAtual.getFullYear();
-                labels.push(`${mes}/${ano}`);
-                
-                let total = 0;
-                pedidos.filter(p => p.status === 'entregue').forEach(pedido => {
-                    const dataEntrega = pedido.dataEntrega?.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
-                    if (dataEntrega.getMonth() + 1 === mes && dataEntrega.getFullYear() === ano) {
-                        const pizza = pizzas.find(pz => pz.id === pedido.pizzaId);
-                        if (pizza) {
-                            total += parseFloat(pizza.valor);
-                        }
-                    }
-                });
-                
-                gastosPorMes.push(total);
-                dataAtual.setMonth(dataAtual.getMonth() + 1);
-            }
-            
-            // Criar ou atualizar gráfico
-            const ctx = document.getElementById('gastosChart')?.getContext('2d');
-            if (ctx) {
-                if (charts.gastos) {
-                    charts.gastos.destroy();
-                }
-                
-                charts.gastos = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Gastos com Pizzas',
-                            data: gastosPorMes,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return 'R$ ' + value.toFixed(2);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Atualizar stats
-            const totalPeriodo = gastosPorMes.reduce((acc, val) => acc + val, 0);
-            const mediaMensal = totalPeriodo / gastosPorMes.length;
-            
-            const statsContainer = document.getElementById('financeiroStats');
-            if (statsContainer) {
-                statsContainer.innerHTML = `
-                    <div class="stat-item">
-                        <div class="stat-value">R$ ${totalPeriodo.toFixed(2)}</div>
-                        <div class="stat-label">Total no Período</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">R$ ${mediaMensal.toFixed(2)}</div>
-                        <div class="stat-label">Média Mensal</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${gastosPorMes.length}</div>
-                        <div class="stat-label">Meses Analisados</div>
-                    </div>
-                `;
-            }
-            
-            showToast('Gráficos financeiros atualizados!', 'success');
-        }
-
-        function exportReport(tipo, formato) {
             showLoading();
             
             try {
-                let dados = [];
-                let nomeArquivo = `relatorio_${tipo}_${new Date().toISOString().split('T')[0]}`;
+                await loadAllData();
                 
-                switch(tipo) {
-                    case 'geral':
-                        dados = gerarDadosRelatorioGeral();
-                        break;
-                    case 'aniversarios':
-                        dados = gerarDadosRelatorioAniversarios();
-                        break;
-                    case 'financeiro':
-                        dados = gerarDadosRelatorioFinanceiro();
-                        break;
-                    case 'pizzas':
-                        dados = gerarDadosRelatorioPizzas();
-                        break;
+                let dadosFiltrados = [];
+                let titulo = '';
+                
+                const dataInicial = periodoInicial ? parseDateBR(periodoInicial) : null;
+                const dataFinal = periodoFinal ? parseDateBR(periodoFinal) : null;
+                
+                switch(tipoRelatorio) {
                     case 'colaboradores':
-                        dados = gerarDadosRelatorioColaboradores();
+                        titulo = 'Relatório de Colaboradores';
+                        dadosFiltrados = colaboradores
+                            .filter(col => !statusFiltro || col.status === statusFiltro)
+                            .map(col => ({
+                                'Nome': col.nome || '-',
+                                'Nascimento': formatDateBR(col.dataNascimento),
+                                'Admissão': formatDateBR(col.dataAdmissao),
+                                'Cidade': col.cidade || '-',
+                                'Empresa': col.empresaNome || '-',
+                                'Departamento': col.departamentoNome || '-',
+                                'Status': col.status || 'Inativo'
+                            }));
                         break;
+                        
+                    case 'pedidos':
+                        titulo = 'Relatório de Pedidos';
+                        dadosFiltrados = pedidos
+                            .filter(ped => {
+                                if (statusFiltro && ped.status !== statusFiltro) return false;
+                                
+                                const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
+                                if (dataInicial && dataEntrega < dataInicial) return false;
+                                if (dataFinal && dataEntrega > dataFinal) return false;
+                                
+                                return true;
+                            })
+                            .map(ped => {
+                                const col = colaboradores.find(c => c.id === ped.colaboradorId);
+                                const pizza = pizzas.find(p => p.id === ped.pizzaId);
+                                return {
+                                    'Colaborador': col?.nome || 'Desconhecido',
+                                    'Pizza': pizza?.nome || 'Desconhecida',
+                                    'Pizzaria': pizza?.pizzaria || 'Desconhecida',
+                                    'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
+                                    'Horário': ped.horarioEntrega || '-',
+                                    'Endereço': ped.enderecoCompleto || '-',
+                                    'Cidade': ped.local || '-',
+                                    'Borda': ped.borda || 'Sem recheio',
+                                    'Valor': pizza ? `R$ ${parseFloat(pizza.valor).toFixed(2)}` : '-',
+                                    'Status': ped.status || 'pendente'
+                                };
+                            });
+                        break;
+                        
+                    case 'financeiro':
+                        titulo = 'Relatório Financeiro';
+                        dadosFiltrados = pedidos
+                            .filter(ped => ped.status === 'entregue')
+                            .filter(ped => {
+                                const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
+                                if (dataInicial && dataEntrega < dataInicial) return false;
+                                if (dataFinal && dataEntrega > dataFinal) return false;
+                                return true;
+                            })
+                            .map(ped => {
+                                const col = colaboradores.find(c => c.id === ped.colaboradorId);
+                                const pizza = pizzas.find(p => p.id === ped.pizzaId);
+                                return {
+                                    'Colaborador': col?.nome || 'Desconhecido',
+                                    'Pizza': pizza?.nome || 'Desconhecida',
+                                    'Pizzaria': pizza?.pizzaria || 'Desconhecida',
+                                    'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
+                                    'Valor': pizza ? `R$ ${parseFloat(pizza.valor).toFixed(2)}` : '-',
+                                    'Status': ped.status
+                                };
+                            });
+                        break;
+                        
+                    case 'aniversarios':
+                        titulo = 'Relatório de Aniversários';
+                        dadosFiltrados = [];
+                        colaboradores
+                            .filter(col => col.status === 'Ativo')
+                            .forEach(col => {
+                                if (col.dataNascimento) {
+                                    const dataNasc = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
+                                    dadosFiltrados.push({
+                                        'Colaborador': col.nome || '-',
+                                        'Tipo': 'Aniversário de Vida',
+                                        'Data': formatDateBR(dataNasc),
+                                        'Idade': calculateAge(dataNasc),
+                                        'Mês': dataNasc.getMonth() + 1
+                                    });
+                                }
+                                if (col.dataAdmissao) {
+                                    const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
+                                    dadosFiltrados.push({
+                                        'Colaborador': col.nome || '-',
+                                        'Tipo': 'Aniversário de Empresa',
+                                        'Data': formatDateBR(dataAdm),
+                                        'Tempo Empresa': calculateAge(dataAdm),
+                                        'Mês': dataAdm.getMonth() + 1
+                                    });
+                                }
+                            });
+                        
+                        if (dataInicial || dataFinal) {
+                            dadosFiltrados = dadosFiltrados.filter(item => {
+                                const [dia, mes, ano] = item.Data.split('/');
+                                const dataItem = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                                if (dataInicial && dataItem < dataInicial) return false;
+                                if (dataFinal && dataItem > dataFinal) return false;
+                                return true;
+                            });
+                        }
+                        break;
+                        
+                    default: // 'todos'
+                        titulo = 'Relatório Completo';
+                        dadosFiltrados = colaboradores.map(col => {
+                            const idade = col.dataNascimento ? calculateAge(col.dataNascimento) : '-';
+                            const tempoEmpresa = col.dataAdmissao ? calculateAge(col.dataAdmissao) : '-';
+                            return {
+                                'Nome': col.nome || '-',
+                                'Nascimento': formatDateBR(col.dataNascimento),
+                                'Idade': idade,
+                                'Admissão': formatDateBR(col.dataAdmissao),
+                                'Tempo Empresa': tempoEmpresa,
+                                'Cidade': col.cidade || '-',
+                                'Empresa': col.empresaNome || '-',
+                                'Departamento': col.departamentoNome || '-',
+                                'Status': col.status || 'Inativo'
+                            };
+                        });
+                }
+                
+                // Ordenar dados
+                if (dadosFiltrados.length > 0) {
+                    const primeiraChave = Object.keys(dadosFiltrados[0])[0];
+                    dadosFiltrados.sort((a, b) => (a[primeiraChave] || '').localeCompare(b[primeiraChave] || ''));
+                }
+                
+                exibirRelatorio(titulo, dadosFiltrados);
+                
+            } catch (error) {
+                console.error('Error filtering report:', error);
+                showToast('Erro ao filtrar relatório', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function exibirRelatorio(titulo, dados) {
+            const container = document.getElementById('relatorioContent');
+            if (!container) return;
+            
+            if (!dados || dados.length === 0) {
+                container.innerHTML = `
+                    <p style="text-align: center; color: var(--secondary); padding: 40px;">
+                        <i class="fas fa-info-circle" style="font-size: 3rem; opacity: 0.5; margin-bottom: 10px; display: block;"></i>
+                        Nenhum dado encontrado para os filtros selecionados
+                    </p>
+                `;
+                return;
+            }
+            
+            let html = `<h4 style="margin-bottom: 15px;">${titulo} - Total: ${dados.length} registro(s)</h4>`;
+            html += '<table><thead><tr>';
+            
+            // Cabeçalho
+            Object.keys(dados[0]).forEach(key => {
+                html += `<th>${key}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            // Linhas
+            dados.forEach(item => {
+                html += '<tr>';
+                Object.values(item).forEach(valor => {
+                    html += `<td>${valor || '-'}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            
+            container.innerHTML = html;
+        }
+
+        async function exportarRelatorio(formato) {
+            const tipoRelatorio = document.getElementById('filtroTipoRelatorio')?.value || 'todos';
+            const statusFiltro = document.getElementById('filtroStatusRelatorio')?.value;
+            
+            showLoading();
+            
+            try {
+                await loadAllData();
+                
+                let dados = [];
+                let nomeArquivo = `relatorio_${tipoRelatorio}_${new Date().toISOString().split('T')[0]}`;
+                
+                // Reutilizar a mesma lógica de filtragem
+                switch(tipoRelatorio) {
+                    case 'colaboradores':
+                        dados = colaboradores
+                            .filter(col => !statusFiltro || col.status === statusFiltro)
+                            .map(col => ({
+                                'Nome': col.nome || '-',
+                                'Nascimento': formatDateBR(col.dataNascimento),
+                                'Admissão': formatDateBR(col.dataAdmissao),
+                                'Cidade': col.cidade || '-',
+                                'Empresa': col.empresaNome || '-',
+                                'Departamento': col.departamentoNome || '-',
+                                'Status': col.status || 'Inativo'
+                            }));
+                        break;
+                        
+                    case 'pedidos':
+                        dados = pedidos
+                            .filter(ped => !statusFiltro || ped.status === statusFiltro)
+                            .map(ped => {
+                                const col = colaboradores.find(c => c.id === ped.colaboradorId);
+                                const pizza = pizzas.find(p => p.id === ped.pizzaId);
+                                return {
+                                    'Colaborador': col?.nome || 'Desconhecido',
+                                    'Pizza': pizza?.nome || 'Desconhecida',
+                                    'Pizzaria': pizza?.pizzaria || 'Desconhecida',
+                                    'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
+                                    'Horário': ped.horarioEntrega || '-',
+                                    'Endereço': ped.enderecoCompleto || '-',
+                                    'Cidade': ped.local || '-',
+                                    'Borda': ped.borda || 'Sem recheio',
+                                    'Valor': pizza ? `R$ ${parseFloat(pizza.valor).toFixed(2)}` : '-',
+                                    'Status': ped.status || 'pendente'
+                                };
+                            });
+                        break;
+                        
+                    case 'financeiro':
+                        dados = pedidos
+                            .filter(ped => ped.status === 'entregue')
+                            .map(ped => {
+                                const col = colaboradores.find(c => c.id === ped.colaboradorId);
+                                const pizza = pizzas.find(p => p.id === ped.pizzaId);
+                                return {
+                                    'Colaborador': col?.nome || 'Desconhecido',
+                                    'Pizza': pizza?.nome || 'Desconhecida',
+                                    'Pizzaria': pizza?.pizzaria || 'Desconhecida',
+                                    'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
+                                    'Valor': pizza ? `R$ ${parseFloat(pizza.valor).toFixed(2)}` : '-',
+                                    'Status': ped.status
+                                };
+                            });
+                        break;
+                        
+                    case 'aniversarios':
+                        dados = [];
+                        colaboradores
+                            .filter(col => col.status === 'Ativo')
+                            .forEach(col => {
+                                if (col.dataNascimento) {
+                                    const dataNasc = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
+                                    dados.push({
+                                        'Colaborador': col.nome || '-',
+                                        'Tipo': 'Aniversário de Vida',
+                                        'Data': formatDateBR(dataNasc),
+                                        'Idade': calculateAge(dataNasc),
+                                        'Mês': dataNasc.getMonth() + 1
+                                    });
+                                }
+                                if (col.dataAdmissao) {
+                                    const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
+                                    dados.push({
+                                        'Colaborador': col.nome || '-',
+                                        'Tipo': 'Aniversário de Empresa',
+                                        'Data': formatDateBR(dataAdm),
+                                        'Tempo Empresa': calculateAge(dataAdm),
+                                        'Mês': dataAdm.getMonth() + 1
+                                    });
+                                }
+                            });
+                        break;
+                        
+                    default:
+                        dados = colaboradores.map(col => ({
+                            'Nome': col.nome || '-',
+                            'Nascimento': formatDateBR(col.dataNascimento),
+                            'Admissão': formatDateBR(col.dataAdmissao),
+                            'Cidade': col.cidade || '-',
+                            'Empresa': col.empresaNome || '-',
+                            'Departamento': col.departamentoNome || '-',
+                            'Status': col.status || 'Inativo'
+                        }));
                 }
                 
                 if (formato === 'excel') {
@@ -4131,8 +3755,29 @@
                     XLSX.writeFile(wb, `${nomeArquivo}.xlsx`);
                     showToast('Relatório exportado com sucesso!', 'success');
                 } else if (formato === 'pdf') {
-                    // Implementar exportação PDF se necessário
-                    showToast('Exportação PDF em desenvolvimento', 'info');
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    doc.setFontSize(16);
+                    doc.text(`Relatório - ${tipoRelatorio}`, 14, 22);
+                    doc.setFontSize(10);
+                    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 30);
+                    
+                    if (dados.length > 0) {
+                        const headers = Object.keys(dados[0]);
+                        const body = dados.map(item => Object.values(item));
+                        
+                        doc.autoTable({
+                            head: [headers],
+                            body: body,
+                            startY: 35,
+                            styles: { fontSize: 8, cellPadding: 2 },
+                            headStyles: { fillColor: [37, 99, 235] }
+                        });
+                    }
+                    
+                    doc.save(`${nomeArquivo}.pdf`);
+                    showToast('Relatório exportado com sucesso!', 'success');
                 }
             } catch (error) {
                 console.error('Error exporting report:', error);
@@ -4140,138 +3785,6 @@
             } finally {
                 hideLoading();
             }
-        }
-
-        function gerarDadosRelatorioGeral() {
-            const dados = [];
-            
-            // Estatísticas gerais
-            dados.push({
-                'Tipo': 'Colaboradores Ativos',
-                'Valor': colaboradores.filter(c => c.status === 'Ativo').length
-            });
-            dados.push({
-                'Tipo': 'Colaboradores Inativos',
-                'Valor': colaboradores.filter(c => c.status === 'Inativo').length
-            });
-            dados.push({
-                'Tipo': 'Pedidos Entregues',
-                'Valor': pedidos.filter(p => p.status === 'entregue').length
-            });
-            dados.push({
-                'Tipo': 'Pedidos Pendentes',
-                'Valor': pedidos.filter(p => p.status === 'pendente').length
-            });
-            dados.push({
-                'Tipo': 'Pedidos Cancelados',
-                'Valor': pedidos.filter(p => p.status === 'cancelado').length
-            });
-            
-            // Distribuição por cidade
-            colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
-                dados.push({
-                    'Tipo': 'Cidade - ' + (c.cidade || 'Não informada'),
-                    'Valor': 1
-                });
-            });
-            
-            return dados;
-        }
-
-        function gerarDadosRelatorioAniversarios() {
-            const dados = [];
-            const hoje = new Date();
-            
-            colaboradores.filter(c => c.status === 'Ativo').forEach(c => {
-                if (c.dataNascimento) {
-                    const nasc = new Date(c.dataNascimento);
-                    dados.push({
-                        'Colaborador': c.nome,
-                        'Tipo': 'Aniversário de Vida',
-                        'Data': formatDateBR(nasc),
-                        'Idade': calculateAge(nasc),
-                        'Mês': nasc.getMonth() + 1
-                    });
-                }
-                
-                if (c.dataAdmissao) {
-                    const adm = new Date(c.dataAdmissao);
-                    dados.push({
-                        'Colaborador': c.nome,
-                        'Tipo': 'Aniversário de Empresa',
-                        'Data': formatDateBR(adm),
-                        'Tempo Empresa': calculateAge(adm),
-                        'Mês': adm.getMonth() + 1
-                    });
-                }
-            });
-            
-            return dados;
-        }
-
-        function gerarDadosRelatorioFinanceiro() {
-            const dados = [];
-            
-            pedidos.filter(p => p.status === 'entregue').forEach(pedido => {
-                const colaborador = colaboradores.find(c => c.id === pedido.colaboradorId);
-                const pizza = pizzas.find(pz => pz.id === pedido.pizzaId);
-                
-                dados.push({
-                    'Colaborador': colaborador?.nome || 'Desconhecido',
-                    'Pizza': pizza?.nome || 'Desconhecida',
-                    'Pizzaria': pizza?.pizzaria || 'Desconhecida',
-                    'Data Entrega': pedido.dataEntregaBR || formatDateBR(pedido.dataEntrega),
-                    'Valor': pizza ? parseFloat(pizza.valor) : 0,
-                    'Status': pedido.status
-                });
-            });
-            
-            return dados;
-        }
-
-        function gerarDadosRelatorioPizzas() {
-            const dados = [];
-            
-            pizzas.forEach(pizza => {
-                const pedidosPizza = pedidos.filter(p => p.pizzaId === pizza.id && p.status === 'entregue');
-                const totalPedidos = pedidosPizza.length;
-                const valorTotal = totalPedidos * parseFloat(pizza.valor);
-                
-                dados.push({
-                    'Pizza': pizza.nome,
-                    'Pizzaria': pizza.pizzaria,
-                    'Valor Unitário': parseFloat(pizza.valor),
-                    'Total Pedidos': totalPedidos,
-                    'Valor Total': valorTotal
-                });
-            });
-            
-            return dados;
-        }
-
-        function gerarDadosRelatorioColaboradores() {
-            const dados = [];
-            
-            colaboradores.forEach(c => {
-                const idade = c.dataNascimento ? calculateAge(c.dataNascimento) : '-';
-                const tempoEmpresa = c.dataAdmissao ? calculateAge(c.dataAdmissao) : '-';
-                
-                dados.push({
-                    'Nome': c.nome || '-',
-                    'Empresa': c.empresaNome || '-',
-                    'Departamento': c.departamentoNome || '-',
-                    'Cidade': c.cidade || '-',
-                    'Status': c.status || 'Inativo',
-                    'Idade': idade,
-                    'Tempo de Empresa': tempoEmpresa
-                });
-            });
-            
-            return dados;
-        }
-
-        function printReport(tipo) {
-            window.print();
         }
 
         // Helper Functions
