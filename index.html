@@ -703,6 +703,21 @@
             color: #856404;
         }
 
+        .badge.entregue {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.cancelado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
         .action-buttons {
             display: flex;
             gap: 8px;
@@ -837,6 +852,11 @@
             background: #e68900;
         }
 
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -912,28 +932,46 @@
             color: var(--warning);
         }
 
-        .valor-aberto-obs {
-            font-size: 0.9rem;
-            color: var(--secondary);
-            margin-top: 5px;
-            padding: 5px;
+        .valor-aberto-detalhes {
+            margin-top: 10px;
+            padding: 10px;
             background: var(--gray-100);
             border-radius: 4px;
+        }
+
+        .valor-aberto-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .valor-aberto-item input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .valor-aberto-item .btn-sm {
+            white-space: nowrap;
+        }
+
+        .valor-aberto-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--gray-200);
+            font-weight: 600;
         }
 
         .valor-aberto-actions {
             display: flex;
             gap: 10px;
             margin-top: 10px;
-        }
-
-        .obs-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--gray-200);
-            border-radius: 4px;
-            margin-top: 5px;
-            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -1080,6 +1118,7 @@
 
         function formatDateBR(date) {
             if (!date) return '';
+            if (date.toDate) date = date.toDate();
             const d = new Date(date);
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -1089,6 +1128,7 @@
 
         function formatDateShortBR(date) {
             if (!date) return '';
+            if (date.toDate) date = date.toDate();
             const d = new Date(date);
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
@@ -1919,7 +1959,7 @@
                 <div class="card" style="margin-bottom: 20px;">
                     <div class="card-header">
                         <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Valores em Aberto</h3>
-                        <span class="badge warning">${valoresAbertos.length} pendente(s)</span>
+                        <span class="badge warning" id="valoresAbertosCount">0 pendente(s)</span>
                     </div>
                     <div class="valores-abertos-list" id="valoresAbertosList"></div>
                 </div>
@@ -1932,10 +1972,10 @@
                                 <th>Colaborador</th>
                                 <th>Pizza</th>
                                 <th>Pizzaria</th>
-                                <th>Data</th>
+                                <th>Data Entrega</th>
                                 <th>Valor</th>
                                 <th>Status</th>
-                                <th>Observação</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="pedidosTableBody">
@@ -1953,6 +1993,7 @@
         }
 
         async function loadFinanceiroData() {
+            showLoading();
             try {
                 const pedidosSnapshot = await db.collection('pedidos').get();
                 const pedidos = pedidosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1963,27 +2004,53 @@
                     colaboradoresMap[doc.id] = { id: doc.id, ...doc.data() };
                 });
                 
+                const pizzasSnapshot = await db.collection('pizzas').get();
+                const pizzasMap = {};
+                pizzasSnapshot.docs.forEach(doc => {
+                    pizzasMap[doc.id] = { id: doc.id, ...doc.data() };
+                });
+                
                 const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
                 valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                // Calcular valores em aberto atuais
+                const valoresAbertosAtualizados = [];
+                for (const valor of valoresAbertos) {
+                    const colaborador = colaboradoresMap[valor.colaboradorId];
+                    const pedido = pedidos.find(p => p.id === valor.pedidoId);
+                    
+                    if (!colaborador || colaborador.status !== 'Inativo') continue;
+                    
+                    if (pedido && pedido.dataEntrega) {
+                        const dataEntrega = pedido.dataEntrega.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
+                        const hoje = new Date();
+                        
+                        // Se a data de entrega já passou e o colaborador foi inativado depois, manter
+                        // Se a data de entrega não chegou e o colaborador foi inativado antes, manter
+                        if (dataEntrega < hoje && colaborador.dataInativacao && colaborador.dataInativacao > dataEntrega) {
+                            valoresAbertosAtualizados.push(valor);
+                        } else if (dataEntrega >= hoje && colaborador.dataInativacao && colaborador.dataInativacao < hoje) {
+                            valoresAbertosAtualizados.push(valor);
+                        }
+                    }
+                }
+                
+                valoresAbertos = valoresAbertosAtualizados;
+                
                 let totalGasto = 0;
-                const pizzarias = new Set();
-                const pedidosValidos = [];
+                let totalPedidos = 0;
+                let pizzarias = new Set();
                 
                 for (const pedido of pedidos) {
                     const colaborador = colaboradoresMap[pedido.colaboradorId];
+                    if (!colaborador) continue;
                     
-                    if (colaborador) {
-                        pedidosValidos.push({ ...pedido, colaborador });
-                        
-                        if (pedido.pizzaId) {
-                            const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
-                            if (pizzaDoc.exists) {
-                                const pizza = pizzaDoc.data();
-                                totalGasto += parseFloat(pizza.valor) || 0;
-                                pizzarias.add(pizza.pizzaria);
-                            }
-                        }
+                    totalPedidos++;
+                    
+                    if (pedido.pizzaId && pizzasMap[pedido.pizzaId]) {
+                        const pizza = pizzasMap[pedido.pizzaId];
+                        totalGasto += parseFloat(pizza.valor) || 0;
+                        pizzarias.add(pizza.pizzaria);
                     }
                 }
                 
@@ -2011,7 +2078,7 @@
                                 <h3>Total de Pedidos</h3>
                                 <i class="fas fa-shopping-cart"></i>
                             </div>
-                            <div class="card-value">${pedidosValidos.length}</div>
+                            <div class="card-value">${totalPedidos}</div>
                         </div>
                         
                         <div class="card">
@@ -2019,9 +2086,14 @@
                                 <h3>Média por Pedido</h3>
                                 <i class="fas fa-calculator"></i>
                             </div>
-                            <div class="card-value">R$ ${pedidosValidos.length > 0 ? (totalGasto / pedidosValidos.length).toFixed(2) : '0.00'}</div>
+                            <div class="card-value">R$ ${totalPedidos > 0 ? (totalGasto / totalPedidos).toFixed(2) : '0.00'}</div>
                         </div>
                     `;
+                }
+                
+                const valoresAbertosCount = document.getElementById('valoresAbertosCount');
+                if (valoresAbertosCount) {
+                    valoresAbertosCount.textContent = `${valoresAbertos.length} pendente(s)`;
                 }
                 
                 const valoresAbertosList = document.getElementById('valoresAbertosList');
@@ -2031,11 +2103,18 @@
                         
                         for (const valor of valoresAbertos) {
                             const colaborador = colaboradoresMap[valor.colaboradorId];
+                            const pedido = pedidos.find(p => p.id === valor.pedidoId);
+                            const pizza = pedido?.pizzaId ? pizzasMap[pedido.pizzaId] : null;
                             
                             const valorCard = document.createElement('div');
                             valorCard.className = 'valor-aberto-card';
+                            valorCard.id = `valorAberto-${valor.id}`;
                             
                             const isInativo = colaborador && colaborador.status === 'Inativo';
+                            
+                            // Calcular total baseado nos itens
+                            let totalAtual = valor.valor;
+                            const itens = valor.itens || [];
                             
                             valorCard.innerHTML = `
                                 <div class="valor-aberto-header">
@@ -2044,17 +2123,50 @@
                                         ${colaborador ? colaborador.nome : 'Colaborador não encontrado'}
                                         ${isInativo ? ' (Inativo)' : ''}
                                     </span>
-                                    <span class="valor-aberto-valor">R$ ${valor.valor.toFixed(2)}</span>
+                                    <span class="valor-aberto-valor" id="valorAbertoTotal-${valor.id}">R$ ${totalAtual.toFixed(2)}</span>
                                 </div>
-                                <div>
-                                    <input type="text" 
-                                           class="obs-input" 
-                                           id="valorAbertoObs-${valor.id}" 
-                                           placeholder="Observação sobre este valor..."
-                                           value="${valor.observacao || ''}"
-                                           onchange="updateValorAbertoObs('${valor.id}')">
+                                
+                                <div class="valor-aberto-detalhes" id="valorAbertoDetalhes-${valor.id}">
+                                    <div class="valor-aberto-item">
+                                        <span>Pizza: ${pizza ? pizza.nome : 'Desconhecida'} (${pizza ? pizza.pizzaria : 'Desconhecida'})</span>
+                                    </div>
+                                    <div class="valor-aberto-item">
+                                        <span>Data Entrega: ${pedido?.dataEntregaBR || formatDateBR(pedido?.dataEntrega) || '-'}</span>
+                                    </div>
+                                    ${itens.map((item, index) => `
+                                        <div class="valor-aberto-item" id="item-${valor.id}-${index}">
+                                            <input type="text" 
+                                                   class="item-descricao" 
+                                                   id="itemDesc-${valor.id}-${index}" 
+                                                   value="${item.descricao || ''}" 
+                                                   placeholder="Descrição...">
+                                            <input type="number" 
+                                                   class="item-valor" 
+                                                   id="itemValor-${valor.id}-${index}" 
+                                                   value="${item.valor || 0}" 
+                                                   step="0.01" 
+                                                   min="0"
+                                                   style="width: 100px;">
+                                            <button class="btn btn-sm btn-danger" onclick="removerItemValorAberto('${valor.id}', ${index})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                    <div class="valor-aberto-item">
+                                        <button class="btn btn-sm btn-success" onclick="adicionarItemValorAberto('${valor.id}')">
+                                            <i class="fas fa-plus"></i> Adicionar Item
+                                        </button>
+                                    </div>
+                                    <div class="valor-aberto-total">
+                                        <span>Total:</span>
+                                        <span id="totalCalculado-${valor.id}">R$ ${calcularTotalItens(itens).toFixed(2)}</span>
+                                    </div>
                                 </div>
+                                
                                 <div class="valor-aberto-actions">
+                                    <button class="btn btn-success btn-sm" onclick="atualizarValorAberto('${valor.id}')">
+                                        <i class="fas fa-save"></i> Atualizar
+                                    </button>
                                     <button class="btn btn-success btn-sm" onclick="marcarValorQuitado('${valor.id}')">
                                         <i class="fas fa-check"></i> Marcar como Quitado
                                     </button>
@@ -2070,46 +2182,167 @@
                 
                 const tbody = document.getElementById('pedidosTableBody');
                 if (tbody) {
-                    if (pedidosValidos.length > 0) {
-                        tbody.innerHTML = '';
-                        
-                        for (const pedido of pedidosValidos) {
+                    tbody.innerHTML = '';
+                    
+                    const pedidosComColaborador = pedidos.filter(p => colaboradoresMap[p.colaboradorId]);
+                    
+                    if (pedidosComColaborador.length > 0) {
+                        for (const pedido of pedidosComColaborador) {
+                            const colaborador = colaboradoresMap[pedido.colaboradorId];
+                            const pizza = pedido.pizzaId ? pizzasMap[pedido.pizzaId] : null;
+                            
                             const row = document.createElement('tr');
                             
-                            const isInativo = pedido.colaborador.status === 'Inativo';
-                            
-                            let pizzaNome = 'Desconhecida';
-                            let pizzariaNome = 'Desconhecida';
-                            let valor = 0;
-                            
-                            if (pedido.pizzaId) {
-                                const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
-                                if (pizzaDoc.exists) {
-                                    const pizza = pizzaDoc.data();
-                                    pizzaNome = pizza.nome;
-                                    pizzariaNome = pizza.pizzaria;
-                                    valor = pizza.valor;
-                                }
-                            }
+                            const isInativo = colaborador.status === 'Inativo';
                             
                             row.innerHTML = `
                                 <td>
-                                    ${pedido.colaborador.nome}
+                                    ${colaborador.nome}
                                     ${isInativo ? '<span class="badge inactive" style="margin-left: 5px;">Inativo</span>' : ''}
                                 </td>
-                                <td>${pizzaNome}</td>
-                                <td>${pizzariaNome}</td>
+                                <td>${pizza ? pizza.nome : 'Desconhecida'}</td>
+                                <td>${pizza ? pizza.pizzaria : 'Desconhecida'}</td>
                                 <td>${pedido.dataEntregaBR || formatDateBR(pedido.dataEntrega) || '-'}</td>
-                                <td>R$ ${parseFloat(valor).toFixed(2)}</td>
-                                <td><span class="badge ${pedido.status === 'entregue' ? 'active' : 'warning'}">${pedido.status || 'pendente'}</span></td>
-                                <td>${pedido.observacaoFinanceiro || '-'}</td>
+                                <td>R$ ${pizza ? parseFloat(pizza.valor).toFixed(2) : '0.00'}</td>
+                                <td>
+                                    <span class="badge ${pedido.status === 'entregue' ? 'entregue' : pedido.status === 'cancelado' ? 'cancelado' : 'pendente'}">
+                                        ${pedido.status || 'pendente'}
+                                    </span>
+                                </td>
+                                <td class="action-buttons">
+                                    <button class="edit" onclick="editarStatusPedido('${pedido.id}')">
+                                        <i class="fas fa-edit"></i> Status
+                                    </button>
+                                </td>
                             `;
                             tbody.appendChild(row);
                         }
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--secondary);">Nenhum pedido encontrado</td></tr>';
                     }
                 }
             } catch (error) {
                 console.error('Error loading financeiro data:', error);
+                showToast('Erro ao carregar dados financeiros', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function calcularTotalItens(itens) {
+            return itens.reduce((total, item) => total + (parseFloat(item.valor) || 0), 0);
+        }
+
+        async function adicionarItemValorAberto(valorId) {
+            const valor = valoresAbertos.find(v => v.id === valorId);
+            if (!valor) return;
+            
+            if (!valor.itens) valor.itens = [];
+            
+            valor.itens.push({
+                descricao: '',
+                valor: 0
+            });
+            
+            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
+            await loadFinanceiroData();
+        }
+
+        async function removerItemValorAberto(valorId, index) {
+            const valor = valoresAbertos.find(v => v.id === valorId);
+            if (!valor || !valor.itens) return;
+            
+            valor.itens.splice(index, 1);
+            
+            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
+            await loadFinanceiroData();
+        }
+
+        async function atualizarValorAberto(valorId) {
+            const valor = valoresAbertos.find(v => v.id === valorId);
+            if (!valor) return;
+            
+            const itens = [];
+            let index = 0;
+            
+            while (true) {
+                const descInput = document.getElementById(`itemDesc-${valorId}-${index}`);
+                const valInput = document.getElementById(`itemValor-${valorId}-${index}`);
+                
+                if (!descInput || !valInput) break;
+                
+                const descricao = descInput.value.trim();
+                const valorItem = parseFloat(valInput.value) || 0;
+                
+                if (descricao || valorItem > 0) {
+                    itens.push({
+                        descricao,
+                        valor: valorItem
+                    });
+                }
+                
+                index++;
+            }
+            
+            await atualizarValorAbertoNoFirestore(valorId, itens);
+            await loadFinanceiroData();
+            showToast('Valor atualizado com sucesso!', 'success');
+        }
+
+        async function atualizarValorAbertoNoFirestore(valorId, itens) {
+            const total = calcularTotalItens(itens);
+            
+            await db.collection('valoresAbertos').doc(valorId).update({
+                itens,
+                valor: total,
+                dataAtualizacao: new Date()
+            });
+        }
+
+        async function marcarValorQuitado(id) {
+            if (!confirm('Tem certeza que deseja marcar este valor como quitado?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('valoresAbertos').doc(id).update({
+                    status: 'quitado',
+                    dataQuitacao: new Date()
+                });
+                
+                await loadFinanceiroData();
+                showToast('Valor marcado como quitado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error marking valor quitado:', error);
+                showToast('Erro ao marcar como quitado', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function editarStatusPedido(pedidoId) {
+            const novoStatus = prompt('Digite o novo status (pendente/entregue/cancelado):');
+            
+            if (!novoStatus) return;
+            
+            if (!['pendente', 'entregue', 'cancelado'].includes(novoStatus)) {
+                showToast('Status inválido. Use: pendente, entregue ou cancelado', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                await db.collection('pedidos').doc(pedidoId).update({
+                    status: novoStatus,
+                    dataAtualizacao: new Date()
+                });
+                
+                await loadFinanceiroData();
+                showToast('Status atualizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error updating pedido status:', error);
+                showToast('Erro ao atualizar status', 'error');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -2862,13 +3095,16 @@
             
             showLoading();
             try {
+                const dataInativacao = novoStatus === 'Inativo' ? new Date() : null;
+                
                 await db.collection('colaboradores').doc(id).update({
                     nome: novoNome,
-                    status: novoStatus
+                    status: novoStatus,
+                    dataInativacao
                 });
                 
                 if (novoStatus === 'Inativo') {
-                    await criarValorAbertoParaInativo(id);
+                    await criarValorAbertoParaInativo(id, dataInativacao);
                 }
                 
                 await loadColaboradoresList();
@@ -2911,7 +3147,7 @@
         }
 
         // Valor em Aberto Functions
-        async function criarValorAbertoParaInativo(colaboradorId) {
+        async function criarValorAbertoParaInativo(colaboradorId, dataInativacao) {
             try {
                 const pedidosSnapshot = await db.collection('pedidos')
                     .where('colaboradorId', '==', colaboradorId)
@@ -2925,60 +3161,34 @@
                         const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId).get();
                         if (pizzaDoc.exists) {
                             const pizza = pizzaDoc.data();
+                            const dataEntrega = pedido.dataEntrega.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
                             
-                            await db.collection('valoresAbertos').add({
-                                colaboradorId,
-                                pedidoId: pedidoDoc.id,
-                                valor: pizza.valor,
-                                dataCriacao: new Date(),
-                                status: 'pendente',
-                                observacao: 'Colaborador inativado - pedido pendente'
-                            });
+                            // Verificar se deve criar valor em aberto baseado nas regras
+                            const hoje = new Date();
+                            let deveCriar = false;
+                            
+                            if (dataEntrega < hoje && dataInativacao > dataEntrega) {
+                                deveCriar = true;
+                            } else if (dataEntrega >= hoje && dataInativacao < hoje) {
+                                deveCriar = true;
+                            }
+                            
+                            if (deveCriar) {
+                                await db.collection('valoresAbertos').add({
+                                    colaboradorId,
+                                    pedidoId: pedidoDoc.id,
+                                    valor: pizza.valor,
+                                    dataCriacao: new Date(),
+                                    status: 'pendente',
+                                    itens: [],
+                                    observacao: 'Colaborador inativado - pedido pendente'
+                                });
+                            }
                         }
                     }
                 }
             } catch (error) {
                 console.error('Error creating valor aberto:', error);
-            }
-        }
-
-        async function updateValorAbertoObs(id) {
-            const input = document.getElementById(`valorAbertoObs-${id}`);
-            const observacao = input.value.trim();
-            
-            showLoading();
-            try {
-                await db.collection('valoresAbertos').doc(id).update({
-                    observacao,
-                    dataAtualizacao: new Date()
-                });
-                
-                showToast('Observação atualizada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error updating valor aberto:', error);
-                showToast('Erro ao atualizar observação', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function marcarValorQuitado(id) {
-            if (!confirm('Tem certeza que deseja marcar este valor como quitado?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('valoresAbertos').doc(id).update({
-                    status: 'quitado',
-                    dataQuitacao: new Date()
-                });
-                
-                await loadFinanceiroData();
-                showToast('Valor marcado como quitado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error marking valor quitado:', error);
-                showToast('Erro ao marcar como quitado', 'error');
-            } finally {
-                hideLoading();
             }
         }
 
