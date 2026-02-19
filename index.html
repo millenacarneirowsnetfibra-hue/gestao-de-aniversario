@@ -3290,10 +3290,10 @@
             if (filtroAno) filtroAno.addEventListener('input', () => filterVida());
             if (filtroStatus) filtroStatus.addEventListener('change', () => filterVida());
 
-            await loadVidaCards(currentMonth);
+            await loadVidaCards();
         }
 
-        async function loadVidaCards(currentMonth) {
+        async function loadVidaCards() {
             const container = document.getElementById('vidaCardsList');
             if (!container) return;
 
@@ -3304,38 +3304,36 @@
                 
                 container.innerHTML = '';
                 
-                const mesAtual = currentMonth || new Date().getMonth() + 1;
+                const hoje = new Date();
+                const mesAtual = hoje.getMonth();
+                const filtroMes = document.getElementById('filtroMesVida')?.value;
                 
-                // Filtrar e ordenar colaboradores - MAIS RECENTES PRIMEIRO
-                const colaboradoresFiltrados = [];
+                // Filtrar colaboradores que têm data de nascimento
+                let colaboradoresComData = colaboradores.filter(col => col.dataNascimento);
                 
-                for (const col of colaboradores) {
-                    if (!col.dataNascimento) continue;
-                    
-                    const dataNascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
-                    const mesNascimento = dataNascimento.getMonth() + 1;
-                    
-                    if (mesNascimento !== mesAtual) continue;
-                    
-                    colaboradoresFiltrados.push(col);
+                // Aplicar filtro de mês se selecionado
+                if (filtroMes && filtroMes !== '') {
+                    colaboradoresComData = colaboradoresComData.filter(col => {
+                        const dataNasc = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
+                        return dataNasc.getMonth() + 1 === parseInt(filtroMes);
+                    });
                 }
                 
-                // Ordenar por data de nascimento (mais recentes primeiro)
-                colaboradoresFiltrados.sort((a, b) => {
+                // Ordenar por proximidade da data
+                colaboradoresComData.sort((a, b) => {
                     const dataA = parseDateISO(a.dataNascimento) || new Date(a.dataNascimento);
                     const dataB = parseDateISO(b.dataNascimento) || new Date(b.dataNascimento);
                     
-                    // Comparar dia/mês (ignorar ano)
-                    const diaMesA = dataA.getMonth() * 100 + dataA.getDate();
-                    const diaMesB = dataB.getMonth() * 100 + dataB.getDate();
+                    // Calcular dias até o próximo aniversário
+                    const diasA = getDaysUntilNextBirthday(dataA);
+                    const diasB = getDaysUntilNextBirthday(dataB);
                     
-                    // Para o mês atual, mais próximo do fim do mês primeiro
-                    return diaMesB - diaMesA;
+                    // Ordenar por proximidade (menor distância primeiro)
+                    return diasA - diasB;
                 });
                 
-                for (const col of colaboradoresFiltrados) {
+                for (const col of colaboradoresComData) {
                     const checklist = checklists.find(c => c.colaboradorId === col.id && c.tipo === 'vida');
-                    
                     const observacao = observacoes.find(o => o.colaboradorId === col.id && o.tipo === 'vida');
                     
                     const card = createVidaCard(col, checklist, observacao);
@@ -3761,33 +3759,35 @@
                 
                 container.innerHTML = '';
                 
-                // Filtrar e ordenar colaboradores - MAIS RECENTES PRIMEIRO
-                const colaboradoresFiltrados = [];
+                const hoje = new Date();
+                const filtroMes = document.getElementById('filtroMesEmpresa')?.value;
                 
-                for (const col of colaboradores) {
-                    if (!col.dataAdmissao) continue;
-                    
-                    const dataAdmissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                    
-                    colaboradoresFiltrados.push(col);
+                // Filtrar colaboradores que têm data de admissão
+                let colaboradoresComData = colaboradores.filter(col => col.dataAdmissao);
+                
+                // Aplicar filtro de mês se selecionado
+                if (filtroMes && filtroMes !== '') {
+                    colaboradoresComData = colaboradoresComData.filter(col => {
+                        const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
+                        return dataAdm.getMonth() + 1 === parseInt(filtroMes);
+                    });
                 }
                 
-                // Ordenar por data de admissão (mais recentes primeiro)
-                colaboradoresFiltrados.sort((a, b) => {
+                // Ordenar por proximidade da data
+                colaboradoresComData.sort((a, b) => {
                     const dataA = parseDateISO(a.dataAdmissao) || new Date(a.dataAdmissao);
                     const dataB = parseDateISO(b.dataAdmissao) || new Date(b.dataAdmissao);
                     
-                    // Comparar dia/mês (ignorar ano)
-                    const diaMesA = dataA.getMonth() * 100 + dataA.getDate();
-                    const diaMesB = dataB.getMonth() * 100 + dataB.getDate();
+                    // Calcular dias até o próximo aniversário de empresa
+                    const diasA = getDaysUntilNextCompanyAnniversary(dataA);
+                    const diasB = getDaysUntilNextCompanyAnniversary(dataB);
                     
-                    // Mais próximo do fim do mês primeiro
-                    return diaMesB - diaMesA;
+                    // Ordenar por proximidade (menor distância primeiro)
+                    return diasA - diasB;
                 });
                 
-                for (const col of colaboradoresFiltrados) {
+                for (const col of colaboradoresComData) {
                     const checklist = checklists.find(c => c.colaboradorId === col.id && c.tipo === 'empresa');
-                    
                     const pedidosColaborador = pedidos.filter(p => p.colaboradorId === col.id && p.status !== 'cancelado');
                     
                     const card = createEmpresaCard(col, checklist, pedidosColaborador);
