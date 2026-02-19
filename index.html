@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* Estilos mantidos iguais ao original */
+        /* ESTILOS MANTIDOS IGUAIS AO ORIGINAL */
         * {
             margin: 0;
             padding: 0;
@@ -2102,14 +2102,47 @@
             return `${day}/${month}`;
         }
 
+        // Função CORRIGIDA para parse de datas no formato brasileiro (com ou sem horário)
         function parseDateBR(dateStr) {
             if (!dateStr) return null;
             
-            // Remove o horário se existir (ex: "02/04/1980 00:00:00" -> "02/04/1980")
-            const cleanDateStr = dateStr.split(' ')[0];
+            // Converte para string e remove espaços extras
+            const str = String(dateStr).trim();
             
-            const [day, month, year] = cleanDateStr.split('/');
-            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            // Se for um número (timestamp do Excel), converte
+            if (!isNaN(str) && str.length > 0) {
+                const excelDate = parseFloat(str);
+                if (excelDate > 0) {
+                    // Data do Excel começa em 1900-01-01
+                    const date = new Date((excelDate - 25569) * 86400 * 1000);
+                    if (!isNaN(date.getTime())) return date;
+                }
+            }
+            
+            // Remove o horário se existir (ex: "02/04/1980 00:00:00" -> "02/04/1980")
+            const cleanDateStr = str.split(' ')[0];
+            
+            // Tenta vários formatos
+            const patterns = [
+                /^(\d{2})\/(\d{2})\/(\d{4})$/, // DD/MM/AAAA
+                /^(\d{2})-(\d{2})-(\d{4})$/,   // DD-MM-AAAA
+                /^(\d{4})-(\d{2})-(\d{2})$/    // AAAA-MM-DD (ISO)
+            ];
+            
+            for (const pattern of patterns) {
+                const match = cleanDateStr.match(pattern);
+                if (match) {
+                    if (pattern === patterns[2]) { // ISO
+                        const [_, year, month, day] = match;
+                        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    } else {
+                        const [_, day, month, year] = match;
+                        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    }
+                }
+            }
+            
+            return null;
         }
 
         function parseDateISO(dateStr) {
@@ -2118,21 +2151,32 @@
             return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
 
+        // Função CORRIGIDA para validar data brasileira
         function validateDateBR(dateStr) {
             if (!dateStr) return false;
             
-            // Remove o horário se existir
-            const cleanDateStr = dateStr.split(' ')[0];
+            // Converte para string e remove espaços
+            const str = String(dateStr).trim();
             
-            const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+            // Remove o horário se existir
+            const cleanDateStr = str.split(' ')[0];
+            
+            // Aceita formato DD/MM/AAAA ou DD-MM-AAAA
+            const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
             if (!regex.test(cleanDateStr)) return false;
             
-            const [_, day, month, year] = cleanDateStr.match(regex);
-            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            const match = cleanDateStr.match(regex);
+            if (!match) return false;
             
-            return date.getDate() === parseInt(day) &&
-                   date.getMonth() === parseInt(month) - 1 &&
-                   date.getFullYear() === parseInt(year);
+            const day = parseInt(match[1]);
+            const month = parseInt(match[2]);
+            const year = parseInt(match[3]);
+            
+            const date = new Date(year, month - 1, day);
+            
+            return date.getDate() === day &&
+                   date.getMonth() === month - 1 &&
+                   date.getFullYear() === year;
         }
 
         function applyDateMask(input) {
@@ -2347,6 +2391,7 @@
             showToast('Modelo baixado com sucesso!', 'success');
         }
 
+        // Função CORRIGIDA para importar colaboradores
         async function importColaboradores() {
             const fileInput = document.getElementById('importFile');
             const file = fileInput.files[0];
@@ -2385,53 +2430,48 @@
                 
                 let imported = 0;
                 let errors = 0;
+                const errorsList = [];
                 
-                for (const row of jsonData) {
+                for (const [index, row] of jsonData.entries()) {
                     try {
                         // Validar dados obrigatórios
                         if (!row.nome || !row.dataNascimento || !row.dataAdmissao || !row.cidade || !row.empresa || !row.departamento) {
-                            console.error('Dados incompletos:', row);
                             errors++;
-                            continue;
-                        }
-                        
-                        // Validar formato da data - converter se necessário
-                        let dataNascimentoStr = String(row.dataNascimento);
-                        let dataAdmissaoStr = String(row.dataAdmissao);
-                        
-                        // Se a data estiver no formato com timestamp (ex: "02/04/1980 00:00:00")
-                        // ou se for número do Excel, o SheetJS já converte para string
-                        
-                        // Remover possíveis aspas e espaços extras
-                        dataNascimentoStr = dataNascimentoStr.trim();
-                        dataAdmissaoStr = dataAdmissaoStr.trim();
-                        
-                        // Verificar se está no formato DD/MM/AAAA (com ou sem horário)
-                        const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})/;
-                        
-                        if (!dateRegex.test(dataNascimentoStr)) {
-                            console.error('Data nascimento inválida:', dataNascimentoStr);
-                            errors++;
-                            continue;
-                        }
-                        
-                        if (!dateRegex.test(dataAdmissaoStr)) {
-                            console.error('Data admissão inválida:', dataAdmissaoStr);
-                            errors++;
+                            errorsList.push(`Linha ${index + 2}: Dados incompletos`);
                             continue;
                         }
                         
                         // Validar cidade
-                        const cidade = row.cidade;
+                        const cidade = String(row.cidade).trim();
                         if (!['Itanhaém', 'Peruíbe', 'Mongaguá', 'Outra'].includes(cidade)) {
-                            console.error('Cidade inválida:', cidade);
                             errors++;
+                            errorsList.push(`Linha ${index + 2}: Cidade inválida: ${cidade}`);
                             continue;
                         }
                         
+                        // Converter datas
+                        const dataNascimento = parseDateBR(String(row.dataNascimento));
+                        const dataAdmissao = parseDateBR(String(row.dataAdmissao));
+                        
+                        if (!dataNascimento) {
+                            errors++;
+                            errorsList.push(`Linha ${index + 2}: Data de nascimento inválida: ${row.dataNascimento}`);
+                            continue;
+                        }
+                        
+                        if (!dataAdmissao) {
+                            errors++;
+                            errorsList.push(`Linha ${index + 2}: Data de admissão inválida: ${row.dataAdmissao}`);
+                            continue;
+                        }
+                        
+                        // Formatar datas para ISO (YYYY-MM-DD)
+                        const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
+                        const admissaoISO = `${dataAdmissao.getFullYear()}-${String(dataAdmissao.getMonth() + 1).padStart(2, '0')}-${String(dataAdmissao.getDate()).padStart(2, '0')}`;
+                        
                         // Buscar ou criar empresa
                         let empresaId = null;
-                        let empresaNome = row.empresa.trim();
+                        let empresaNome = String(row.empresa).trim();
                         const empresaExistente = empresas.find(e => e.nome.toLowerCase() === empresaNome.toLowerCase());
                         
                         if (empresaExistente) {
@@ -2447,7 +2487,7 @@
                         
                         // Buscar ou criar departamento
                         let departamentoId = null;
-                        let departamentoNome = row.departamento.trim();
+                        let departamentoNome = String(row.departamento).trim();
                         const departamentoExistente = departamentos.find(d => d.nome.toLowerCase() === departamentoNome.toLowerCase());
                         
                         if (departamentoExistente) {
@@ -2461,29 +2501,8 @@
                             departamentos.push({ id: departamentoId, nome: departamentoNome });
                         }
                         
-                        // Converter datas - extrair apenas a parte da data (DD/MM/AAAA)
-                        const nascimentoMatch = dataNascimentoStr.match(dateRegex);
-                        const admissaoMatch = dataAdmissaoStr.match(dateRegex);
-                        
-                        if (!nascimentoMatch || !admissaoMatch) {
-                            errors++;
-                            continue;
-                        }
-                        
-                        const dataNascimento = parseDateBR(nascimentoMatch[0]);
-                        const dataAdmissao = parseDateBR(admissaoMatch[0]);
-                        
-                        if (!dataNascimento || !dataAdmissao) {
-                            errors++;
-                            continue;
-                        }
-                        
-                        // Formatar datas para ISO (YYYY-MM-DD)
-                        const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
-                        const admissaoISO = `${dataAdmissao.getFullYear()}-${String(dataAdmissao.getMonth() + 1).padStart(2, '0')}-${String(dataAdmissao.getDate()).padStart(2, '0')}`;
-                        
                         const colaboradorData = {
-                            nome: row.nome.trim(),
+                            nome: String(row.nome).trim(),
                             dataNascimento: nascimentoISO,
                             dataAdmissao: admissaoISO,
                             cidade: cidade,
@@ -2505,6 +2524,7 @@
                     } catch (err) {
                         console.error('Erro ao importar linha:', err, row);
                         errors++;
+                        errorsList.push(`Linha ${index + 2}: ${err.message || 'Erro desconhecido'}`);
                     }
                 }
                 
@@ -2515,8 +2535,13 @@
                     await loadColaboradoresList();
                 }
                 
-                showToast(`${imported} colaborador(es) importado(s) com sucesso! ${errors} erro(s).`, 
-                        errors > 0 ? 'warning' : 'success');
+                if (errorsList.length > 0) {
+                    console.error('Erros na importação:', errorsList);
+                    showToast(`${imported} colaborador(es) importado(s) com sucesso! ${errors} erro(s). Verifique o console para detalhes.`, 
+                            errors > 0 ? 'warning' : 'success');
+                } else {
+                    showToast(`${imported} colaborador(es) importado(s) com sucesso!`, 'success');
+                }
                 
             } catch (error) {
                 console.error('Erro ao importar:', error);
@@ -4746,7 +4771,7 @@
             }
         }
 
-        // Load Cadastros Gerais (MODIFICADO: removida data de cadastro e adicionado botão de importar)
+        // Load Cadastros Gerais
         async function loadCadastros(container) {
             await carregarEmpresasDepartamentos();
             await loadPizzasList();
@@ -5127,7 +5152,7 @@
             }
         }
 
-        // Empresa Functions (MODIFICADO: removida coluna de data de cadastro)
+        // Empresa Functions
         async function loadEmpresasList() {
             showLoading();
             try {
@@ -5207,7 +5232,7 @@
             }
         }
 
-        // Departamento Functions (MODIFICADO: removida coluna de data de cadastro)
+        // Departamento Functions
         async function loadDepartamentosList() {
             showLoading();
             try {
@@ -5287,7 +5312,7 @@
             }
         }
 
-        // Pizza Functions (MODIFICADO: permite editar todos os campos)
+        // Pizza Functions
         async function loadPizzasList() {
             showLoading();
             try {
