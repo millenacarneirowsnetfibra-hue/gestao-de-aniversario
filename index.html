@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Estilos mantidos iguais ao original */
         * {
             margin: 0;
             padding: 0;
@@ -2111,6 +2112,7 @@
         }
 
         function validateDateBR(dateStr) {
+            if (!dateStr) return false;
             const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
             if (!regex.test(dateStr)) return false;
             
@@ -2377,26 +2379,57 @@
                     try {
                         // Validar dados obrigatórios
                         if (!row.nome || !row.dataNascimento || !row.dataAdmissao || !row.cidade || !row.empresa || !row.departamento) {
+                            console.error('Dados incompletos:', row);
                             errors++;
                             continue;
                         }
                         
-                        // Validar formato da data
-                        if (!validateDateBR(row.dataNascimento) || !validateDateBR(row.dataAdmissao)) {
-                            errors++;
-                            continue;
+                        // Validar formato da data - converter se necessário
+                        let dataNascimentoStr = row.dataNascimento;
+                        let dataAdmissaoStr = row.dataAdmissao;
+                        
+                        // Verificar se está no formato DD/MM/AAAA
+                        if (!validateDateBR(dataNascimentoStr)) {
+                            // Tentar outros formatos
+                            if (dataNascimentoStr.includes('-')) {
+                                // Pode ser YYYY-MM-DD
+                                const parts = dataNascimentoStr.split('-');
+                                if (parts.length === 3) {
+                                    dataNascimentoStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                }
+                            }
+                            if (!validateDateBR(dataNascimentoStr)) {
+                                console.error('Data nascimento inválida:', dataNascimentoStr);
+                                errors++;
+                                continue;
+                            }
+                        }
+                        
+                        if (!validateDateBR(dataAdmissaoStr)) {
+                            if (dataAdmissaoStr.includes('-')) {
+                                const parts = dataAdmissaoStr.split('-');
+                                if (parts.length === 3) {
+                                    dataAdmissaoStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                }
+                            }
+                            if (!validateDateBR(dataAdmissaoStr)) {
+                                console.error('Data admissão inválida:', dataAdmissaoStr);
+                                errors++;
+                                continue;
+                            }
                         }
                         
                         // Validar cidade
                         const cidade = row.cidade;
                         if (!['Itanhaém', 'Peruíbe', 'Mongaguá', 'Outra'].includes(cidade)) {
+                            console.error('Cidade inválida:', cidade);
                             errors++;
                             continue;
                         }
                         
                         // Buscar ou criar empresa
                         let empresaId = null;
-                        let empresaNome = row.empresa;
+                        let empresaNome = row.empresa.trim();
                         const empresaExistente = empresas.find(e => e.nome.toLowerCase() === empresaNome.toLowerCase());
                         
                         if (empresaExistente) {
@@ -2412,7 +2445,7 @@
                         
                         // Buscar ou criar departamento
                         let departamentoId = null;
-                        let departamentoNome = row.departamento;
+                        let departamentoNome = row.departamento.trim();
                         const departamentoExistente = departamentos.find(d => d.nome.toLowerCase() === departamentoNome.toLowerCase());
                         
                         if (departamentoExistente) {
@@ -2426,16 +2459,16 @@
                             departamentos.push({ id: departamentoId, nome: departamentoNome });
                         }
                         
-                        // Criar colaborador
-                        const dataNascimento = parseDateBR(row.dataNascimento);
-                        const dataAdmissao = parseDateBR(row.dataAdmissao);
+                        // Converter datas
+                        const dataNascimento = parseDateBR(dataNascimentoStr);
+                        const dataAdmissao = parseDateBR(dataAdmissaoStr);
                         
                         // Formatar datas para ISO (YYYY-MM-DD)
                         const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
                         const admissaoISO = `${dataAdmissao.getFullYear()}-${String(dataAdmissao.getMonth() + 1).padStart(2, '0')}-${String(dataAdmissao.getDate()).padStart(2, '0')}`;
                         
                         const colaboradorData = {
-                            nome: row.nome,
+                            nome: row.nome.trim(),
                             dataNascimento: nascimentoISO,
                             dataAdmissao: admissaoISO,
                             cidade: cidade,
@@ -2443,11 +2476,11 @@
                             empresaNome,
                             departamentoId,
                             departamentoNome,
-                            status: row.status === 'Inativo' ? 'Inativo' : 'Ativo',
+                            status: row.status && row.status.toLowerCase() === 'inativo' ? 'Inativo' : 'Ativo',
                             dataCriacao: new Date()
                         };
                         
-                        if (row.status === 'Inativo') {
+                        if (colaboradorData.status === 'Inativo') {
                             colaboradorData.dataInativacao = new Date();
                         }
                         
@@ -2455,7 +2488,7 @@
                         
                         imported++;
                     } catch (err) {
-                        console.error('Erro ao importar linha:', err);
+                        console.error('Erro ao importar linha:', err, row);
                         errors++;
                     }
                 }
@@ -2463,6 +2496,10 @@
                 closeModal('import');
                 await loadAllData();
                 await loadColaboradoresList();
+                
+                if (currentSection === 'cadastros') {
+                    await loadColaboradoresList();
+                }
                 
                 showToast(`${imported} colaborador(es) importado(s) com sucesso! ${errors} erro(s).`, 
                         errors > 0 ? 'warning' : 'success');
@@ -2491,19 +2528,23 @@
                     empresas = empresasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     
                     const empresaSelect = document.getElementById('modalColabEmpresa');
-                    empresaSelect.innerHTML = '<option value="">Selecione...</option>';
-                    empresas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(emp => {
-                        empresaSelect.innerHTML += `<option value="${emp.id}">${emp.nome}</option>`;
-                    });
+                    if (empresaSelect) {
+                        empresaSelect.innerHTML = '<option value="">Selecione...</option>';
+                        empresas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(emp => {
+                            empresaSelect.innerHTML += `<option value="${emp.id}">${emp.nome}</option>`;
+                        });
+                    }
                     
                     const departamentosSnapshot = await db.collection('departamentos').get();
                     departamentos = departamentosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     
                     const deptoSelect = document.getElementById('modalColabDepartamento');
-                    deptoSelect.innerHTML = '<option value="">Selecione...</option>';
-                    departamentos.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(dep => {
-                        deptoSelect.innerHTML += `<option value="${dep.id}">${dep.nome}</option>`;
-                    });
+                    if (deptoSelect) {
+                        deptoSelect.innerHTML = '<option value="">Selecione...</option>';
+                        departamentos.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(dep => {
+                            deptoSelect.innerHTML += `<option value="${dep.id}">${dep.nome}</option>`;
+                        });
+                    }
                     
                     resolve();
                 } catch (error) {
