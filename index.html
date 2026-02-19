@@ -579,11 +579,17 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* Cards List */
+        /* Cards List - 2 por linha */
         .cards-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .cards-list {
+                grid-template-columns: 1fr;
+            }
         }
 
         .person-card {
@@ -2522,7 +2528,7 @@
                 closeStatusModal();
                 
                 if (currentSection === 'financeiro') {
-                    await loadFinanceiroData();
+                    await loadFinanceiro(document.getElementById('mainContent'));
                 } else if (currentSection === 'relatorios') {
                     await aplicarFiltroRelatorio();
                 }
@@ -6191,7 +6197,7 @@
             });
             
             await atualizarValorAbertoNoFirestore(valorId, valor.itens);
-            await loadFinanceiroData();
+            await loadFinanceiro(document.getElementById('mainContent'));
         }
 
         async function removerItemValorAberto(valorId, index) {
@@ -6201,7 +6207,7 @@
             valor.itens.splice(index, 1);
             
             await atualizarValorAbertoNoFirestore(valorId, valor.itens);
-            await loadFinanceiroData();
+            await loadFinanceiro(document.getElementById('mainContent'));
         }
 
         async function atualizarValorAberto(valorId) {
@@ -6231,7 +6237,7 @@
             }
             
             await atualizarValorAbertoNoFirestore(valorId, itens);
-            await loadFinanceiroData();
+            await loadFinanceiro(document.getElementById('mainContent'));
             showToast('Valor atualizado com sucesso!', 'success');
         }
 
@@ -6255,7 +6261,7 @@
                     dataQuitacao: new Date()
                 });
                 
-                await loadFinanceiroData();
+                await loadFinanceiro(document.getElementById('mainContent'));
                 showToast('Valor marcado como quitado com sucesso!', 'success');
             } catch (error) {
                 console.error('Error marking valor quitado:', error);
@@ -6338,7 +6344,7 @@
 
         function applyFinanceiroFilters() {
             showToast('Filtros aplicados com sucesso!', 'success');
-            loadFinanceiroData();
+            loadFinanceiro(document.getElementById('mainContent'));
         }
 
         // Initialize
