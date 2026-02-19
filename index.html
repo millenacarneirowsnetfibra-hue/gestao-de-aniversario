@@ -412,6 +412,7 @@
             display: flex;
             justify-content: flex-end;
             margin-bottom: 20px;
+            gap: 10px;
         }
 
         .btn-add {
@@ -431,6 +432,27 @@
 
         .btn-add:hover {
             background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-import {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-import:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
@@ -1855,7 +1877,7 @@
     <div class="modal" id="modalPizza">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-pizza-slice"></i> Nova Pizza</h3>
+                <h3><i class="fas fa-pizza-slice"></i> <span id="modalPizzaTitle">Nova Pizza</span></h3>
                 <i class="fas fa-times modal-close" onclick="closeModal('pizza')"></i>
             </div>
             <div class="modal-body">
@@ -1882,6 +1904,47 @@
                 <button class="btn btn-secondary" onclick="closeModal('pizza')">Cancelar</button>
                 <button class="btn btn-success" onclick="savePizzaModal()">
                     <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Colaboradores Modal -->
+    <div class="modal" id="modalImportColaboradores">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-import"></i> Importar Colaboradores</h3>
+                <i class="fas fa-times modal-close" onclick="closeModal('import')"></i>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px;">
+                    <p>Formato esperado (CSV ou Excel):</p>
+                    <ul style="margin: 10px 0 20px 20px; color: var(--secondary);">
+                        <li><strong>nome</strong> - Nome completo</li>
+                        <li><strong>dataNascimento</strong> - Data de nascimento (DD/MM/AAAA)</li>
+                        <li><strong>dataAdmissao</strong> - Data de admissão (DD/MM/AAAA)</li>
+                        <li><strong>cidade</strong> - Cidade (Itanhaém, Peruíbe, Mongaguá, Outra)</li>
+                        <li><strong>empresa</strong> - Nome da empresa</li>
+                        <li><strong>departamento</strong> - Nome do departamento</li>
+                        <li><strong>status</strong> - Ativo ou Inativo (opcional, padrão: Ativo)</li>
+                    </ul>
+                </div>
+                
+                <div class="form-group">
+                    <label>Arquivo (CSV ou Excel)</label>
+                    <input type="file" id="importFile" accept=".csv,.xlsx,.xls">
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <a href="#" onclick="downloadModeloImportacao()" style="color: var(--primary);">
+                        <i class="fas fa-download"></i> Baixar modelo de importação
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('import')">Cancelar</button>
+                <button class="btn btn-success" onclick="importColaboradores()">
+                    <i class="fas fa-upload"></i> Importar
                 </button>
             </div>
         </div>
@@ -1977,6 +2040,7 @@
         let currentPedidoId = null;
         let editingColaboradorId = null;
         let editingPedidoId = null;
+        let editingPizzaId = null;
         let charts = {};
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
@@ -2207,11 +2271,217 @@
             }
             else if (tipo === 'pizza') {
                 document.getElementById('modalPizza').classList.add('active');
-                document.getElementById('modalPizzaNome').value = '';
-                document.getElementById('modalPizzaDescricao').value = '';
-                document.getElementById('modalPizzaPizzaria').value = '';
-                document.getElementById('modalPizzaValor').value = '';
+                if (editId) {
+                    editingPizzaId = editId;
+                    document.getElementById('modalPizzaTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Pizza';
+                    
+                    const pizza = pizzas.find(p => p.id === editId);
+                    if (pizza) {
+                        document.getElementById('modalPizzaNome').value = pizza.nome || '';
+                        document.getElementById('modalPizzaDescricao').value = pizza.descricao || '';
+                        document.getElementById('modalPizzaPizzaria').value = pizza.pizzaria || '';
+                        document.getElementById('modalPizzaValor').value = pizza.valor || '';
+                    }
+                } else {
+                    editingPizzaId = null;
+                    document.getElementById('modalPizzaTitle').innerHTML = '<i class="fas fa-pizza-slice"></i> Nova Pizza';
+                    document.getElementById('modalPizzaNome').value = '';
+                    document.getElementById('modalPizzaDescricao').value = '';
+                    document.getElementById('modalPizzaPizzaria').value = '';
+                    document.getElementById('modalPizzaValor').value = '';
+                }
             }
+            else if (tipo === 'import') {
+                document.getElementById('modalImportColaboradores').classList.add('active');
+                document.getElementById('importFile').value = '';
+            }
+        }
+
+        function closeModal(tipo) {
+            if (tipo === 'colaborador') {
+                document.getElementById('modalColaborador').classList.remove('active');
+                editingColaboradorId = null;
+            }
+            else if (tipo === 'empresa') {
+                document.getElementById('modalEmpresa').classList.remove('active');
+            }
+            else if (tipo === 'departamento') {
+                document.getElementById('modalDepartamento').classList.remove('active');
+            }
+            else if (tipo === 'pizza') {
+                document.getElementById('modalPizza').classList.remove('active');
+                editingPizzaId = null;
+            }
+            else if (tipo === 'import') {
+                document.getElementById('modalImportColaboradores').classList.remove('active');
+            }
+        }
+
+        // Import Functions
+        function downloadModeloImportacao() {
+            const data = [
+                ['nome', 'dataNascimento', 'dataAdmissao', 'cidade', 'empresa', 'departamento', 'status'],
+                ['João Silva', '15/03/1990', '10/01/2020', 'Itanhaém', 'Empresa Exemplo', 'RH', 'Ativo'],
+                ['Maria Souza', '22/07/1985', '05/03/2019', 'Peruíbe', 'Empresa Exemplo', 'Financeiro', 'Ativo'],
+                ['Pedro Santos', '30/11/1995', '20/06/2021', 'Mongaguá', 'Outra Empresa', 'TI', 'Inativo']
+            ];
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Modelo');
+            XLSX.writeFile(wb, 'modelo_importacao_colaboradores.xlsx');
+            
+            showToast('Modelo baixado com sucesso!', 'success');
+        }
+
+        async function importColaboradores() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showToast('Selecione um arquivo', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const data = await readFileAsync(file);
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(sheet);
+                
+                if (jsonData.length === 0) {
+                    showToast('Arquivo vazio', 'error');
+                    return;
+                }
+                
+                // Verificar cabeçalhos
+                const expectedHeaders = ['nome', 'dataNascimento', 'dataAdmissao', 'cidade', 'empresa', 'departamento'];
+                const firstRow = jsonData[0];
+                const missingHeaders = expectedHeaders.filter(h => !(h in firstRow));
+                
+                if (missingHeaders.length > 0) {
+                    showToast(`Cabeçalhos ausentes: ${missingHeaders.join(', ')}`, 'error');
+                    return;
+                }
+                
+                // Carregar empresas e departamentos existentes
+                await loadAllData();
+                
+                let imported = 0;
+                let errors = 0;
+                
+                for (const row of jsonData) {
+                    try {
+                        // Validar dados obrigatórios
+                        if (!row.nome || !row.dataNascimento || !row.dataAdmissao || !row.cidade || !row.empresa || !row.departamento) {
+                            errors++;
+                            continue;
+                        }
+                        
+                        // Validar formato da data
+                        if (!validateDateBR(row.dataNascimento) || !validateDateBR(row.dataAdmissao)) {
+                            errors++;
+                            continue;
+                        }
+                        
+                        // Validar cidade
+                        const cidade = row.cidade;
+                        if (!['Itanhaém', 'Peruíbe', 'Mongaguá', 'Outra'].includes(cidade)) {
+                            errors++;
+                            continue;
+                        }
+                        
+                        // Buscar ou criar empresa
+                        let empresaId = null;
+                        let empresaNome = row.empresa;
+                        const empresaExistente = empresas.find(e => e.nome.toLowerCase() === empresaNome.toLowerCase());
+                        
+                        if (empresaExistente) {
+                            empresaId = empresaExistente.id;
+                        } else {
+                            const empresaRef = await db.collection('empresas').add({
+                                nome: empresaNome,
+                                dataCriacao: new Date()
+                            });
+                            empresaId = empresaRef.id;
+                            empresas.push({ id: empresaId, nome: empresaNome });
+                        }
+                        
+                        // Buscar ou criar departamento
+                        let departamentoId = null;
+                        let departamentoNome = row.departamento;
+                        const departamentoExistente = departamentos.find(d => d.nome.toLowerCase() === departamentoNome.toLowerCase());
+                        
+                        if (departamentoExistente) {
+                            departamentoId = departamentoExistente.id;
+                        } else {
+                            const departamentoRef = await db.collection('departamentos').add({
+                                nome: departamentoNome,
+                                dataCriacao: new Date()
+                            });
+                            departamentoId = departamentoRef.id;
+                            departamentos.push({ id: departamentoId, nome: departamentoNome });
+                        }
+                        
+                        // Criar colaborador
+                        const dataNascimento = parseDateBR(row.dataNascimento);
+                        const dataAdmissao = parseDateBR(row.dataAdmissao);
+                        
+                        // Formatar datas para ISO (YYYY-MM-DD)
+                        const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
+                        const admissaoISO = `${dataAdmissao.getFullYear()}-${String(dataAdmissao.getMonth() + 1).padStart(2, '0')}-${String(dataAdmissao.getDate()).padStart(2, '0')}`;
+                        
+                        const colaboradorData = {
+                            nome: row.nome,
+                            dataNascimento: nascimentoISO,
+                            dataAdmissao: admissaoISO,
+                            cidade: cidade,
+                            empresaId,
+                            empresaNome,
+                            departamentoId,
+                            departamentoNome,
+                            status: row.status === 'Inativo' ? 'Inativo' : 'Ativo',
+                            dataCriacao: new Date()
+                        };
+                        
+                        if (row.status === 'Inativo') {
+                            colaboradorData.dataInativacao = new Date();
+                        }
+                        
+                        await db.collection('colaboradores').add(colaboradorData);
+                        
+                        imported++;
+                    } catch (err) {
+                        console.error('Erro ao importar linha:', err);
+                        errors++;
+                    }
+                }
+                
+                closeModal('import');
+                await loadAllData();
+                await loadColaboradoresList();
+                
+                showToast(`${imported} colaborador(es) importado(s) com sucesso! ${errors} erro(s).`, 
+                        errors > 0 ? 'warning' : 'success');
+                
+            } catch (error) {
+                console.error('Erro ao importar:', error);
+                showToast('Erro ao importar arquivo', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function readFileAsync(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e.target.error);
+                reader.readAsBinaryString(file);
+            });
         }
 
         function carregarEmpresasDepartamentos() {
@@ -2241,22 +2511,6 @@
                     resolve();
                 }
             });
-        }
-
-        function closeModal(tipo) {
-            if (tipo === 'colaborador') {
-                document.getElementById('modalColaborador').classList.remove('active');
-                editingColaboradorId = null;
-            }
-            else if (tipo === 'empresa') {
-                document.getElementById('modalEmpresa').classList.remove('active');
-            }
-            else if (tipo === 'departamento') {
-                document.getElementById('modalDepartamento').classList.remove('active');
-            }
-            else if (tipo === 'pizza') {
-                document.getElementById('modalPizza').classList.remove('active');
-            }
         }
 
         // Pizza Edit Modal Functions
@@ -3225,9 +3479,9 @@
             }, 100);
         }
 
-        // Load Aniversário de Vida - CORRIGIDO
+        // Load Aniversário de Vida
         async function loadVida(container) {
-            await loadEmpresasDropDowns();
+            await carregarEmpresasDepartamentos();
             
             container.innerHTML = `
                 <div class="filters-container" id="vidaFilters">
@@ -3291,7 +3545,6 @@
             await loadVidaCards();
         }
 
-        // CORRIGIDO: Carregar TODOS os colaboradores com data de nascimento, ordenar por proximidade e aplicar filtro inicial do mês atual
         async function loadVidaCards() {
             const container = document.getElementById('vidaCardsList');
             if (!container) return;
@@ -3306,9 +3559,9 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Pegar todos os colaboradores que têm data de nascimento, não apenas do mês atual
+                // Pegar todos os colaboradores que têm data de nascimento
                 const colaboradoresComData = colaboradores.filter(col => {
-                    return col.dataNascimento; // Todos que têm data de nascimento
+                    return col.dataNascimento;
                 });
                 
                 // Adicionar informação de dias até o próximo aniversário para ordenação
@@ -3331,7 +3584,7 @@
                 // Aplicar filtro inicial para mostrar apenas mês atual
                 const filtroMes = document.getElementById('filtroMesVida');
                 if (filtroMes) {
-                    filtroMes.value = mesAtual + 1; // +1 porque os meses vão de 1-12 no select
+                    filtroMes.value = mesAtual + 1;
                 }
                 filterVida();
                 
@@ -3369,7 +3622,7 @@
             const dataFormatada = formatDateBR(dataNascimento);
             const dataCurta = formatDateShortBR(dataNascimento);
             const idade = calculateAge(dataNascimento);
-            const mesNascimento = dataNascimento.getMonth() + 1; // Para filtro
+            const mesNascimento = dataNascimento.getMonth() + 1;
             
             // Adicionar atributo de mês para filtro
             card.dataset.mesNascimento = mesNascimento;
@@ -3679,9 +3932,9 @@
             }
         }
 
-        // Load Empresa - CORRIGIDO
+        // Load Empresa
         async function loadEmpresa(container) {
-            await loadEmpresasDropDowns();
+            await carregarEmpresasDepartamentos();
             
             container.innerHTML = `
                 <div class="filters-container" id="empresaFilters">
@@ -3745,7 +3998,6 @@
             await loadEmpresaCards();
         }
 
-        // CORRIGIDO: Carregar TODOS os colaboradores com data de admissão, ordenar por proximidade e aplicar filtro inicial do mês atual
         async function loadEmpresaCards() {
             const container = document.getElementById('empresaCardsList');
             if (!container) return;
@@ -3760,9 +4012,9 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Pegar todos os colaboradores que têm data de admissão, não apenas do mês atual
+                // Pegar todos os colaboradores que têm data de admissão
                 const colaboradoresComData = colaboradores.filter(col => {
-                    return col.dataAdmissao; // Todos que têm data de admissão
+                    return col.dataAdmissao;
                 });
                 
                 // Adicionar informação de dias até o próximo aniversário para ordenação
@@ -3785,7 +4037,7 @@
                 // Aplicar filtro inicial para mostrar apenas mês atual
                 const filtroMes = document.getElementById('filtroMesEmpresa');
                 if (filtroMes) {
-                    filtroMes.value = mesAtual + 1; // +1 porque os meses vão de 1-12 no select
+                    filtroMes.value = mesAtual + 1;
                 }
                 filterEmpresa();
                 
@@ -3823,7 +4075,7 @@
             const dataFormatada = formatDateBR(dataAdmissao);
             const dataCurta = formatDateShortBR(dataAdmissao);
             const anosEmpresa = new Date().getFullYear() - dataAdmissao.getFullYear();
-            const mesAdmissao = dataAdmissao.getMonth() + 1; // Para filtro
+            const mesAdmissao = dataAdmissao.getMonth() + 1;
             
             // Adicionar atributo de mês para filtro
             card.dataset.mesAdmissao = mesAdmissao;
@@ -4439,9 +4691,9 @@
             }
         }
 
-        // Load Cadastros Gerais
+        // Load Cadastros Gerais (MODIFICADO: removida data de cadastro e adicionado botão de importar)
         async function loadCadastros(container) {
-            await loadEmpresasDropDowns();
+            await carregarEmpresasDepartamentos();
             await loadPizzasList();
             
             container.innerHTML = `
@@ -4465,6 +4717,9 @@
                         <div class="add-button-container">
                             <button class="btn-add" onclick="openModal('colaborador')">
                                 <i class="fas fa-plus-circle"></i> Novo Colaborador
+                            </button>
+                            <button class="btn-import" onclick="openModal('import')">
+                                <i class="fas fa-file-import"></i> Importar Colaboradores
                             </button>
                         </div>
                         
@@ -4549,7 +4804,6 @@
                                 <thead>
                                     <tr>
                                         <th>Nome</th>
-                                        <th>Data de Cadastro</th>
                                         <th>Ações</th>
                                     </tr>
                                 </thead>
@@ -4586,7 +4840,6 @@
                                 <thead>
                                     <tr>
                                         <th>Nome</th>
-                                        <th>Data de Cadastro</th>
                                         <th>Ações</th>
                                     </tr>
                                 </thead>
@@ -4738,6 +4991,923 @@
             });
         }
 
+        // Colaborador Functions
+        async function loadColaboradoresList() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('colaboradores').get();
+                colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                colaboradores.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+                
+                const tbody = document.getElementById('colaboradoresTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                colaboradores.forEach(col => {
+                    const isOutside = !col.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(col.cidade);
+                    const row = document.createElement('tr');
+                    if (isOutside) row.classList.add('outside-region');
+                    
+                    const dataNascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
+                    const dataAdmissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
+                    
+                    row.innerHTML = `
+                        <td>${col.nome || '-'}</td>
+                        <td>${dataNascimento ? formatDateBR(dataNascimento) : '-'}</td>
+                        <td>${dataAdmissao ? formatDateBR(dataAdmissao) : '-'}</td>
+                        <td>${col.cidade || '-'}</td>
+                        <td>${col.empresaNome || '-'}</td>
+                        <td>${col.departamentoNome || '-'}</td>
+                        <td><span class="badge ${col.status === 'Ativo' ? 'active' : 'inactive'}">${col.status || 'Inativo'}</span></td>
+                        <td class="action-buttons">
+                            <button class="edit" onclick="openModal('colaborador', '${col.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete" onclick="deleteColaborador('${col.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                filterColaboradores();
+            } catch (error) {
+                console.error('Error loading colaboradores:', error);
+                showToast('Erro ao carregar colaboradores', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteColaborador(id) {
+            if (!confirm('Tem certeza que deseja excluir este colaborador? Isso removerá todos os pedidos associados.')) return;
+            
+            showLoading();
+            try {
+                const pedidosSnapshot = await db.collection('pedidos')
+                    .where('colaboradorId', '==', id)
+                    .get();
+                
+                const batch = db.batch();
+                
+                pedidosSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+                
+                await db.collection('colaboradores').doc(id).delete();
+                
+                await loadColaboradoresList();
+                await loadAllData();
+                showToast('Colaborador e pedidos excluídos com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting colaborador:', error);
+                showToast('Erro ao excluir colaborador', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Empresa Functions (MODIFICADO: removida coluna de data de cadastro)
+        async function loadEmpresasList() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('empresas').get();
+                empresas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                empresas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+                
+                const tbody = document.getElementById('empresasTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                empresas.forEach(emp => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${emp.nome || '-'}</td>
+                        <td class="action-buttons">
+                            <button class="edit" onclick="editEmpresa('${emp.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete" onclick="deleteEmpresa('${emp.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                filterEmpresas();
+            } catch (error) {
+                console.error('Error loading empresas:', error);
+                showToast('Erro ao carregar empresas', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function editEmpresa(id) {
+            const empresa = empresas.find(e => e.id === id);
+            if (!empresa) return;
+            
+            const novoNome = prompt('Novo nome da empresa:', empresa.nome);
+            if (!novoNome) return;
+            
+            showLoading();
+            try {
+                await db.collection('empresas').doc(id).update({
+                    nome: novoNome
+                });
+                
+                await loadEmpresasList();
+                await loadAllData();
+                showToast('Empresa atualizada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error editing empresa:', error);
+                showToast('Erro ao atualizar empresa', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteEmpresa(id) {
+            if (!confirm('Tem certeza que deseja excluir esta empresa?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('empresas').doc(id).delete();
+                await loadEmpresasList();
+                await loadAllData();
+                showToast('Empresa excluída com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting empresa:', error);
+                showToast('Erro ao excluir empresa', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Departamento Functions (MODIFICADO: removida coluna de data de cadastro)
+        async function loadDepartamentosList() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('departamentos').get();
+                departamentos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                departamentos.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+                
+                const tbody = document.getElementById('departamentosTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                departamentos.forEach(dep => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${dep.nome || '-'}</td>
+                        <td class="action-buttons">
+                            <button class="edit" onclick="editDepartamento('${dep.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete" onclick="deleteDepartamento('${dep.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                filterDepartamentos();
+            } catch (error) {
+                console.error('Error loading departamentos:', error);
+                showToast('Erro ao carregar departamentos', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function editDepartamento(id) {
+            const departamento = departamentos.find(d => d.id === id);
+            if (!departamento) return;
+            
+            const novoNome = prompt('Novo nome do departamento:', departamento.nome);
+            if (!novoNome) return;
+            
+            showLoading();
+            try {
+                await db.collection('departamentos').doc(id).update({
+                    nome: novoNome
+                });
+                
+                await loadDepartamentosList();
+                await loadAllData();
+                showToast('Departamento atualizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error editing departamento:', error);
+                showToast('Erro ao atualizar departamento', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteDepartamento(id) {
+            if (!confirm('Tem certeza que deseja excluir este departamento?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('departamentos').doc(id).delete();
+                await loadDepartamentosList();
+                await loadAllData();
+                showToast('Departamento excluído com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting departamento:', error);
+                showToast('Erro ao excluir departamento', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Pizza Functions (MODIFICADO: permite editar todos os campos)
+        async function loadPizzasList() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('pizzas').get();
+                pizzas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                pizzas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+                
+                const tbody = document.getElementById('pizzasTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                pizzas.forEach(pizza => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${pizza.nome || '-'}</td>
+                        <td>${pizza.descricao || '-'}</td>
+                        <td>${pizza.pizzaria || '-'}</td>
+                        <td>R$ ${parseFloat(pizza.valor || 0).toFixed(2)}</td>
+                        <td class="action-buttons">
+                            <button class="edit" onclick="openModal('pizza', '${pizza.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete" onclick="deletePizza('${pizza.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                filterPizzas();
+            } catch (error) {
+                console.error('Error loading pizzas:', error);
+                showToast('Erro ao carregar pizzas', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function savePizzaModal() {
+            const nome = document.getElementById('modalPizzaNome').value.trim();
+            const descricao = document.getElementById('modalPizzaDescricao').value.trim();
+            const pizzaria = document.getElementById('modalPizzaPizzaria').value.trim();
+            const valor = parseFloat(document.getElementById('modalPizzaValor').value);
+            
+            if (!nome || !pizzaria || !valor) {
+                showToast('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                if (editingPizzaId) {
+                    await db.collection('pizzas').doc(editingPizzaId).update({
+                        nome,
+                        descricao,
+                        pizzaria,
+                        valor,
+                        dataAtualizacao: new Date()
+                    });
+                    showToast('Pizza atualizada com sucesso!', 'success');
+                } else {
+                    await db.collection('pizzas').add({
+                        nome,
+                        descricao,
+                        pizzaria,
+                        valor,
+                        dataCriacao: new Date()
+                    });
+                    showToast('Pizza cadastrada com sucesso!', 'success');
+                }
+                
+                closeModal('pizza');
+                await loadPizzasList();
+                await loadAllData();
+            } catch (error) {
+                console.error('Error saving pizza:', error);
+                showToast('Erro ao salvar pizza', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deletePizza(id) {
+            if (!confirm('Tem certeza que deseja excluir esta pizza?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('pizzas').doc(id).delete();
+                await loadPizzasList();
+                await loadAllData();
+                showToast('Pizza excluída com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting pizza:', error);
+                showToast('Erro ao excluir pizza', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Pizza Order Functions
+        async function savePizzaOrder(colaboradorId) {
+            const tipoPizza = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
+            const pizzaSelect1 = document.getElementById(`pizzaSelect1-${colaboradorId}`);
+            const pizzaSelect2 = document.getElementById(`pizzaSelect2-${colaboradorId}`);
+            const dataEntrega = document.getElementById(`pizzaData-${colaboradorId}`)?.value;
+            const horarioEntrega = document.getElementById(`pizzaHora-${colaboradorId}`)?.value;
+            const local = document.getElementById(`pizzaCidade-${colaboradorId}`)?.value;
+            const enderecoCompleto = document.getElementById(`pizzaEndereco-${colaboradorId}`)?.value;
+            const borda = document.querySelector(`input[name="borda-${colaboradorId}"]:checked`)?.value;
+            const observacoes = document.getElementById(`pizzaObs-${colaboradorId}`)?.value;
+            
+            if (!dataEntrega || !horarioEntrega || !local || !enderecoCompleto) {
+                showToast('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+            
+            if (!validateDateBR(dataEntrega)) {
+                showToast('Data inválida', 'error');
+                return;
+            }
+            
+            if (tipoPizza === 'inteira' && !pizzaSelect1?.value) {
+                showToast('Selecione uma pizza', 'error');
+                return;
+            }
+            
+            if (tipoPizza === 'meia' && (!pizzaSelect1?.value || !pizzaSelect2?.value)) {
+                showToast('Selecione os dois sabores', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                const pedidoData = {
+                    colaboradorId,
+                    tipoPizza,
+                    dataEntrega: parseDateBR(dataEntrega),
+                    dataEntregaBR: dataEntrega,
+                    horarioEntrega,
+                    local,
+                    enderecoCompleto,
+                    borda: borda || 'sem',
+                    observacoes,
+                    status: 'pendente',
+                    dataCriacao: new Date()
+                };
+                
+                if (tipoPizza === 'inteira') {
+                    pedidoData.pizzaId = pizzaSelect1.value;
+                    pedidoData.pizzaId1 = pizzaSelect1.value;
+                    pedidoData.pizzaId2 = null;
+                } else {
+                    pedidoData.pizzaId = null;
+                    pedidoData.pizzaId1 = pizzaSelect1.value;
+                    pedidoData.pizzaId2 = pizzaSelect2.value;
+                }
+                
+                await db.collection('pedidos').add(pedidoData);
+                
+                // Limpar formulário
+                document.getElementById(`pizzaSelect1-${colaboradorId}`).value = '';
+                if (pizzaSelect2) pizzaSelect2.value = '';
+                document.getElementById(`pizzaData-${colaboradorId}`).value = '';
+                document.getElementById(`pizzaHora-${colaboradorId}`).value = '';
+                document.getElementById(`pizzaEndereco-${colaboradorId}`).value = '';
+                document.getElementById(`pizzaObs-${colaboradorId}`).value = '';
+                
+                const radios = document.querySelectorAll(`input[name="borda-${colaboradorId}"]`);
+                radios.forEach(r => r.checked = false);
+                document.querySelector(`input[name="borda-${colaboradorId}"][value="sem"]`).checked = true;
+                
+                togglePizzaOrder(colaboradorId);
+                await loadAllData();
+                
+                // Recarregar a seção para mostrar o novo pedido
+                if (currentSection === 'empresa') {
+                    await loadEmpresa(document.getElementById('mainContent'));
+                }
+                
+                showToast('Pedido salvo com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error saving pizza order:', error);
+                showToast('Erro ao salvar pedido', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Valor em Aberto Functions
+        async function criarValorAbertoParaInativo(colaboradorId, dataInativacao) {
+            try {
+                const pedidosSnapshot = await db.collection('pedidos')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .where('status', '==', 'pendente')
+                    .get();
+                
+                for (const pedidoDoc of pedidosSnapshot.docs) {
+                    const pedido = pedidoDoc.data();
+                    
+                    if (pedido.pizzaId || pedido.pizzaId1) {
+                        let valor = 0;
+                        
+                        if (pedido.tipoPizza === 'meia' && pedido.pizzaId1 && pedido.pizzaId2) {
+                            const pizza1 = await db.collection('pizzas').doc(pedido.pizzaId1).get();
+                            const pizza2 = await db.collection('pizzas').doc(pedido.pizzaId2).get();
+                            
+                            if (pizza1.exists && pizza2.exists) {
+                                valor = (parseFloat(pizza1.data().valor) + parseFloat(pizza2.data().valor)) / 2;
+                            }
+                        } else {
+                            const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId || pedido.pizzaId1).get();
+                            if (pizzaDoc.exists) {
+                                valor = parseFloat(pizzaDoc.data().valor) || 0;
+                            }
+                        }
+                        
+                        const dataEntrega = pedido.dataEntrega.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
+                        
+                        const hoje = new Date();
+                        let deveCriar = false;
+                        
+                        if (dataEntrega < hoje && dataInativacao > dataEntrega) {
+                            deveCriar = true;
+                        } else if (dataEntrega >= hoje && dataInativacao < hoje) {
+                            deveCriar = true;
+                        }
+                        
+                        if (deveCriar) {
+                            await db.collection('valoresAbertos').add({
+                                colaboradorId,
+                                pedidoId: pedidoDoc.id,
+                                valor,
+                                dataCriacao: new Date(),
+                                status: 'pendente',
+                                itens: [],
+                                observacao: 'Colaborador inativado - pedido pendente'
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error creating valor aberto:', error);
+            }
+        }
+
+        function calcularTotalItens(itens) {
+            return itens.reduce((total, item) => total + (parseFloat(item.valor) || 0), 0);
+        }
+
+        async function adicionarItemValorAberto(valorId) {
+            const valor = valoresAbertos.find(v => v.id === valorId);
+            if (!valor) return;
+            
+            if (!valor.itens) valor.itens = [];
+            
+            valor.itens.push({
+                descricao: '',
+                valor: 0
+            });
+            
+            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
+            await loadFinanceiro(document.getElementById('mainContent'));
+        }
+
+        async function removerItemValorAberto(valorId, index) {
+            const valor = valoresAbertos.find(v => v.id === valorId);
+            if (!valor || !valor.itens) return;
+            
+            valor.itens.splice(index, 1);
+            
+            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
+            await loadFinanceiro(document.getElementById('mainContent'));
+        }
+
+        async function atualizarValorAberto(valorId) {
+            const valor = valoresAbertos.find(v => v.id === valorId);
+            if (!valor) return;
+            
+            const itens = [];
+            let index = 0;
+            
+            while (true) {
+                const descInput = document.getElementById(`itemDesc-${valorId}-${index}`);
+                const valInput = document.getElementById(`itemValor-${valorId}-${index}`);
+                
+                if (!descInput || !valInput) break;
+                
+                const descricao = descInput.value.trim();
+                const valorItem = parseFloat(valInput.value) || 0;
+                
+                if (descricao || valorItem > 0) {
+                    itens.push({
+                        descricao,
+                        valor: valorItem
+                    });
+                }
+                
+                index++;
+            }
+            
+            await atualizarValorAbertoNoFirestore(valorId, itens);
+            await loadFinanceiro(document.getElementById('mainContent'));
+            showToast('Valor atualizado com sucesso!', 'success');
+        }
+
+        async function atualizarValorAbertoNoFirestore(valorId, itens) {
+            const total = calcularTotalItens(itens);
+            
+            await db.collection('valoresAbertos').doc(valorId).update({
+                itens,
+                valor: total,
+                dataAtualizacao: new Date()
+            });
+        }
+
+        async function marcarValorQuitado(id) {
+            if (!confirm('Tem certeza que deseja marcar este valor como quitado?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('valoresAbertos').doc(id).update({
+                    status: 'quitado',
+                    dataQuitacao: new Date()
+                });
+                
+                await loadFinanceiro(document.getElementById('mainContent'));
+                showToast('Valor marcado como quitado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error marking valor quitado:', error);
+                showToast('Erro ao marcar como quitado', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Checklist Functions
+        async function toggleChecklistItem(colaboradorId, index) {
+            showLoading();
+            try {
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
+                
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    itens[index].checked = !itens[index].checked;
+                    
+                    await doc.ref.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    const checkedCount = itens.filter(item => item.checked).length;
+                    const progress = (checkedCount / itens.length) * 100;
+                    const progressBar = document.getElementById(`progress-${colaboradorId}`);
+                    if (progressBar) {
+                        progressBar.style.width = `${progress}%`;
+                    }
+                    
+                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+                    if (itemText) {
+                        if (itens[index].checked) {
+                            itemText.classList.add('checked');
+                        } else {
+                            itemText.classList.remove('checked');
+                        }
+                    }
+                    
+                    showToast('Checklist atualizado com sucesso!', 'success');
+                } else {
+                    // Criar novo checklist se não existir
+                    const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
+                    const itens = getDefaultChecklistItems(tipo);
+                    itens[index].checked = !itens[index].checked;
+                    
+                    await db.collection('checklists').add({
+                        colaboradorId,
+                        tipo,
+                        itens,
+                        dataCriacao: new Date()
+                    });
+                    
+                    showToast('Checklist criado com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error updating checklist:', error);
+                showToast('Erro ao atualizar checklist', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function addChecklistItem(colaboradorId) {
+            const input = document.getElementById(`newItem-${colaboradorId}`);
+            const itemName = input.value.trim();
+            
+            if (!itemName) {
+                showToast('Digite um nome para o item', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
+                
+                let checklistId, itens, tipo;
+                
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
+                    checklistId = doc.id;
+                    const data = doc.data();
+                    itens = data.itens || [];
+                    tipo = data.tipo;
+                } else {
+                    tipo = currentSection === 'vida' ? 'vida' : 'empresa';
+                    itens = getDefaultChecklistItems(tipo);
+                }
+                
+                itens.push({
+                    id: Date.now().toString(),
+                    nome: itemName,
+                    checked: false
+                });
+                
+                if (checklistId) {
+                    await db.collection('checklists').doc(checklistId).update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                } else {
+                    await db.collection('checklists').add({
+                        colaboradorId,
+                        tipo,
+                        itens,
+                        dataCriacao: new Date()
+                    });
+                }
+                
+                // Recarregar a seção atual para mostrar o novo item
+                if (currentSection === 'vida') {
+                    await loadVida(document.getElementById('mainContent'));
+                } else if (currentSection === 'empresa') {
+                    await loadEmpresa(document.getElementById('mainContent'));
+                }
+                
+                input.value = '';
+                showToast('Item adicionado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error adding checklist item:', error);
+                showToast('Erro ao adicionar item', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function editChecklistItemName(colaboradorId, index) {
+            const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+            const currentName = itemText.textContent;
+            const newName = prompt('Editar item:', currentName);
+            
+            if (newName && newName.trim() !== '') {
+                updateChecklistItemName(colaboradorId, index, newName.trim());
+            }
+        }
+
+        async function updateChecklistItemName(colaboradorId, index, newName) {
+            if (!newName.trim()) return;
+            
+            showLoading();
+            try {
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
+                
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    itens[index].nome = newName;
+                    
+                    await doc.ref.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+                    if (itemText) {
+                        itemText.textContent = newName;
+                    }
+                    
+                    showToast('Item atualizado com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error updating checklist item:', error);
+                showToast('Erro ao atualizar item', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function removeChecklistItem(colaboradorId, index) {
+            if (!confirm('Tem certeza que deseja remover este item?')) return;
+            
+            showLoading();
+            try {
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
+                
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    itens.splice(index, 1);
+                    
+                    await doc.ref.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    // Recarregar a seção atual para mostrar os itens atualizados
+                    if (currentSection === 'vida') {
+                        await loadVida(document.getElementById('mainContent'));
+                    } else if (currentSection === 'empresa') {
+                        await loadEmpresa(document.getElementById('mainContent'));
+                    }
+                    
+                    showToast('Item removido com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error removing checklist item:', error);
+                showToast('Erro ao remover item', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Modal Save Functions
+        async function saveColaboradorModal() {
+            const nome = document.getElementById('modalColabNome').value.trim();
+            const dataNascimento = document.getElementById('modalColabNascimento').value;
+            const dataAdmissao = document.getElementById('modalColabAdmissao').value;
+            const cidade = document.getElementById('modalColabCidade').value;
+            const empresaId = document.getElementById('modalColabEmpresa').value;
+            const departamentoId = document.getElementById('modalColabDepartamento').value;
+            const status = document.getElementById('modalColabStatus').value;
+            
+            if (!nome || !dataNascimento || !dataAdmissao || !cidade || !empresaId || !departamentoId) {
+                showToast('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+            
+            const empresa = empresas.find(e => e.id === empresaId);
+            const departamento = departamentos.find(d => d.id === departamentoId);
+            
+            showLoading();
+            try {
+                if (editingColaboradorId) {
+                    const dataInativacao = status === 'Inativo' ? new Date() : null;
+                    
+                    await db.collection('colaboradores').doc(editingColaboradorId).update({
+                        nome,
+                        dataNascimento,
+                        dataAdmissao,
+                        cidade,
+                        empresaId,
+                        empresaNome: empresa ? empresa.nome : '',
+                        departamentoId,
+                        departamentoNome: departamento ? departamento.nome : '',
+                        status,
+                        dataInativacao,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    if (status === 'Inativo') {
+                        await criarValorAbertoParaInativo(editingColaboradorId, dataInativacao);
+                    }
+                    
+                    showToast('Colaborador atualizado com sucesso!', 'success');
+                } else {
+                    await db.collection('colaboradores').add({
+                        nome,
+                        dataNascimento,
+                        dataAdmissao,
+                        cidade,
+                        empresaId,
+                        empresaNome: empresa ? empresa.nome : '',
+                        departamentoId,
+                        departamentoNome: departamento ? departamento.nome : '',
+                        status,
+                        dataCriacao: new Date()
+                    });
+                    
+                    showToast('Colaborador cadastrado com sucesso!', 'success');
+                }
+                
+                closeModal('colaborador');
+                await loadColaboradoresList();
+                await loadAllData();
+            } catch (error) {
+                console.error('Error saving colaborador:', error);
+                showToast('Erro ao salvar colaborador', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function saveEmpresaModal() {
+            const nome = document.getElementById('modalEmpresaNome').value.trim();
+            
+            if (!nome) {
+                showToast('Digite o nome da empresa', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                await db.collection('empresas').add({
+                    nome,
+                    dataCriacao: new Date()
+                });
+                
+                closeModal('empresa');
+                await loadEmpresasList();
+                await loadAllData();
+                showToast('Empresa cadastrada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error saving empresa:', error);
+                showToast('Erro ao cadastrar empresa', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function saveDepartamentoModal() {
+            const nome = document.getElementById('modalDepartamentoNome').value.trim();
+            
+            if (!nome) {
+                showToast('Digite o nome do departamento', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                await db.collection('departamentos').add({
+                    nome,
+                    dataCriacao: new Date()
+                });
+                
+                closeModal('departamento');
+                await loadDepartamentosList();
+                await loadAllData();
+                showToast('Departamento cadastrado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error saving departamento:', error);
+                showToast('Erro ao cadastrar departamento', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
         // Load Relatórios
         async function loadRelatorios(container) {
             await loadAllData();
@@ -4830,7 +6000,7 @@
             }
             reportTimeout = setTimeout(() => {
                 aplicarFiltroRelatorio();
-            }, 500); // Delay de 500ms após o último input
+            }, 500);
         }
 
         async function aplicarFiltroRelatorio() {
@@ -5279,949 +6449,7 @@
             }
         }
 
-        // Checklist Functions
-        async function toggleChecklistItem(colaboradorId, index) {
-            showLoading();
-            try {
-                // Buscar o documento do checklist
-                const checklistSnapshot = await db.collection('checklists')
-                    .where('colaboradorId', '==', colaboradorId)
-                    .get();
-                
-                if (!checklistSnapshot.empty) {
-                    const doc = checklistSnapshot.docs[0];
-                    const data = doc.data();
-                    const itens = data.itens || [];
-                    
-                    itens[index].checked = !itens[index].checked;
-                    
-                    await doc.ref.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    const checkedCount = itens.filter(item => item.checked).length;
-                    const progress = (checkedCount / itens.length) * 100;
-                    const progressBar = document.getElementById(`progress-${colaboradorId}`);
-                    if (progressBar) {
-                        progressBar.style.width = `${progress}%`;
-                    }
-                    
-                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-                    if (itemText) {
-                        if (itens[index].checked) {
-                            itemText.classList.add('checked');
-                        } else {
-                            itemText.classList.remove('checked');
-                        }
-                    }
-                    
-                    showToast('Checklist atualizado com sucesso!', 'success');
-                } else {
-                    // Criar novo checklist se não existir
-                    const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
-                    const itens = getDefaultChecklistItems(tipo);
-                    itens[index].checked = !itens[index].checked;
-                    
-                    await db.collection('checklists').add({
-                        colaboradorId,
-                        tipo,
-                        itens,
-                        dataCriacao: new Date()
-                    });
-                    
-                    showToast('Checklist criado com sucesso!', 'success');
-                }
-            } catch (error) {
-                console.error('Error updating checklist:', error);
-                showToast('Erro ao atualizar checklist', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function addChecklistItem(colaboradorId) {
-            const input = document.getElementById(`newItem-${colaboradorId}`);
-            const itemName = input.value.trim();
-            
-            if (!itemName) {
-                showToast('Digite um nome para o item', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                // Buscar o documento do checklist
-                const checklistSnapshot = await db.collection('checklists')
-                    .where('colaboradorId', '==', colaboradorId)
-                    .get();
-                
-                let checklistId, itens, tipo;
-                
-                if (!checklistSnapshot.empty) {
-                    const doc = checklistSnapshot.docs[0];
-                    checklistId = doc.id;
-                    const data = doc.data();
-                    itens = data.itens || [];
-                    tipo = data.tipo;
-                } else {
-                    tipo = currentSection === 'vida' ? 'vida' : 'empresa';
-                    itens = getDefaultChecklistItems(tipo);
-                }
-                
-                itens.push({
-                    id: Date.now().toString(),
-                    nome: itemName,
-                    checked: false
-                });
-                
-                if (checklistId) {
-                    await db.collection('checklists').doc(checklistId).update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                } else {
-                    await db.collection('checklists').add({
-                        colaboradorId,
-                        tipo,
-                        itens,
-                        dataCriacao: new Date()
-                    });
-                }
-                
-                // Recarregar a seção atual para mostrar o novo item
-                if (currentSection === 'vida') {
-                    await loadVida(document.getElementById('mainContent'));
-                } else if (currentSection === 'empresa') {
-                    await loadEmpresa(document.getElementById('mainContent'));
-                }
-                
-                input.value = '';
-                showToast('Item adicionado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error adding checklist item:', error);
-                showToast('Erro ao adicionar item', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        function editChecklistItemName(colaboradorId, index) {
-            const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-            const currentName = itemText.textContent;
-            const newName = prompt('Editar item:', currentName);
-            
-            if (newName && newName.trim() !== '') {
-                updateChecklistItemName(colaboradorId, index, newName.trim());
-            }
-        }
-
-        async function updateChecklistItemName(colaboradorId, index, newName) {
-            if (!newName.trim()) return;
-            
-            showLoading();
-            try {
-                // Buscar o documento do checklist
-                const checklistSnapshot = await db.collection('checklists')
-                    .where('colaboradorId', '==', colaboradorId)
-                    .get();
-                
-                if (!checklistSnapshot.empty) {
-                    const doc = checklistSnapshot.docs[0];
-                    const data = doc.data();
-                    const itens = data.itens || [];
-                    
-                    itens[index].nome = newName;
-                    
-                    await doc.ref.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-                    if (itemText) {
-                        itemText.textContent = newName;
-                    }
-                    
-                    showToast('Item atualizado com sucesso!', 'success');
-                }
-            } catch (error) {
-                console.error('Error updating checklist item:', error);
-                showToast('Erro ao atualizar item', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function removeChecklistItem(colaboradorId, index) {
-            if (!confirm('Tem certeza que deseja remover este item?')) return;
-            
-            showLoading();
-            try {
-                // Buscar o documento do checklist
-                const checklistSnapshot = await db.collection('checklists')
-                    .where('colaboradorId', '==', colaboradorId)
-                    .get();
-                
-                if (!checklistSnapshot.empty) {
-                    const doc = checklistSnapshot.docs[0];
-                    const data = doc.data();
-                    const itens = data.itens || [];
-                    
-                    itens.splice(index, 1);
-                    
-                    await doc.ref.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    // Recarregar a seção atual para mostrar os itens atualizados
-                    if (currentSection === 'vida') {
-                        await loadVida(document.getElementById('mainContent'));
-                    } else if (currentSection === 'empresa') {
-                        await loadEmpresa(document.getElementById('mainContent'));
-                    }
-                    
-                    showToast('Item removido com sucesso!', 'success');
-                }
-            } catch (error) {
-                console.error('Error removing checklist item:', error);
-                showToast('Erro ao remover item', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Modal Save Functions
-        async function saveColaboradorModal() {
-            const nome = document.getElementById('modalColabNome').value.trim();
-            const dataNascimento = document.getElementById('modalColabNascimento').value;
-            const dataAdmissao = document.getElementById('modalColabAdmissao').value;
-            const cidade = document.getElementById('modalColabCidade').value;
-            const empresaId = document.getElementById('modalColabEmpresa').value;
-            const departamentoId = document.getElementById('modalColabDepartamento').value;
-            const status = document.getElementById('modalColabStatus').value;
-            
-            if (!nome || !dataNascimento || !dataAdmissao || !cidade || !empresaId || !departamentoId) {
-                showToast('Preencha todos os campos obrigatórios', 'error');
-                return;
-            }
-            
-            const empresa = empresas.find(e => e.id === empresaId);
-            const departamento = departamentos.find(d => d.id === departamentoId);
-            
-            showLoading();
-            try {
-                if (editingColaboradorId) {
-                    const dataInativacao = status === 'Inativo' ? new Date() : null;
-                    
-                    await db.collection('colaboradores').doc(editingColaboradorId).update({
-                        nome,
-                        dataNascimento,
-                        dataAdmissao,
-                        cidade,
-                        empresaId,
-                        empresaNome: empresa ? empresa.nome : '',
-                        departamentoId,
-                        departamentoNome: departamento ? departamento.nome : '',
-                        status,
-                        dataInativacao,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    if (status === 'Inativo') {
-                        await criarValorAbertoParaInativo(editingColaboradorId, dataInativacao);
-                    }
-                    
-                    showToast('Colaborador atualizado com sucesso!', 'success');
-                } else {
-                    await db.collection('colaboradores').add({
-                        nome,
-                        dataNascimento,
-                        dataAdmissao,
-                        cidade,
-                        empresaId,
-                        empresaNome: empresa ? empresa.nome : '',
-                        departamentoId,
-                        departamentoNome: departamento ? departamento.nome : '',
-                        status,
-                        dataCriacao: new Date()
-                    });
-                    
-                    showToast('Colaborador cadastrado com sucesso!', 'success');
-                }
-                
-                closeModal('colaborador');
-                await loadColaboradoresList();
-                await loadAllData();
-            } catch (error) {
-                console.error('Error saving colaborador:', error);
-                showToast('Erro ao salvar colaborador', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function saveEmpresaModal() {
-            const nome = document.getElementById('modalEmpresaNome').value.trim();
-            
-            if (!nome) {
-                showToast('Digite o nome da empresa', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                await db.collection('empresas').add({
-                    nome,
-                    dataCriacao: new Date()
-                });
-                
-                closeModal('empresa');
-                await loadEmpresasList();
-                await loadAllData();
-                showToast('Empresa cadastrada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving empresa:', error);
-                showToast('Erro ao cadastrar empresa', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function saveDepartamentoModal() {
-            const nome = document.getElementById('modalDepartamentoNome').value.trim();
-            
-            if (!nome) {
-                showToast('Digite o nome do departamento', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                await db.collection('departamentos').add({
-                    nome,
-                    dataCriacao: new Date()
-                });
-                
-                closeModal('departamento');
-                await loadDepartamentosList();
-                await loadAllData();
-                showToast('Departamento cadastrado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving departamento:', error);
-                showToast('Erro ao cadastrar departamento', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function savePizzaModal() {
-            const nome = document.getElementById('modalPizzaNome').value.trim();
-            const descricao = document.getElementById('modalPizzaDescricao').value.trim();
-            const pizzaria = document.getElementById('modalPizzaPizzaria').value.trim();
-            const valor = parseFloat(document.getElementById('modalPizzaValor').value);
-            
-            if (!nome || !pizzaria || !valor) {
-                showToast('Preencha todos os campos obrigatórios', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                await db.collection('pizzas').add({
-                    nome,
-                    descricao,
-                    pizzaria,
-                    valor,
-                    dataCriacao: new Date()
-                });
-                
-                closeModal('pizza');
-                await loadPizzasList();
-                await loadAllData();
-                showToast('Pizza cadastrada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving pizza:', error);
-                showToast('Erro ao cadastrar pizza', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Colaborador Functions
-        async function loadColaboradoresList() {
-            showLoading();
-            try {
-                const snapshot = await db.collection('colaboradores').get();
-                colaboradores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                colaboradores.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-                
-                const tbody = document.getElementById('colaboradoresTableBody');
-                if (!tbody) return;
-                
-                tbody.innerHTML = '';
-                
-                colaboradores.forEach(col => {
-                    const isOutside = !col.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(col.cidade);
-                    const row = document.createElement('tr');
-                    if (isOutside) row.classList.add('outside-region');
-                    
-                    const dataNascimento = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
-                    const dataAdmissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                    
-                    row.innerHTML = `
-                        <td>${col.nome || '-'}</td>
-                        <td>${dataNascimento ? formatDateBR(dataNascimento) : '-'}</td>
-                        <td>${dataAdmissao ? formatDateBR(dataAdmissao) : '-'}</td>
-                        <td>${col.cidade || '-'}</td>
-                        <td>${col.empresaNome || '-'}</td>
-                        <td>${col.departamentoNome || '-'}</td>
-                        <td><span class="badge ${col.status === 'Ativo' ? 'active' : 'inactive'}">${col.status || 'Inativo'}</span></td>
-                        <td class="action-buttons">
-                            <button class="edit" onclick="openModal('colaborador', '${col.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete" onclick="deleteColaborador('${col.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                
-                filterColaboradores();
-            } catch (error) {
-                console.error('Error loading colaboradores:', error);
-                showToast('Erro ao carregar colaboradores', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deleteColaborador(id) {
-            if (!confirm('Tem certeza que deseja excluir este colaborador? Isso removerá todos os pedidos associados.')) return;
-            
-            showLoading();
-            try {
-                const pedidosSnapshot = await db.collection('pedidos')
-                    .where('colaboradorId', '==', id)
-                    .get();
-                
-                const batch = db.batch();
-                
-                pedidosSnapshot.docs.forEach(doc => {
-                    batch.delete(doc.ref);
-                });
-                
-                await batch.commit();
-                
-                await db.collection('colaboradores').doc(id).delete();
-                
-                await loadColaboradoresList();
-                await loadAllData();
-                showToast('Colaborador e pedidos excluídos com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error deleting colaborador:', error);
-                showToast('Erro ao excluir colaborador', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Empresa Functions
-        async function loadEmpresasList() {
-            showLoading();
-            try {
-                const snapshot = await db.collection('empresas').get();
-                empresas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                empresas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-                
-                const tbody = document.getElementById('empresasTableBody');
-                if (!tbody) return;
-                
-                tbody.innerHTML = '';
-                
-                empresas.forEach(emp => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${emp.nome || '-'}</td>
-                        <td>${emp.dataCriacao ? formatDateBR(emp.dataCriacao.toDate()) : '-'}</td>
-                        <td class="action-buttons">
-                            <button class="edit" onclick="editEmpresa('${emp.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete" onclick="deleteEmpresa('${emp.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                
-                filterEmpresas();
-            } catch (error) {
-                console.error('Error loading empresas:', error);
-                showToast('Erro ao carregar empresas', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function editEmpresa(id) {
-            const empresa = empresas.find(e => e.id === id);
-            if (!empresa) return;
-            
-            const novoNome = prompt('Novo nome da empresa:', empresa.nome);
-            if (!novoNome) return;
-            
-            showLoading();
-            try {
-                await db.collection('empresas').doc(id).update({
-                    nome: novoNome
-                });
-                
-                await loadEmpresasList();
-                await loadAllData();
-                showToast('Empresa atualizada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error editing empresa:', error);
-                showToast('Erro ao atualizar empresa', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deleteEmpresa(id) {
-            if (!confirm('Tem certeza que deseja excluir esta empresa?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('empresas').doc(id).delete();
-                await loadEmpresasList();
-                await loadAllData();
-                showToast('Empresa excluída com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error deleting empresa:', error);
-                showToast('Erro ao excluir empresa', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Departamento Functions
-        async function loadDepartamentosList() {
-            showLoading();
-            try {
-                const snapshot = await db.collection('departamentos').get();
-                departamentos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                departamentos.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-                
-                const tbody = document.getElementById('departamentosTableBody');
-                if (!tbody) return;
-                
-                tbody.innerHTML = '';
-                
-                departamentos.forEach(dep => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${dep.nome || '-'}</td>
-                        <td>${dep.dataCriacao ? formatDateBR(dep.dataCriacao.toDate()) : '-'}</td>
-                        <td class="action-buttons">
-                            <button class="edit" onclick="editDepartamento('${dep.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete" onclick="deleteDepartamento('${dep.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                
-                filterDepartamentos();
-            } catch (error) {
-                console.error('Error loading departamentos:', error);
-                showToast('Erro ao carregar departamentos', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function editDepartamento(id) {
-            const departamento = departamentos.find(d => d.id === id);
-            if (!departamento) return;
-            
-            const novoNome = prompt('Novo nome do departamento:', departamento.nome);
-            if (!novoNome) return;
-            
-            showLoading();
-            try {
-                await db.collection('departamentos').doc(id).update({
-                    nome: novoNome
-                });
-                
-                await loadDepartamentosList();
-                await loadAllData();
-                showToast('Departamento atualizado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error editing departamento:', error);
-                showToast('Erro ao atualizar departamento', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deleteDepartamento(id) {
-            if (!confirm('Tem certeza que deseja excluir este departamento?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('departamentos').doc(id).delete();
-                await loadDepartamentosList();
-                await loadAllData();
-                showToast('Departamento excluído com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error deleting departamento:', error);
-                showToast('Erro ao excluir departamento', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Pizza Functions
-        async function loadPizzasList() {
-            showLoading();
-            try {
-                const snapshot = await db.collection('pizzas').get();
-                pizzas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                pizzas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-                
-                const tbody = document.getElementById('pizzasTableBody');
-                if (!tbody) return;
-                
-                tbody.innerHTML = '';
-                
-                pizzas.forEach(pizza => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${pizza.nome || '-'}</td>
-                        <td>${pizza.descricao || '-'}</td>
-                        <td>${pizza.pizzaria || '-'}</td>
-                        <td>R$ ${parseFloat(pizza.valor || 0).toFixed(2)}</td>
-                        <td class="action-buttons">
-                            <button class="edit" onclick="editPizza('${pizza.id}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete" onclick="deletePizza('${pizza.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                
-                filterPizzas();
-            } catch (error) {
-                console.error('Error loading pizzas:', error);
-                showToast('Erro ao carregar pizzas', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function editPizza(id) {
-            const pizza = pizzas.find(p => p.id === id);
-            if (!pizza) return;
-            
-            const novoNome = prompt('Novo nome da pizza:', pizza.nome);
-            if (!novoNome) return;
-            
-            const novaDescricao = prompt('Nova descrição:', pizza.descricao || '');
-            const novaPizzaria = prompt('Nova pizzaria:', pizza.pizzaria);
-            if (!novaPizzaria) return;
-            
-            const novoValor = parseFloat(prompt('Novo valor (R$):', pizza.valor));
-            if (isNaN(novoValor)) return;
-            
-            showLoading();
-            try {
-                await db.collection('pizzas').doc(id).update({
-                    nome: novoNome,
-                    descricao: novaDescricao,
-                    pizzaria: novaPizzaria,
-                    valor: novoValor
-                });
-                
-                await loadPizzasList();
-                await loadAllData();
-                showToast('Pizza atualizada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error editing pizza:', error);
-                showToast('Erro ao atualizar pizza', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deletePizza(id) {
-            if (!confirm('Tem certeza que deseja excluir esta pizza?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('pizzas').doc(id).delete();
-                await loadPizzasList();
-                await loadAllData();
-                showToast('Pizza excluída com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error deleting pizza:', error);
-                showToast('Erro ao excluir pizza', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Pizza Order Functions
-        async function savePizzaOrder(colaboradorId) {
-            const tipoPizza = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
-            const pizzaSelect1 = document.getElementById(`pizzaSelect1-${colaboradorId}`);
-            const pizzaSelect2 = document.getElementById(`pizzaSelect2-${colaboradorId}`);
-            const dataEntrega = document.getElementById(`pizzaData-${colaboradorId}`)?.value;
-            const horarioEntrega = document.getElementById(`pizzaHora-${colaboradorId}`)?.value;
-            const local = document.getElementById(`pizzaCidade-${colaboradorId}`)?.value;
-            const enderecoCompleto = document.getElementById(`pizzaEndereco-${colaboradorId}`)?.value;
-            const borda = document.querySelector(`input[name="borda-${colaboradorId}"]:checked`)?.value;
-            const observacoes = document.getElementById(`pizzaObs-${colaboradorId}`)?.value;
-            
-            if (!dataEntrega || !horarioEntrega || !local || !enderecoCompleto) {
-                showToast('Preencha todos os campos obrigatórios', 'error');
-                return;
-            }
-            
-            if (!validateDateBR(dataEntrega)) {
-                showToast('Data inválida', 'error');
-                return;
-            }
-            
-            if (tipoPizza === 'inteira' && !pizzaSelect1?.value) {
-                showToast('Selecione uma pizza', 'error');
-                return;
-            }
-            
-            if (tipoPizza === 'meia' && (!pizzaSelect1?.value || !pizzaSelect2?.value)) {
-                showToast('Selecione os dois sabores', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                const pedidoData = {
-                    colaboradorId,
-                    tipoPizza,
-                    dataEntrega: parseDateBR(dataEntrega),
-                    dataEntregaBR: dataEntrega,
-                    horarioEntrega,
-                    local,
-                    enderecoCompleto,
-                    borda: borda || 'sem',
-                    observacoes,
-                    status: 'pendente',
-                    dataCriacao: new Date()
-                };
-                
-                if (tipoPizza === 'inteira') {
-                    pedidoData.pizzaId = pizzaSelect1.value;
-                    pedidoData.pizzaId1 = pizzaSelect1.value;
-                    pedidoData.pizzaId2 = null;
-                } else {
-                    pedidoData.pizzaId = null;
-                    pedidoData.pizzaId1 = pizzaSelect1.value;
-                    pedidoData.pizzaId2 = pizzaSelect2.value;
-                }
-                
-                await db.collection('pedidos').add(pedidoData);
-                
-                // Limpar formulário
-                document.getElementById(`pizzaSelect1-${colaboradorId}`).value = '';
-                if (pizzaSelect2) pizzaSelect2.value = '';
-                document.getElementById(`pizzaData-${colaboradorId}`).value = '';
-                document.getElementById(`pizzaHora-${colaboradorId}`).value = '';
-                document.getElementById(`pizzaEndereco-${colaboradorId}`).value = '';
-                document.getElementById(`pizzaObs-${colaboradorId}`).value = '';
-                
-                const radios = document.querySelectorAll(`input[name="borda-${colaboradorId}"]`);
-                radios.forEach(r => r.checked = false);
-                document.querySelector(`input[name="borda-${colaboradorId}"][value="sem"]`).checked = true;
-                
-                togglePizzaOrder(colaboradorId);
-                await loadAllData();
-                
-                // Recarregar a seção para mostrar o novo pedido
-                if (currentSection === 'empresa') {
-                    await loadEmpresa(document.getElementById('mainContent'));
-                }
-                
-                showToast('Pedido salvo com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving pizza order:', error);
-                showToast('Erro ao salvar pedido', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Valor em Aberto Functions
-        async function criarValorAbertoParaInativo(colaboradorId, dataInativacao) {
-            try {
-                const pedidosSnapshot = await db.collection('pedidos')
-                    .where('colaboradorId', '==', colaboradorId)
-                    .where('status', '==', 'pendente')
-                    .get();
-                
-                for (const pedidoDoc of pedidosSnapshot.docs) {
-                    const pedido = pedidoDoc.data();
-                    
-                    if (pedido.pizzaId || pedido.pizzaId1) {
-                        let valor = 0;
-                        
-                        if (pedido.tipoPizza === 'meia' && pedido.pizzaId1 && pedido.pizzaId2) {
-                            const pizza1 = await db.collection('pizzas').doc(pedido.pizzaId1).get();
-                            const pizza2 = await db.collection('pizzas').doc(pedido.pizzaId2).get();
-                            
-                            if (pizza1.exists && pizza2.exists) {
-                                valor = (parseFloat(pizza1.data().valor) + parseFloat(pizza2.data().valor)) / 2;
-                            }
-                        } else {
-                            const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId || pedido.pizzaId1).get();
-                            if (pizzaDoc.exists) {
-                                valor = parseFloat(pizzaDoc.data().valor) || 0;
-                            }
-                        }
-                        
-                        const dataEntrega = pedido.dataEntrega.toDate ? pedido.dataEntrega.toDate() : new Date(pedido.dataEntrega);
-                        
-                        const hoje = new Date();
-                        let deveCriar = false;
-                        
-                        if (dataEntrega < hoje && dataInativacao > dataEntrega) {
-                            deveCriar = true;
-                        } else if (dataEntrega >= hoje && dataInativacao < hoje) {
-                            deveCriar = true;
-                        }
-                        
-                        if (deveCriar) {
-                            await db.collection('valoresAbertos').add({
-                                colaboradorId,
-                                pedidoId: pedidoDoc.id,
-                                valor,
-                                dataCriacao: new Date(),
-                                status: 'pendente',
-                                itens: [],
-                                observacao: 'Colaborador inativado - pedido pendente'
-                            });
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error creating valor aberto:', error);
-            }
-        }
-
-        function calcularTotalItens(itens) {
-            return itens.reduce((total, item) => total + (parseFloat(item.valor) || 0), 0);
-        }
-
-        async function adicionarItemValorAberto(valorId) {
-            const valor = valoresAbertos.find(v => v.id === valorId);
-            if (!valor) return;
-            
-            if (!valor.itens) valor.itens = [];
-            
-            valor.itens.push({
-                descricao: '',
-                valor: 0
-            });
-            
-            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
-            await loadFinanceiro(document.getElementById('mainContent'));
-        }
-
-        async function removerItemValorAberto(valorId, index) {
-            const valor = valoresAbertos.find(v => v.id === valorId);
-            if (!valor || !valor.itens) return;
-            
-            valor.itens.splice(index, 1);
-            
-            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
-            await loadFinanceiro(document.getElementById('mainContent'));
-        }
-
-        async function atualizarValorAberto(valorId) {
-            const valor = valoresAbertos.find(v => v.id === valorId);
-            if (!valor) return;
-            
-            const itens = [];
-            let index = 0;
-            
-            while (true) {
-                const descInput = document.getElementById(`itemDesc-${valorId}-${index}`);
-                const valInput = document.getElementById(`itemValor-${valorId}-${index}`);
-                
-                if (!descInput || !valInput) break;
-                
-                const descricao = descInput.value.trim();
-                const valorItem = parseFloat(valInput.value) || 0;
-                
-                if (descricao || valorItem > 0) {
-                    itens.push({
-                        descricao,
-                        valor: valorItem
-                    });
-                }
-                
-                index++;
-            }
-            
-            await atualizarValorAbertoNoFirestore(valorId, itens);
-            await loadFinanceiro(document.getElementById('mainContent'));
-            showToast('Valor atualizado com sucesso!', 'success');
-        }
-
-        async function atualizarValorAbertoNoFirestore(valorId, itens) {
-            const total = calcularTotalItens(itens);
-            
-            await db.collection('valoresAbertos').doc(valorId).update({
-                itens,
-                valor: total,
-                dataAtualizacao: new Date()
-            });
-        }
-
-        async function marcarValorQuitado(id) {
-            if (!confirm('Tem certeza que deseja marcar este valor como quitado?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('valoresAbertos').doc(id).update({
-                    status: 'quitado',
-                    dataQuitacao: new Date()
-                });
-                
-                await loadFinanceiro(document.getElementById('mainContent'));
-                showToast('Valor marcado como quitado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error marking valor quitado:', error);
-                showToast('Erro ao marcar como quitado', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Filter Functions for Vida and Empresa - CORRIGIDAS
+        // Filter Functions for Vida and Empresa
         function filterVida() {
             const nome = document.getElementById('filtroNomeVida')?.value?.toLowerCase() || '';
             const mes = document.getElementById('filtroMesVida')?.value;
