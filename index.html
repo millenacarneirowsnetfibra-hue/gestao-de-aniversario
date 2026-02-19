@@ -1973,6 +1973,7 @@
         let pedidos = [];
         let valoresAbertos = [];
         let observacoes = [];
+        let checklists = [];
         let currentPedidoId = null;
         let editingColaboradorId = null;
         let editingPedidoId = null;
@@ -2016,6 +2017,7 @@
             if (!date) return '';
             if (date.toDate) date = date.toDate();
             const d = new Date(date);
+            if (isNaN(d.getTime())) return '';
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
@@ -2026,6 +2028,7 @@
             if (!date) return '';
             if (date.toDate) date = date.toDate();
             const d = new Date(date);
+            if (isNaN(d.getTime())) return '';
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${day}/${month}`;
@@ -2612,6 +2615,9 @@
                 
                 const observacoesSnapshot = await db.collection('observacoes').get();
                 observacoes = observacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const checklistsSnapshot = await db.collection('checklists').get();
+                checklists = checklistsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             } catch (error) {
                 console.error('Error loading all data:', error);
             }
@@ -3328,30 +3334,11 @@
                 });
                 
                 for (const col of colaboradoresFiltrados) {
-                    const checklistSnapshot = await db.collection('checklists')
-                        .where('colaboradorId', '==', col.id)
-                        .where('tipo', '==', 'vida')
-                        .get();
+                    const checklist = checklists.find(c => c.colaboradorId === col.id && c.tipo === 'vida');
                     
-                    let checklist = null;
-                    let checklistId = null;
-                    if (!checklistSnapshot.empty) {
-                        checklistId = checklistSnapshot.docs[0].id;
-                        checklist = { id: checklistId, ...checklistSnapshot.docs[0].data() };
-                    }
+                    const observacao = observacoes.find(o => o.colaboradorId === col.id && o.tipo === 'vida');
                     
-                    // Buscar observação
-                    const observacaoSnapshot = await db.collection('observacoes')
-                        .where('colaboradorId', '==', col.id)
-                        .where('tipo', '==', 'vida')
-                        .get();
-                    
-                    let observacao = null;
-                    if (!observacaoSnapshot.empty) {
-                        observacao = { id: observacaoSnapshot.docs[0].id, ...observacaoSnapshot.docs[0].data() };
-                    }
-                    
-                    const card = createVidaCard(col, checklist, checklistId, observacao);
+                    const card = createVidaCard(col, checklist, observacao);
                     container.appendChild(card);
                 }
                 
@@ -3381,11 +3368,10 @@
             }
         }
 
-        function createVidaCard(colaborador, checklist, checklistId, observacao) {
+        function createVidaCard(colaborador, checklist, observacao) {
             const card = document.createElement('div');
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
-            card.dataset.checklistId = checklistId || '';
             card.dataset.status = colaborador.status || 'Ativo';
             
             const dataNascimento = parseDateISO(colaborador.dataNascimento) || new Date(colaborador.dataNascimento);
@@ -3473,7 +3459,7 @@
                     </div>
                     
                     <div class="checklist-items" id="checklist-${colaborador.id}">
-                        ${renderChecklistItems(colaborador.id, checklistId, checklist, 'vida')}
+                        ${renderChecklistItems(colaborador.id, checklist, 'vida')}
                     </div>
                 </div>
             `;
@@ -3631,7 +3617,7 @@
             return `${(checked / checklist.itens.length) * 100}%`;
         }
 
-        function renderChecklistItems(colaboradorId, checklistId, checklist, tipo) {
+        function renderChecklistItems(colaboradorId, checklist, tipo) {
             const itens = checklist?.itens || getDefaultChecklistItems(tipo);
             
             let html = `<ul class="checklist-sortable" id="checklistSortable-${colaboradorId}" data-colaborador-id="${colaboradorId}">`;
@@ -3702,8 +3688,6 @@
         async function loadEmpresa(container) {
             await loadEmpresasDropDowns();
             
-            const currentMonth = new Date().getMonth() + 1;
-            
             container.innerHTML = `
                 <div class="filters-container" id="empresaFilters">
                     <div class="filters-header" onclick="toggleFilters('empresa')">
@@ -3763,10 +3747,10 @@
             if (filtroAno) filtroAno.addEventListener('input', () => filterEmpresa());
             if (filtroStatus) filtroStatus.addEventListener('change', () => filterEmpresa());
 
-            await loadEmpresaCards(currentMonth);
+            await loadEmpresaCards();
         }
 
-        async function loadEmpresaCards(currentMonth) {
+        async function loadEmpresaCards() {
             const container = document.getElementById('empresaCardsList');
             if (!container) return;
 
@@ -3784,26 +3768,8 @@
                     if (!col.dataAdmissao) continue;
                     
                     const dataAdmissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                    const mesAdmissao = dataAdmissao.getMonth() + 1;
                     
-                    // Mostrar todos os meses se o filtro de mês não estiver definido, senão filtrar pelo mês selecionado
-                    const mesSelecionado = document.getElementById('filtroMesEmpresa')?.value;
-                    const anoSelecionado = document.getElementById('filtroAnoEmpresa')?.value;
-                    
-                    let mostrar = true;
-                    
-                    if (mesSelecionado && mesSelecionado !== '') {
-                        mostrar = mesAdmissao === parseInt(mesSelecionado);
-                    }
-                    
-                    if (anoSelecionado && anoSelecionado !== '') {
-                        const anoAdmissao = dataAdmissao.getFullYear();
-                        mostrar = mostrar && anoAdmissao === parseInt(anoSelecionado);
-                    }
-                    
-                    if (mostrar) {
-                        colaboradoresFiltrados.push(col);
-                    }
+                    colaboradoresFiltrados.push(col);
                 }
                 
                 // Ordenar por data de admissão (mais recentes primeiro)
@@ -3820,21 +3786,11 @@
                 });
                 
                 for (const col of colaboradoresFiltrados) {
-                    const checklistSnapshot = await db.collection('checklists')
-                        .where('colaboradorId', '==', col.id)
-                        .where('tipo', '==', 'empresa')
-                        .get();
-                    
-                    let checklist = null;
-                    let checklistId = null;
-                    if (!checklistSnapshot.empty) {
-                        checklistId = checklistSnapshot.docs[0].id;
-                        checklist = { id: checklistId, ...checklistSnapshot.docs[0].data() };
-                    }
+                    const checklist = checklists.find(c => c.colaboradorId === col.id && c.tipo === 'empresa');
                     
                     const pedidosColaborador = pedidos.filter(p => p.colaboradorId === col.id && p.status !== 'cancelado');
                     
-                    const card = createEmpresaCard(col, checklist, checklistId, pedidosColaborador);
+                    const card = createEmpresaCard(col, checklist, pedidosColaborador);
                     container.appendChild(card);
                 }
                 
@@ -3864,11 +3820,10 @@
             }
         }
 
-        function createEmpresaCard(colaborador, checklist, checklistId, pedidosExistentes) {
+        function createEmpresaCard(colaborador, checklist, pedidosExistentes) {
             const card = document.createElement('div');
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
-            card.dataset.checklistId = checklistId || '';
             card.dataset.status = colaborador.status || 'Ativo';
             
             const dataAdmissao = parseDateISO(colaborador.dataAdmissao) || new Date(colaborador.dataAdmissao);
@@ -3973,7 +3928,7 @@
                     </div>
                     
                     <div class="checklist-items" id="checklist-${colaborador.id}">
-                        ${renderChecklistItems(colaborador.id, checklistId, checklist, 'empresa')}
+                        ${renderChecklistItems(colaborador.id, checklist, 'empresa')}
                     </div>
                 </div>
                 
@@ -5711,9 +5666,7 @@
                 
                 tbody.innerHTML = '';
                 
-                const colaboradoresFiltrados = colaboradores.filter(col => col.status === 'Ativo');
-                
-                colaboradoresFiltrados.forEach(col => {
+                colaboradores.forEach(col => {
                     const isOutside = !col.cidade || !['Itanhaém', 'Peruíbe', 'Mongaguá'].includes(col.cidade);
                     const row = document.createElement('tr');
                     if (isOutside) row.classList.add('outside-region');
