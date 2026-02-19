@@ -1922,13 +1922,16 @@
                     <p>Formato esperado (CSV ou Excel):</p>
                     <ul style="margin: 10px 0 20px 20px; color: var(--secondary);">
                         <li><strong>nome</strong> - Nome completo</li>
-                        <li><strong>dataNascimento</strong> - Data de nascimento (DD/MM/AAAA)</li>
-                        <li><strong>dataAdmissao</strong> - Data de admissão (DD/MM/AAAA)</li>
+                        <li><strong>dataNascimento</strong> - Data de nascimento (DD/MM/AAAA ou DD/MM/AAAA HH:MM:SS)</li>
+                        <li><strong>dataAdmissao</strong> - Data de admissão (DD/MM/AAAA ou DD/MM/AAAA HH:MM:SS)</li>
                         <li><strong>cidade</strong> - Cidade (Itanhaém, Peruíbe, Mongaguá, Outra)</li>
                         <li><strong>empresa</strong> - Nome da empresa</li>
                         <li><strong>departamento</strong> - Nome do departamento</li>
                         <li><strong>status</strong> - Ativo ou Inativo (opcional, padrão: Ativo)</li>
                     </ul>
+                    <p style="color: var(--primary); font-weight: 500;">
+                        <i class="fas fa-info-circle"></i> O sistema aceita datas com ou sem horário (ex: 02/04/1980 00:00:00)
+                    </p>
                 </div>
                 
                 <div class="form-group">
@@ -2101,7 +2104,11 @@
 
         function parseDateBR(dateStr) {
             if (!dateStr) return null;
-            const [day, month, year] = dateStr.split('/');
+            
+            // Remove o horário se existir (ex: "02/04/1980 00:00:00" -> "02/04/1980")
+            const cleanDateStr = dateStr.split(' ')[0];
+            
+            const [day, month, year] = cleanDateStr.split('/');
             return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
 
@@ -2113,10 +2120,14 @@
 
         function validateDateBR(dateStr) {
             if (!dateStr) return false;
-            const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-            if (!regex.test(dateStr)) return false;
             
-            const [_, day, month, year] = dateStr.match(regex);
+            // Remove o horário se existir
+            const cleanDateStr = dateStr.split(' ')[0];
+            
+            const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+            if (!regex.test(cleanDateStr)) return false;
+            
+            const [_, day, month, year] = cleanDateStr.match(regex);
             const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
             
             return date.getDate() === parseInt(day) &&
@@ -2385,38 +2396,29 @@
                         }
                         
                         // Validar formato da data - converter se necessário
-                        let dataNascimentoStr = row.dataNascimento;
-                        let dataAdmissaoStr = row.dataAdmissao;
+                        let dataNascimentoStr = String(row.dataNascimento);
+                        let dataAdmissaoStr = String(row.dataAdmissao);
                         
-                        // Verificar se está no formato DD/MM/AAAA
-                        if (!validateDateBR(dataNascimentoStr)) {
-                            // Tentar outros formatos
-                            if (dataNascimentoStr.includes('-')) {
-                                // Pode ser YYYY-MM-DD
-                                const parts = dataNascimentoStr.split('-');
-                                if (parts.length === 3) {
-                                    dataNascimentoStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                                }
-                            }
-                            if (!validateDateBR(dataNascimentoStr)) {
-                                console.error('Data nascimento inválida:', dataNascimentoStr);
-                                errors++;
-                                continue;
-                            }
+                        // Se a data estiver no formato com timestamp (ex: "02/04/1980 00:00:00")
+                        // ou se for número do Excel, o SheetJS já converte para string
+                        
+                        // Remover possíveis aspas e espaços extras
+                        dataNascimentoStr = dataNascimentoStr.trim();
+                        dataAdmissaoStr = dataAdmissaoStr.trim();
+                        
+                        // Verificar se está no formato DD/MM/AAAA (com ou sem horário)
+                        const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})/;
+                        
+                        if (!dateRegex.test(dataNascimentoStr)) {
+                            console.error('Data nascimento inválida:', dataNascimentoStr);
+                            errors++;
+                            continue;
                         }
                         
-                        if (!validateDateBR(dataAdmissaoStr)) {
-                            if (dataAdmissaoStr.includes('-')) {
-                                const parts = dataAdmissaoStr.split('-');
-                                if (parts.length === 3) {
-                                    dataAdmissaoStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                                }
-                            }
-                            if (!validateDateBR(dataAdmissaoStr)) {
-                                console.error('Data admissão inválida:', dataAdmissaoStr);
-                                errors++;
-                                continue;
-                            }
+                        if (!dateRegex.test(dataAdmissaoStr)) {
+                            console.error('Data admissão inválida:', dataAdmissaoStr);
+                            errors++;
+                            continue;
                         }
                         
                         // Validar cidade
@@ -2459,9 +2461,22 @@
                             departamentos.push({ id: departamentoId, nome: departamentoNome });
                         }
                         
-                        // Converter datas
-                        const dataNascimento = parseDateBR(dataNascimentoStr);
-                        const dataAdmissao = parseDateBR(dataAdmissaoStr);
+                        // Converter datas - extrair apenas a parte da data (DD/MM/AAAA)
+                        const nascimentoMatch = dataNascimentoStr.match(dateRegex);
+                        const admissaoMatch = dataAdmissaoStr.match(dateRegex);
+                        
+                        if (!nascimentoMatch || !admissaoMatch) {
+                            errors++;
+                            continue;
+                        }
+                        
+                        const dataNascimento = parseDateBR(nascimentoMatch[0]);
+                        const dataAdmissao = parseDateBR(admissaoMatch[0]);
+                        
+                        if (!dataNascimento || !dataAdmissao) {
+                            errors++;
+                            continue;
+                        }
                         
                         // Formatar datas para ISO (YYYY-MM-DD)
                         const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
@@ -2476,7 +2491,7 @@
                             empresaNome,
                             departamentoId,
                             departamentoNome,
-                            status: row.status && row.status.toLowerCase() === 'inativo' ? 'Inativo' : 'Ativo',
+                            status: row.status && String(row.status).toLowerCase() === 'inativo' ? 'Inativo' : 'Ativo',
                             dataCriacao: new Date()
                         };
                         
@@ -2495,7 +2510,6 @@
                 
                 closeModal('import');
                 await loadAllData();
-                await loadColaboradoresList();
                 
                 if (currentSection === 'cadastros') {
                     await loadColaboradoresList();
@@ -2506,7 +2520,7 @@
                 
             } catch (error) {
                 console.error('Erro ao importar:', error);
-                showToast('Erro ao importar arquivo', 'error');
+                showToast('Erro ao importar arquivo: ' + error.message, 'error');
             } finally {
                 hideLoading();
             }
