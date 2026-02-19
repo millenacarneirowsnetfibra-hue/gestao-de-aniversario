@@ -582,7 +582,7 @@
         /* Cards List */
         .cards-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
             gap: 20px;
         }
 
@@ -1568,44 +1568,6 @@
             background: #145c33;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                z-index: 1000;
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-
-            .cards-list {
-                grid-template-columns: 1fr;
-            }
-
-            .pizza-order-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .pizza-order-field.full-width {
-                grid-column: span 1;
-            }
-
-            .report-period {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .dashboard-tabs-header {
-                flex-wrap: wrap;
-            }
-        }
-
         /* Valores em Aberto */
         .valores-abertos-list {
             display: flex;
@@ -1688,6 +1650,44 @@
             display: flex;
             gap: 10px;
             margin-top: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .cards-list {
+                grid-template-columns: 1fr;
+            }
+
+            .pizza-order-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pizza-order-field.full-width {
+                grid-column: span 1;
+            }
+
+            .report-period {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .dashboard-tabs-header {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -3328,8 +3328,10 @@
                         .get();
                     
                     let checklist = null;
+                    let checklistId = null;
                     if (!checklistSnapshot.empty) {
-                        checklist = { id: checklistSnapshot.docs[0].id, ...checklistSnapshot.docs[0].data() };
+                        checklistId = checklistSnapshot.docs[0].id;
+                        checklist = { id: checklistId, ...checklistSnapshot.docs[0].data() };
                     }
                     
                     // Buscar observação
@@ -3343,7 +3345,7 @@
                         observacao = { id: observacaoSnapshot.docs[0].id, ...observacaoSnapshot.docs[0].data() };
                     }
                     
-                    const card = createVidaCard(col, checklist, observacao);
+                    const card = createVidaCard(col, checklist, checklistId, observacao);
                     container.appendChild(card);
                 }
                 
@@ -3373,10 +3375,11 @@
             }
         }
 
-        function createVidaCard(colaborador, checklist, observacao) {
+        function createVidaCard(colaborador, checklist, checklistId, observacao) {
             const card = document.createElement('div');
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
+            card.dataset.checklistId = checklistId || '';
             card.dataset.status = colaborador.status || 'Ativo';
             
             const dataNascimento = parseDateISO(colaborador.dataNascimento) || new Date(colaborador.dataNascimento);
@@ -3464,7 +3467,7 @@
                     </div>
                     
                     <div class="checklist-items" id="checklist-${colaborador.id}">
-                        ${renderChecklistItems(colaborador.id, checklist, 'vida')}
+                        ${renderChecklistItems(colaborador.id, checklistId, checklist, 'vida')}
                     </div>
                 </div>
             `;
@@ -3587,10 +3590,13 @@
         async function reordenarChecklist(colaboradorId, oldIndex, newIndex) {
             showLoading();
             try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
                 
-                if (doc.exists) {
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
                     const data = doc.data();
                     const itens = data.itens || [];
                     
@@ -3598,7 +3604,7 @@
                     const [movedItem] = itens.splice(oldIndex, 1);
                     itens.splice(newIndex, 0, movedItem);
                     
-                    await checklistRef.update({
+                    await doc.ref.update({
                         itens,
                         dataAtualizacao: new Date()
                     });
@@ -3619,7 +3625,7 @@
             return `${(checked / checklist.itens.length) * 100}%`;
         }
 
-        function renderChecklistItems(colaboradorId, checklist, tipo) {
+        function renderChecklistItems(colaboradorId, checklistId, checklist, tipo) {
             const itens = checklist?.itens || getDefaultChecklistItems(tipo);
             
             let html = `<ul class="checklist-sortable" id="checklistSortable-${colaboradorId}" data-colaborador-id="${colaboradorId}">`;
@@ -3686,7 +3692,7 @@
             }
         }
 
-        // Load Empresa - CORRIGIDO: Formulário de pizza com campos separados por tipo
+        // Load Empresa
         async function loadEmpresa(container) {
             await loadEmpresasDropDowns();
             
@@ -3814,13 +3820,15 @@
                         .get();
                     
                     let checklist = null;
+                    let checklistId = null;
                     if (!checklistSnapshot.empty) {
-                        checklist = { id: checklistSnapshot.docs[0].id, ...checklistSnapshot.docs[0].data() };
+                        checklistId = checklistSnapshot.docs[0].id;
+                        checklist = { id: checklistId, ...checklistSnapshot.docs[0].data() };
                     }
                     
                     const pedidosColaborador = pedidos.filter(p => p.colaboradorId === col.id && p.status !== 'cancelado');
                     
-                    const card = createEmpresaCard(col, checklist, pedidosColaborador);
+                    const card = createEmpresaCard(col, checklist, checklistId, pedidosColaborador);
                     container.appendChild(card);
                 }
                 
@@ -3850,10 +3858,11 @@
             }
         }
 
-        function createEmpresaCard(colaborador, checklist, pedidosExistentes) {
+        function createEmpresaCard(colaborador, checklist, checklistId, pedidosExistentes) {
             const card = document.createElement('div');
             card.className = 'person-card';
             card.dataset.colaboradorId = colaborador.id;
+            card.dataset.checklistId = checklistId || '';
             card.dataset.status = colaborador.status || 'Ativo';
             
             const dataAdmissao = parseDateISO(colaborador.dataAdmissao) || new Date(colaborador.dataAdmissao);
@@ -3958,7 +3967,7 @@
                     </div>
                     
                     <div class="checklist-items" id="checklist-${colaborador.id}">
-                        ${renderChecklistItems(colaborador.id, checklist, 'empresa')}
+                        ${renderChecklistItems(colaborador.id, checklistId, checklist, 'empresa')}
                     </div>
                 </div>
                 
@@ -3996,24 +4005,24 @@
                     <!-- Campo para Pizza Inteira -->
                     <div class="pizza-order-field pizza-fields pizza-inteira-${colaboradorId} active" id="pizzaInteiraField-${colaboradorId}">
                         <label>Pizza</label>
-                        <select id="pizzaSelect1-${colaboradorId}">
+                        <select id="pizzaSelect1-${colaboradorId}" class="pizza-select">
                             <option value="">Selecione uma pizza...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`).join('')}
                         </select>
                     </div>
                     
                     <!-- Campos para Meia a Meia -->
-                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia1Field-${colaboradorId}">
+                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia1Field-${colaboradorId}" style="display: none;">
                         <label>1ª Metade</label>
-                        <select id="pizzaSelect1-${colaboradorId}">
+                        <select id="pizzaSelect1-${colaboradorId}" class="pizza-select">
                             <option value="">Selecione...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}
                         </select>
                     </div>
                     
-                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia2Field-${colaboradorId}">
+                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia2Field-${colaboradorId}" style="display: none;">
                         <label>2ª Metade</label>
-                        <select id="pizzaSelect2-${colaboradorId}">
+                        <select id="pizzaSelect2-${colaboradorId}" class="pizza-select">
                             <option value="">Selecione...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}
                         </select>
@@ -5316,45 +5325,55 @@
         async function toggleChecklistItem(colaboradorId, index) {
             showLoading();
             try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
                 
-                let itens;
-                let tipo = currentSection === 'vida' ? 'vida' : 'empresa';
-                
-                if (doc.exists) {
-                    itens = doc.data().itens;
-                    tipo = doc.data().tipo;
-                } else {
-                    itens = getDefaultChecklistItems(tipo);
-                }
-                
-                itens[index].checked = !itens[index].checked;
-                
-                await checklistRef.set({
-                    colaboradorId,
-                    tipo,
-                    itens,
-                    dataAtualizacao: new Date()
-                }, { merge: true });
-                
-                const checkedCount = itens.filter(item => item.checked).length;
-                const progress = (checkedCount / itens.length) * 100;
-                const progressBar = document.getElementById(`progress-${colaboradorId}`);
-                if (progressBar) {
-                    progressBar.style.width = `${progress}%`;
-                }
-                
-                const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-                if (itemText) {
-                    if (itens[index].checked) {
-                        itemText.classList.add('checked');
-                    } else {
-                        itemText.classList.remove('checked');
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
+                    const data = doc.data();
+                    const itens = data.itens || [];
+                    
+                    itens[index].checked = !itens[index].checked;
+                    
+                    await doc.ref.update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    const checkedCount = itens.filter(item => item.checked).length;
+                    const progress = (checkedCount / itens.length) * 100;
+                    const progressBar = document.getElementById(`progress-${colaboradorId}`);
+                    if (progressBar) {
+                        progressBar.style.width = `${progress}%`;
                     }
+                    
+                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+                    if (itemText) {
+                        if (itens[index].checked) {
+                            itemText.classList.add('checked');
+                        } else {
+                            itemText.classList.remove('checked');
+                        }
+                    }
+                    
+                    showToast('Checklist atualizado com sucesso!', 'success');
+                } else {
+                    // Criar novo checklist se não existir
+                    const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
+                    const itens = getDefaultChecklistItems(tipo);
+                    itens[index].checked = !itens[index].checked;
+                    
+                    await db.collection('checklists').add({
+                        colaboradorId,
+                        tipo,
+                        itens,
+                        dataCriacao: new Date()
+                    });
+                    
+                    showToast('Checklist criado com sucesso!', 'success');
                 }
-                
-                showToast('Checklist atualizado com sucesso!', 'success');
             } catch (error) {
                 console.error('Error updating checklist:', error);
                 showToast('Erro ao atualizar checklist', 'error');
@@ -5374,16 +5393,21 @@
             
             showLoading();
             try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
                 
-                let itens;
-                let tipo = currentSection === 'vida' ? 'vida' : 'empresa';
+                let checklistId, itens, tipo;
                 
-                if (doc.exists) {
-                    itens = doc.data().itens || [];
-                    tipo = doc.data().tipo;
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
+                    checklistId = doc.id;
+                    const data = doc.data();
+                    itens = data.itens || [];
+                    tipo = data.tipo;
                 } else {
+                    tipo = currentSection === 'vida' ? 'vida' : 'empresa';
                     itens = getDefaultChecklistItems(tipo);
                 }
                 
@@ -5393,16 +5417,25 @@
                     checked: false
                 });
                 
-                await checklistRef.set({
-                    colaboradorId,
-                    tipo,
-                    itens,
-                    dataAtualizacao: new Date()
-                }, { merge: true });
+                if (checklistId) {
+                    await db.collection('checklists').doc(checklistId).update({
+                        itens,
+                        dataAtualizacao: new Date()
+                    });
+                } else {
+                    await db.collection('checklists').add({
+                        colaboradorId,
+                        tipo,
+                        itens,
+                        dataCriacao: new Date()
+                    });
+                }
                 
-                const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
-                if (checklistDiv) {
-                    checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
+                // Recarregar a seção atual para mostrar o novo item
+                if (currentSection === 'vida') {
+                    await loadVida(document.getElementById('mainContent'));
+                } else if (currentSection === 'empresa') {
+                    await loadEmpresa(document.getElementById('mainContent'));
                 }
                 
                 input.value = '';
@@ -5430,16 +5463,19 @@
             
             showLoading();
             try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
                 
-                if (doc.exists) {
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
                     const data = doc.data();
                     const itens = data.itens || [];
                     
                     itens[index].nome = newName;
                     
-                    await checklistRef.update({
+                    await doc.ref.update({
                         itens,
                         dataAtualizacao: new Date()
                     });
@@ -5464,16 +5500,19 @@
             
             showLoading();
             try {
-                const checklistRef = db.collection('checklists').doc(`checklist_${colaboradorId}`);
-                const doc = await checklistRef.get();
+                // Buscar o documento do checklist
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
                 
-                if (doc.exists) {
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
                     const data = doc.data();
                     const itens = data.itens || [];
                     
                     itens.splice(index, 1);
                     
-                    await checklistRef.update({
+                    await doc.ref.update({
                         itens,
                         dataAtualizacao: new Date()
                     });
