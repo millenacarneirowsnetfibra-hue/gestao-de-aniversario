@@ -30,7 +30,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* ESTILOS MANTIDOS IGUAIS AO ORIGINAL */
         * {
             margin: 0;
             padding: 0;
@@ -1002,7 +1001,7 @@
             background: var(--primary-dark);
         }
 
-        /* Pizza Order */
+        /* Pizza Order - NOVO ESTILO CONFORME AS IMAGENS */
         .pizza-order {
             margin-top: 15px;
             border-top: 1px solid var(--gray-200);
@@ -1014,6 +1013,13 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .pizza-order-header i {
+            transition: transform 0.3s ease;
         }
 
         .pizza-order-form {
@@ -1024,6 +1030,79 @@
 
         .pizza-order-form.expanded {
             max-height: 2000px;
+        }
+
+        /* Título "Novo Pedido de Pizza" */
+        .pizza-order-header span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .pizza-order-header span i {
+            color: var(--primary);
+        }
+
+        /* Seletor de tipo de pizza - estilizado como imagem */
+        .tipo-pizza-selector {
+            display: flex;
+            gap: 30px;
+            margin: 10px 0 20px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--gray-200);
+            font-weight: 500;
+        }
+
+        .tipo-pizza-selector label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .tipo-pizza-selector input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Campos de pizza */
+        .pizza-fields {
+            display: none;
+        }
+
+        .pizza-fields.active {
+            display: block;
+        }
+
+        .pizza-select-group {
+            margin-bottom: 20px;
+        }
+
+        .pizza-select-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary);
+            font-size: 0.95rem;
+        }
+
+        .pizza-select-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .pizza-select-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .pedido-existente {
@@ -1086,59 +1165,17 @@
             margin-right: 5px;
         }
 
-        .tipo-pizza-selector {
-            display: flex;
-            gap: 20px;
-            margin: 10px 0;
-            padding: 10px;
-            background: var(--gray-100);
-            border-radius: 8px;
-        }
-
-        .tipo-pizza-selector label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .pizza-fields {
-            display: none;
-        }
-
-        .pizza-fields.active {
-            display: block;
-        }
-
-        .pizza-select-group {
-            margin-bottom: 15px;
-        }
-
-        .pizza-select-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: var(--secondary);
-        }
-
-        .pizza-select-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--gray-200);
-            border-radius: 6px;
-        }
-
         .pizza-order-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 20px;
             margin-top: 15px;
         }
 
         .pizza-order-field {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 8px;
         }
 
         .pizza-order-field.full-width {
@@ -1146,7 +1183,7 @@
         }
 
         .pizza-order-field label {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--secondary);
             font-weight: 500;
         }
@@ -1154,25 +1191,56 @@
         .pizza-order-field input,
         .pizza-order-field select,
         .pizza-order-field textarea {
-            padding: 8px 12px;
-            border: 1px solid var(--gray-200);
-            border-radius: 6px;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
             font-size: 0.95rem;
+            background-color: white;
+        }
+
+        .pizza-order-field input:focus,
+        .pizza-order-field select:focus,
+        .pizza-order-field textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .radio-group {
             display: flex;
-            gap: 15px;
+            gap: 20px;
             align-items: center;
             flex-wrap: wrap;
+            margin-top: 5px;
         }
 
         .radio-group label {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             font-weight: normal;
             cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .radio-group input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .valor-preview {
+            background: var(--gray-100);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            border-left: 4px solid var(--success);
+        }
+
+        .valor-preview i {
+            color: var(--success);
+            margin-right: 8px;
         }
 
         /* Tables */
@@ -2058,6 +2126,10 @@
                         </select>
                     </div>
                     
+                    <div class="form-group full-width" id="bonusValorPreview" style="margin: 10px 0;">
+                        <!-- Preview do valor será inserido via JS -->
+                    </div>
+                    
                     <div class="form-group">
                         <label>Data de Entrega *</label>
                         <input type="text" id="bonusPizzaData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
@@ -2433,6 +2505,62 @@
             return aniversarioEsteAno < hoje;
         }
 
+        // NOVA FUNÇÃO: Calcular valor da pizza meia a meia
+        function calcularValorMeiaMeia(pizzaId1, pizzaId2) {
+            const pizza1 = pizzas.find(p => p.id === pizzaId1);
+            const pizza2 = pizzas.find(p => p.id === pizzaId2);
+            
+            if (!pizza1 || !pizza2) return 0;
+            
+            const valor1 = parseFloat(pizza1.valor) || 0;
+            const valor2 = parseFloat(pizza2.valor) || 0;
+            
+            return (valor1 / 2) + (valor2 / 2);
+        }
+
+        // NOVA FUNÇÃO: Atualizar preview do valor
+        function atualizarPreviewValor(tipo, pizzaId1, pizzaId2 = null) {
+            const previewContainer = document.getElementById('bonusValorPreview');
+            if (!previewContainer) return;
+            
+            let valorTotal = 0;
+            let html = '';
+            
+            if (tipo === 'inteira' && pizzaId1) {
+                const pizza = pizzas.find(p => p.id === pizzaId1);
+                if (pizza) {
+                    valorTotal = parseFloat(pizza.valor) || 0;
+                    html = `
+                        <div class="valor-preview">
+                            <i class="fas fa-calculator"></i>
+                            Valor total: R$ ${valorTotal.toFixed(2)}
+                        </div>
+                    `;
+                }
+            } else if (tipo === 'meia' && pizzaId1 && pizzaId2) {
+                valorTotal = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+                
+                const pizza1 = pizzas.find(p => p.id === pizzaId1);
+                const pizza2 = pizzas.find(p => p.id === pizzaId2);
+                
+                if (pizza1 && pizza2) {
+                    const metade1 = parseFloat(pizza1.valor) / 2;
+                    const metade2 = parseFloat(pizza2.valor) / 2;
+                    
+                    html = `
+                        <div class="valor-preview">
+                            <i class="fas fa-calculator"></i>
+                            Metade ${pizza1.nome}: R$ ${metade1.toFixed(2)}<br>
+                            Metade ${pizza2.nome}: R$ ${metade2.toFixed(2)}<br>
+                            <strong>Total: R$ ${valorTotal.toFixed(2)}</strong>
+                        </div>
+                    `;
+                }
+            }
+            
+            previewContainer.innerHTML = html;
+        }
+
         // Pizza Bonus Modal Functions
         function openPizzaBonusModal() {
             const modal = document.getElementById('modalPizzaBonus');
@@ -2463,6 +2591,7 @@
             document.getElementById('bonusPizzaEndereco').value = '';
             document.getElementById('bonusPizzaObs').value = '';
             document.querySelector('input[name="bonusBorda"][value="sem"]').checked = true;
+            document.getElementById('bonusValorPreview').innerHTML = '';
             
             toggleBonusPizzaFields();
             modal.classList.add('active');
@@ -2482,6 +2611,10 @@
                 pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
                     selectInteira.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`;
                 });
+                
+                selectInteira.addEventListener('change', () => {
+                    atualizarPreviewValor('inteira', selectInteira.value);
+                });
             }
             
             if (selectMeia1) {
@@ -2489,12 +2622,20 @@
                 pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
                     selectMeia1.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria}</option>`;
                 });
+                
+                selectMeia1.addEventListener('change', () => {
+                    atualizarPreviewValor('meia', selectMeia1.value, selectMeia2.value);
+                });
             }
             
             if (selectMeia2) {
                 selectMeia2.innerHTML = '<option value="">Selecione...</option>';
                 pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
                     selectMeia2.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria}</option>`;
+                });
+                
+                selectMeia2.addEventListener('change', () => {
+                    atualizarPreviewValor('meia', selectMeia1.value, selectMeia2.value);
                 });
             }
         }
@@ -2510,10 +2651,20 @@
                 document.querySelectorAll('.bonus-pizza-inteira').forEach(el => {
                     el.classList.add('active');
                 });
+                
+                // Atualizar preview
+                const pizzaId = document.getElementById('bonusPizzaSelect1')?.value;
+                atualizarPreviewValor('inteira', pizzaId);
+                
             } else if (tipo === 'meia') {
                 document.querySelectorAll('.bonus-pizza-meia').forEach(el => {
                     el.classList.add('active');
                 });
+                
+                // Atualizar preview
+                const pizzaId1 = document.getElementById('bonusPizzaSelect1Meia')?.value;
+                const pizzaId2 = document.getElementById('bonusPizzaSelect2Meia')?.value;
+                atualizarPreviewValor('meia', pizzaId1, pizzaId2);
             }
         }
 
@@ -2587,6 +2738,10 @@
                     pedidoData.pizzaId = null;
                     pedidoData.pizzaId1 = pizzaId1;
                     pedidoData.pizzaId2 = pizzaId2;
+                    
+                    // Calcular o valor total baseado na regra de meia a meia
+                    const valorTotal = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+                    pedidoData.valorCalculado = valorTotal;
                 }
                 
                 await db.collection('pedidos').add(pedidoData);
@@ -2961,7 +3116,6 @@
             return `
                 <div class="form-grid">
                     <div class="form-group full-width">
-                        <label>Tipo de Pizza</label>
                         <div class="tipo-pizza-selector">
                             <label>
                                 <input type="radio" name="editTipoPizza" value="inteira" ${tipoPizza === 'inteira' ? 'checked' : ''} onchange="toggleEditPizzaFields()">
@@ -2976,7 +3130,7 @@
                     
                     <div class="form-group pizza-fields pizza-inteira ${tipoPizza === 'inteira' ? 'active' : ''}">
                         <label>Pizza</label>
-                        <select id="editPizzaSelect1">
+                        <select id="editPizzaSelect1" class="pizza-select">
                             <option value="">Selecione uma pizza...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}" ${p.id === pizza1 ? 'selected' : ''}>${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`).join('')}
                         </select>
@@ -2984,7 +3138,7 @@
                     
                     <div class="form-group pizza-fields pizza-meia ${tipoPizza === 'meia' ? 'active' : ''}">
                         <label>1ª Metade</label>
-                        <select id="editPizzaSelect1">
+                        <select id="editPizzaSelect1Meia" class="pizza-select">
                             <option value="">Selecione...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}" ${p.id === pizza1 ? 'selected' : ''}>${p.nome}</option>`).join('')}
                         </select>
@@ -2992,11 +3146,13 @@
                     
                     <div class="form-group pizza-fields pizza-meia ${tipoPizza === 'meia' ? 'active' : ''}">
                         <label>2ª Metade</label>
-                        <select id="editPizzaSelect2">
+                        <select id="editPizzaSelect2Meia" class="pizza-select">
                             <option value="">Selecione...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}" ${p.id === pizza2 ? 'selected' : ''}>${p.nome}</option>`).join('')}
                         </select>
                     </div>
+                    
+                    <div class="form-group full-width" id="editValorPreview"></div>
                     
                     <div class="form-group">
                         <label>Data de Entrega</label>
@@ -3059,23 +3215,83 @@
                 document.querySelectorAll('#editPizzaModalBody .pizza-inteira').forEach(el => {
                     el.classList.add('active');
                 });
+                
+                // Atualizar preview
+                const pizzaId = document.getElementById('editPizzaSelect1')?.value;
+                atualizarEditPreviewValor('inteira', pizzaId);
+                
             } else if (tipo === 'meia') {
                 document.querySelectorAll('#editPizzaModalBody .pizza-meia').forEach(el => {
                     el.classList.add('active');
                 });
+                
+                // Atualizar preview
+                const pizzaId1 = document.getElementById('editPizzaSelect1Meia')?.value;
+                const pizzaId2 = document.getElementById('editPizzaSelect2Meia')?.value;
+                atualizarEditPreviewValor('meia', pizzaId1, pizzaId2);
             }
+        }
+
+        function atualizarEditPreviewValor(tipo, pizzaId1, pizzaId2 = null) {
+            const previewContainer = document.getElementById('editValorPreview');
+            if (!previewContainer) return;
+            
+            let valorTotal = 0;
+            let html = '';
+            
+            if (tipo === 'inteira' && pizzaId1) {
+                const pizza = pizzas.find(p => p.id === pizzaId1);
+                if (pizza) {
+                    valorTotal = parseFloat(pizza.valor) || 0;
+                    html = `
+                        <div class="valor-preview">
+                            <i class="fas fa-calculator"></i>
+                            Valor total: R$ ${valorTotal.toFixed(2)}
+                        </div>
+                    `;
+                }
+            } else if (tipo === 'meia' && pizzaId1 && pizzaId2) {
+                valorTotal = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+                
+                const pizza1 = pizzas.find(p => p.id === pizzaId1);
+                const pizza2 = pizzas.find(p => p.id === pizzaId2);
+                
+                if (pizza1 && pizza2) {
+                    const metade1 = parseFloat(pizza1.valor) / 2;
+                    const metade2 = parseFloat(pizza2.valor) / 2;
+                    
+                    html = `
+                        <div class="valor-preview">
+                            <i class="fas fa-calculator"></i>
+                            Metade ${pizza1.nome}: R$ ${metade1.toFixed(2)}<br>
+                            Metade ${pizza2.nome}: R$ ${metade2.toFixed(2)}<br>
+                            <strong>Total: R$ ${valorTotal.toFixed(2)}</strong>
+                        </div>
+                    `;
+                }
+            }
+            
+            previewContainer.innerHTML = html;
         }
 
         async function updatePizzaOrder() {
             const tipoPizza = document.querySelector('input[name="editTipoPizza"]:checked')?.value;
-            const pizzaSelect1 = document.getElementById('editPizzaSelect1');
-            const pizzaSelect2 = document.getElementById('editPizzaSelect2');
             const dataEntrega = document.getElementById('editPizzaData')?.value;
             const horarioEntrega = document.getElementById('editPizzaHora')?.value;
             const local = document.getElementById('editPizzaCidade')?.value;
             const enderecoCompleto = document.getElementById('editPizzaEndereco')?.value;
             const borda = document.querySelector('input[name="editBorda"]:checked')?.value;
             const observacoes = document.getElementById('editPizzaObs')?.value;
+            
+            let pizzaId1, pizzaId2;
+            
+            if (tipoPizza === 'inteira') {
+                pizzaId1 = document.getElementById('editPizzaSelect1')?.value;
+                pizzaId2 = null;
+            } else {
+                pizzaId1 = document.getElementById('editPizzaSelect1Meia')?.value;
+                pizzaId2 = document.getElementById('editPizzaSelect2Meia')?.value;
+            }
             
             if (!dataEntrega || !horarioEntrega || !local || !enderecoCompleto) {
                 showToast('Preencha todos os campos obrigatórios', 'error');
@@ -3087,12 +3303,12 @@
                 return;
             }
             
-            if (tipoPizza === 'inteira' && !pizzaSelect1?.value) {
+            if (tipoPizza === 'inteira' && !pizzaId1) {
                 showToast('Selecione uma pizza', 'error');
                 return;
             }
             
-            if (tipoPizza === 'meia' && (!pizzaSelect1?.value || !pizzaSelect2?.value)) {
+            if (tipoPizza === 'meia' && (!pizzaId1 || !pizzaId2)) {
                 showToast('Selecione os dois sabores', 'error');
                 return;
             }
@@ -3112,13 +3328,17 @@
                 };
                 
                 if (tipoPizza === 'inteira') {
-                    updateData.pizzaId = pizzaSelect1.value;
-                    updateData.pizzaId1 = pizzaSelect1.value;
+                    updateData.pizzaId = pizzaId1;
+                    updateData.pizzaId1 = pizzaId1;
                     updateData.pizzaId2 = null;
                 } else {
                     updateData.pizzaId = null;
-                    updateData.pizzaId1 = pizzaSelect1.value;
-                    updateData.pizzaId2 = pizzaSelect2.value;
+                    updateData.pizzaId1 = pizzaId1;
+                    updateData.pizzaId2 = pizzaId2;
+                    
+                    // Calcular e armazenar o valor baseado na regra de meia a meia
+                    const valorCalculado = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+                    updateData.valorCalculado = valorCalculado;
                 }
                 
                 await db.collection('pedidos').doc(editingPedidoId).update(updateData);
@@ -3610,26 +3830,21 @@
             const gastosPorMes = Array(12).fill(0);
             
             pedidosEntregues.forEach(ped => {
+                let valor = 0;
+                
                 if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
-                    const pizza1 = pizzas.find(pz => pz.id === ped.pizzaId1);
-                    const pizza2 = pizzas.find(pz => pz.id === ped.pizzaId2);
-                    const valor1 = pizza1 ? parseFloat(pizza1.valor) || 0 : 0;
-                    const valor2 = pizza2 ? parseFloat(pizza2.valor) || 0 : 0;
-                    const valor = (valor1 + valor2) / 2;
-                    totalGasto += valor;
-                    
-                    const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
-                    gastosPorMes[dataEntrega.getMonth()] += valor;
+                    valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
                 } else {
                     const pizza = pizzas.find(pz => pz.id === (ped.pizzaId || ped.pizzaId1));
                     if (pizza) {
-                        const valor = parseFloat(pizza.valor) || 0;
-                        totalGasto += valor;
-                        
-                        const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
-                        gastosPorMes[dataEntrega.getMonth()] += valor;
+                        valor = parseFloat(pizza.valor) || 0;
                     }
                 }
+                
+                totalGasto += valor;
+                
+                const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
+                gastosPorMes[dataEntrega.getMonth()] += valor;
             });
             
             container.innerHTML = `
@@ -4577,7 +4792,7 @@
                     
                     <div class="pizza-order-field pizza-fields pizza-inteira-${colaboradorId} active" id="pizzaInteiraField-${colaboradorId}">
                         <label>Pizza</label>
-                        <select id="pizzaSelect1-${colaboradorId}" class="pizza-select">
+                        <select id="pizzaSelect1-${colaboradorId}" class="pizza-select" onchange="atualizarPreviewPedido('${colaboradorId}')">
                             <option value="">Selecione uma pizza...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`).join('')}
                         </select>
@@ -4585,7 +4800,7 @@
                     
                     <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia1Field-${colaboradorId}" style="display: none;">
                         <label>1ª Metade</label>
-                        <select id="pizzaSelect1-${colaboradorId}" class="pizza-select">
+                        <select id="pizzaSelect1Meia-${colaboradorId}" class="pizza-select" onchange="atualizarPreviewPedido('${colaboradorId}')">
                             <option value="">Selecione...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}
                         </select>
@@ -4593,11 +4808,13 @@
                     
                     <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia2Field-${colaboradorId}" style="display: none;">
                         <label>2ª Metade</label>
-                        <select id="pizzaSelect2-${colaboradorId}" class="pizza-select">
+                        <select id="pizzaSelect2Meia-${colaboradorId}" class="pizza-select" onchange="atualizarPreviewPedido('${colaboradorId}')">
                             <option value="">Selecione...</option>
                             ${pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}
                         </select>
                     </div>
+                    
+                    <div class="pizza-order-field full-width" id="previewValor-${colaboradorId}"></div>
                     
                     <div class="pizza-order-field">
                         <label>Data de Entrega</label>
@@ -4655,6 +4872,57 @@
             `;
         }
 
+        function atualizarPreviewPedido(colaboradorId) {
+            const tipo = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
+            const previewContainer = document.getElementById(`previewValor-${colaboradorId}`);
+            
+            if (!previewContainer) return;
+            
+            let valorTotal = 0;
+            let html = '';
+            
+            if (tipo === 'inteira') {
+                const pizzaId = document.getElementById(`pizzaSelect1-${colaboradorId}`)?.value;
+                const pizza = pizzas.find(p => p.id === pizzaId);
+                
+                if (pizza) {
+                    valorTotal = parseFloat(pizza.valor) || 0;
+                    html = `
+                        <div class="valor-preview">
+                            <i class="fas fa-calculator"></i>
+                            Valor total: R$ ${valorTotal.toFixed(2)}
+                        </div>
+                    `;
+                }
+            } else if (tipo === 'meia') {
+                const pizzaId1 = document.getElementById(`pizzaSelect1Meia-${colaboradorId}`)?.value;
+                const pizzaId2 = document.getElementById(`pizzaSelect2Meia-${colaboradorId}`)?.value;
+                
+                if (pizzaId1 && pizzaId2) {
+                    valorTotal = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+                    
+                    const pizza1 = pizzas.find(p => p.id === pizzaId1);
+                    const pizza2 = pizzas.find(p => p.id === pizzaId2);
+                    
+                    if (pizza1 && pizza2) {
+                        const metade1 = parseFloat(pizza1.valor) / 2;
+                        const metade2 = parseFloat(pizza2.valor) / 2;
+                        
+                        html = `
+                            <div class="valor-preview">
+                                <i class="fas fa-calculator"></i>
+                                Metade ${pizza1.nome}: R$ ${metade1.toFixed(2)}<br>
+                                Metade ${pizza2.nome}: R$ ${metade2.toFixed(2)}<br>
+                                <strong>Total: R$ ${valorTotal.toFixed(2)}</strong>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            previewContainer.innerHTML = html;
+        }
+
         function togglePizzaFields(colaboradorId) {
             const tipo = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
             
@@ -4668,6 +4936,9 @@
                 document.getElementById(`pizzaMeia1Field-${colaboradorId}`).style.display = 'block';
                 document.getElementById(`pizzaMeia2Field-${colaboradorId}`).style.display = 'block';
             }
+            
+            // Atualizar preview após mudar o tipo
+            atualizarPreviewPedido(colaboradorId);
         }
 
         // Load Controle Financeiro
@@ -4861,25 +5132,24 @@
                     return true;
                 });
                 
-                // Calcular totais
+                // Calcular totais usando a nova regra de cálculo
                 let totalGasto = 0;
                 let totalPedidos = pedidosFiltrados.length;
                 
                 pedidosFiltrados.forEach(ped => {
                     if (ped.status === 'entregue') {
+                        let valor = 0;
+                        
                         if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
-                            const pizza1 = pizzasMap[ped.pizzaId1];
-                            const pizza2 = pizzasMap[ped.pizzaId2];
-                            
-                            if (pizza1 && pizza2) {
-                                totalGasto += (parseFloat(pizza1.valor) + parseFloat(pizza2.valor)) / 2;
-                            }
+                            valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
                         } else if (ped.pizzaId || ped.pizzaId1) {
                             const pizza = pizzasMap[ped.pizzaId || ped.pizzaId1];
                             if (pizza) {
-                                totalGasto += parseFloat(pizza.valor) || 0;
+                                valor = parseFloat(pizza.valor) || 0;
                             }
                         }
+                        
+                        totalGasto += valor;
                     }
                 });
                 
@@ -5026,6 +5296,7 @@
                             
                             let pizzaInfo = '';
                             let valorTotal = 0;
+                            let pizzaria = '';
                             
                             if (pedido.tipoPizza === 'meia' && pedido.pizzaId1 && pedido.pizzaId2) {
                                 const pizza1 = pizzasMap[pedido.pizzaId1];
@@ -5033,19 +5304,21 @@
                                 
                                 if (pizza1 && pizza2) {
                                     pizzaInfo = `${pizza1.nome} + ${pizza2.nome}`;
-                                    valorTotal = (parseFloat(pizza1.valor) + parseFloat(pizza2.valor)) / 2;
+                                    valorTotal = calcularValorMeiaMeia(pedido.pizzaId1, pedido.pizzaId2);
+                                    pizzaria = pizza1.pizzaria || 'Desconhecida';
                                 } else {
                                     pizzaInfo = 'Sabores não encontrados';
                                 }
                             } else {
                                 const pizza = pizzasMap[pedido.pizzaId || pedido.pizzaId1];
-                                pizzaInfo = pizza ? pizza.nome : 'Desconhecida';
-                                valorTotal = pizza ? parseFloat(pizza.valor) || 0 : 0;
+                                if (pizza) {
+                                    pizzaInfo = pizza.nome;
+                                    valorTotal = parseFloat(pizza.valor) || 0;
+                                    pizzaria = pizza.pizzaria || 'Desconhecida';
+                                } else {
+                                    pizzaInfo = 'Desconhecida';
+                                }
                             }
-                            
-                            const pizzaria = (pedido.tipoPizza === 'meia' && pedido.pizzaId1) 
-                                ? (pizzasMap[pedido.pizzaId1]?.pizzaria || 'Desconhecida')
-                                : (pizzasMap[pedido.pizzaId || pedido.pizzaId1]?.pizzaria || 'Desconhecida');
                             
                             const row = document.createElement('tr');
                             
@@ -5783,14 +6056,22 @@
 
         async function savePizzaOrder(colaboradorId) {
             const tipoPizza = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
-            const pizzaSelect1 = document.getElementById(`pizzaSelect1-${colaboradorId}`);
-            const pizzaSelect2 = document.getElementById(`pizzaSelect2-${colaboradorId}`);
             const dataEntrega = document.getElementById(`pizzaData-${colaboradorId}`)?.value;
             const horarioEntrega = document.getElementById(`pizzaHora-${colaboradorId}`)?.value;
             const local = document.getElementById(`pizzaCidade-${colaboradorId}`)?.value;
             const enderecoCompleto = document.getElementById(`pizzaEndereco-${colaboradorId}`)?.value;
             const borda = document.querySelector(`input[name="borda-${colaboradorId}"]:checked`)?.value;
             const observacoes = document.getElementById(`pizzaObs-${colaboradorId}`)?.value;
+            
+            let pizzaId1, pizzaId2;
+            
+            if (tipoPizza === 'inteira') {
+                pizzaId1 = document.getElementById(`pizzaSelect1-${colaboradorId}`)?.value;
+                pizzaId2 = null;
+            } else {
+                pizzaId1 = document.getElementById(`pizzaSelect1Meia-${colaboradorId}`)?.value;
+                pizzaId2 = document.getElementById(`pizzaSelect2Meia-${colaboradorId}`)?.value;
+            }
             
             if (!dataEntrega || !horarioEntrega || !local || !enderecoCompleto) {
                 showToast('Preencha todos os campos obrigatórios', 'error');
@@ -5802,12 +6083,12 @@
                 return;
             }
             
-            if (tipoPizza === 'inteira' && !pizzaSelect1?.value) {
+            if (tipoPizza === 'inteira' && !pizzaId1) {
                 showToast('Selecione uma pizza', 'error');
                 return;
             }
             
-            if (tipoPizza === 'meia' && (!pizzaSelect1?.value || !pizzaSelect2?.value)) {
+            if (tipoPizza === 'meia' && (!pizzaId1 || !pizzaId2)) {
                 showToast('Selecione os dois sabores', 'error');
                 return;
             }
@@ -5829,19 +6110,26 @@
                 };
                 
                 if (tipoPizza === 'inteira') {
-                    pedidoData.pizzaId = pizzaSelect1.value;
-                    pedidoData.pizzaId1 = pizzaSelect1.value;
+                    pedidoData.pizzaId = pizzaId1;
+                    pedidoData.pizzaId1 = pizzaId1;
                     pedidoData.pizzaId2 = null;
                 } else {
                     pedidoData.pizzaId = null;
-                    pedidoData.pizzaId1 = pizzaSelect1.value;
-                    pedidoData.pizzaId2 = pizzaSelect2.value;
+                    pedidoData.pizzaId1 = pizzaId1;
+                    pedidoData.pizzaId2 = pizzaId2;
+                    
+                    // Calcular e armazenar o valor baseado na regra de meia a meia
+                    const valorCalculado = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+                    pedidoData.valorCalculado = valorCalculado;
                 }
                 
                 await db.collection('pedidos').add(pedidoData);
                 
                 document.getElementById(`pizzaSelect1-${colaboradorId}`).value = '';
-                if (pizzaSelect2) pizzaSelect2.value = '';
+                const selectMeia1 = document.getElementById(`pizzaSelect1Meia-${colaboradorId}`);
+                const selectMeia2 = document.getElementById(`pizzaSelect2Meia-${colaboradorId}`);
+                if (selectMeia1) selectMeia1.value = '';
+                if (selectMeia2) selectMeia2.value = '';
                 document.getElementById(`pizzaData-${colaboradorId}`).value = '';
                 document.getElementById(`pizzaHora-${colaboradorId}`).value = '';
                 document.getElementById(`pizzaEndereco-${colaboradorId}`).value = '';
@@ -5881,12 +6169,7 @@
                         let valor = 0;
                         
                         if (pedido.tipoPizza === 'meia' && pedido.pizzaId1 && pedido.pizzaId2) {
-                            const pizza1 = await db.collection('pizzas').doc(pedido.pizzaId1).get();
-                            const pizza2 = await db.collection('pizzas').doc(pedido.pizzaId2).get();
-                            
-                            if (pizza1.exists && pizza2.exists) {
-                                valor = (parseFloat(pizza1.data().valor) + parseFloat(pizza2.data().valor)) / 2;
-                            }
+                            valor = calcularValorMeiaMeia(pedido.pizzaId1, pedido.pizzaId2);
                         } else {
                             const pizzaDoc = await db.collection('pizzas').doc(pedido.pizzaId || pedido.pizzaId1).get();
                             if (pizzaDoc.exists) {
@@ -6486,13 +6769,17 @@
                                 const col = colaboradores.find(c => c.id === ped.colaboradorId);
                                 
                                 let pizzaInfo = '';
+                                let valor = 0;
+                                
                                 if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
                                     const pizza1 = pizzas.find(p => p.id === ped.pizzaId1);
                                     const pizza2 = pizzas.find(p => p.id === ped.pizzaId2);
                                     pizzaInfo = pizza1 && pizza2 ? `${pizza1.nome} + ${pizza2.nome}` : 'Sabores não encontrados';
+                                    valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
                                 } else {
                                     const pizza = pizzas.find(p => p.id === (ped.pizzaId || ped.pizzaId1));
                                     pizzaInfo = pizza ? pizza.nome : 'Desconhecida';
+                                    valor = pizza ? parseFloat(pizza.valor) || 0 : 0;
                                 }
                                 
                                 const pizzaria = ped.tipoPizza === 'meia' 
@@ -6508,7 +6795,7 @@
                                     'Endereço': ped.enderecoCompleto || '-',
                                     'Cidade': ped.local || '-',
                                     'Borda': ped.borda || 'Sem recheio',
-                                    'Valor': calcularValorPedido(ped).toFixed(2),
+                                    'Valor': `R$ ${valor.toFixed(2)}`,
                                     'Status': ped.status || 'pendente',
                                     'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
@@ -6529,16 +6816,18 @@
                                 const col = colaboradores.find(c => c.id === ped.colaboradorId);
                                 
                                 let pizzaInfo = '';
+                                let valor = 0;
+                                
                                 if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
                                     const pizza1 = pizzas.find(p => p.id === ped.pizzaId1);
                                     const pizza2 = pizzas.find(p => p.id === ped.pizzaId2);
                                     pizzaInfo = pizza1 && pizza2 ? `${pizza1.nome} + ${pizza2.nome}` : 'Sabores não encontrados';
+                                    valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
                                 } else {
                                     const pizza = pizzas.find(p => p.id === (ped.pizzaId || ped.pizzaId1));
                                     pizzaInfo = pizza ? pizza.nome : 'Desconhecida';
+                                    valor = pizza ? parseFloat(pizza.valor) || 0 : 0;
                                 }
-                                
-                                const valor = calcularValorPedido(ped);
                                 
                                 return {
                                     'Colaborador': col?.nome || 'Desconhecido',
@@ -6628,12 +6917,7 @@
             if (!pedido) return 0;
             
             if (pedido.tipoPizza === 'meia' && pedido.pizzaId1 && pedido.pizzaId2) {
-                const pizza1 = pizzas.find(p => p.id === pedido.pizzaId1);
-                const pizza2 = pizzas.find(p => p.id === pedido.pizzaId2);
-                
-                if (pizza1 && pizza2) {
-                    return (parseFloat(pizza1.valor) + parseFloat(pizza2.valor)) / 2;
-                }
+                return calcularValorMeiaMeia(pedido.pizzaId1, pedido.pizzaId2);
             } else {
                 const pizza = pizzas.find(p => p.id === (pedido.pizzaId || pedido.pizzaId1));
                 if (pizza) {
@@ -6713,13 +6997,17 @@
                                 const col = colaboradores.find(c => c.id === ped.colaboradorId);
                                 
                                 let pizzaInfo = '';
+                                let valor = 0;
+                                
                                 if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
                                     const pizza1 = pizzas.find(p => p.id === ped.pizzaId1);
                                     const pizza2 = pizzas.find(p => p.id === ped.pizzaId2);
                                     pizzaInfo = pizza1 && pizza2 ? `${pizza1.nome} + ${pizza2.nome}` : 'Sabores não encontrados';
+                                    valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
                                 } else {
                                     const pizza = pizzas.find(p => p.id === (ped.pizzaId || ped.pizzaId1));
                                     pizzaInfo = pizza ? pizza.nome : 'Desconhecida';
+                                    valor = pizza ? parseFloat(pizza.valor) || 0 : 0;
                                 }
                                 
                                 const pizzaria = ped.tipoPizza === 'meia' 
@@ -6735,7 +7023,7 @@
                                     'Endereço': ped.enderecoCompleto || '-',
                                     'Cidade': ped.local || '-',
                                     'Borda': ped.borda || 'Sem recheio',
-                                    'Valor': calcularValorPedido(ped).toFixed(2),
+                                    'Valor': `R$ ${valor.toFixed(2)}`,
                                     'Status': ped.status || 'pendente',
                                     'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
@@ -6749,16 +7037,18 @@
                                 const col = colaboradores.find(c => c.id === ped.colaboradorId);
                                 
                                 let pizzaInfo = '';
+                                let valor = 0;
+                                
                                 if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
                                     const pizza1 = pizzas.find(p => p.id === ped.pizzaId1);
                                     const pizza2 = pizzas.find(p => p.id === ped.pizzaId2);
                                     pizzaInfo = pizza1 && pizza2 ? `${pizza1.nome} + ${pizza2.nome}` : 'Sabores não encontrados';
+                                    valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
                                 } else {
                                     const pizza = pizzas.find(p => p.id === (ped.pizzaId || ped.pizzaId1));
                                     pizzaInfo = pizza ? pizza.nome : 'Desconhecida';
+                                    valor = pizza ? parseFloat(pizza.valor) || 0 : 0;
                                 }
-                                
-                                const valor = calcularValorPedido(ped);
                                 
                                 return {
                                     'Colaborador': col?.nome || 'Desconhecido',
