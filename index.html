@@ -2037,7 +2037,7 @@
                     
                     <!-- Campo para Pizza Inteira -->
                     <div class="form-group bonus-pizza-fields bonus-pizza-inteira active">
-                        <label>Pizza</label>
+                        <label>Pizza *</label>
                         <select id="bonusPizzaSelect1">
                             <option value="">Selecione uma pizza...</option>
                         </select>
@@ -2045,31 +2045,31 @@
                     
                     <!-- Campos para Meia a Meia -->
                     <div class="form-group bonus-pizza-fields bonus-pizza-meia">
-                        <label>1ª Metade</label>
+                        <label>1ª Metade *</label>
                         <select id="bonusPizzaSelect1Meia">
                             <option value="">Selecione...</option>
                         </select>
                     </div>
                     
                     <div class="form-group bonus-pizza-fields bonus-pizza-meia">
-                        <label>2ª Metade</label>
+                        <label>2ª Metade *</label>
                         <select id="bonusPizzaSelect2Meia">
                             <option value="">Selecione...</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label>Data de Entrega</label>
+                        <label>Data de Entrega *</label>
                         <input type="text" id="bonusPizzaData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
                     </div>
                     
                     <div class="form-group">
-                        <label>Horário de Entrega</label>
+                        <label>Horário de Entrega *</label>
                         <input type="time" id="bonusPizzaHora">
                     </div>
                     
                     <div class="form-group">
-                        <label>Cidade de Entrega</label>
+                        <label>Cidade de Entrega *</label>
                         <select id="bonusPizzaCidade">
                             <option value="Itanhaém">Itanhaém</option>
                             <option value="Peruíbe">Peruíbe</option>
@@ -2078,7 +2078,7 @@
                     </div>
                     
                     <div class="form-group full-width">
-                        <label>Endereço Completo</label>
+                        <label>Endereço Completo *</label>
                         <input type="text" id="bonusPizzaEndereco" placeholder="Rua, número, complemento, bairro">
                     </div>
                     
@@ -2510,7 +2510,7 @@
                 document.querySelectorAll('.bonus-pizza-inteira').forEach(el => {
                     el.classList.add('active');
                 });
-            } else {
+            } else if (tipo === 'meia') {
                 document.querySelectorAll('.bonus-pizza-meia').forEach(el => {
                     el.classList.add('active');
                 });
