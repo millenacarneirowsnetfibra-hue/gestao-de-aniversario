@@ -3765,8 +3765,6 @@
                 
                 container.innerHTML = '';
                 
-                const mesAtual = currentMonth || new Date().getMonth() + 1;
-                
                 // Filtrar e ordenar colaboradores - MAIS RECENTES PRIMEIRO
                 const colaboradoresFiltrados = [];
                 
@@ -3776,9 +3774,24 @@
                     const dataAdmissao = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
                     const mesAdmissao = dataAdmissao.getMonth() + 1;
                     
-                    if (mesAdmissao !== mesAtual) continue;
+                    // Mostrar todos os meses se o filtro de mês não estiver definido, senão filtrar pelo mês selecionado
+                    const mesSelecionado = document.getElementById('filtroMesEmpresa')?.value;
+                    const anoSelecionado = document.getElementById('filtroAnoEmpresa')?.value;
                     
-                    colaboradoresFiltrados.push(col);
+                    let mostrar = true;
+                    
+                    if (mesSelecionado && mesSelecionado !== '') {
+                        mostrar = mesAdmissao === parseInt(mesSelecionado);
+                    }
+                    
+                    if (anoSelecionado && anoSelecionado !== '') {
+                        const anoAdmissao = dataAdmissao.getFullYear();
+                        mostrar = mostrar && anoAdmissao === parseInt(anoSelecionado);
+                    }
+                    
+                    if (mostrar) {
+                        colaboradoresFiltrados.push(col);
+                    }
                 }
                 
                 // Ordenar por data de admissão (mais recentes primeiro)
@@ -3790,7 +3803,7 @@
                     const diaMesA = dataA.getMonth() * 100 + dataA.getDate();
                     const diaMesB = dataB.getMonth() * 100 + dataB.getDate();
                     
-                    // Para o mês atual, mais próximo do fim do mês primeiro
+                    // Mais próximo do fim do mês primeiro
                     return diaMesB - diaMesA;
                 });
                 
@@ -3980,8 +3993,8 @@
                         </div>
                     </div>
                     
-                    <!-- Campo para Pizza Inteira - aparece apenas quando selecionado inteira -->
-                    <div class="pizza-order-field full-width pizza-fields pizza-inteira-${colaboradorId} active">
+                    <!-- Campo para Pizza Inteira -->
+                    <div class="pizza-order-field pizza-fields pizza-inteira-${colaboradorId} active" id="pizzaInteiraField-${colaboradorId}">
                         <label>Pizza</label>
                         <select id="pizzaSelect1-${colaboradorId}">
                             <option value="">Selecione uma pizza...</option>
@@ -3989,8 +4002,8 @@
                         </select>
                     </div>
                     
-                    <!-- Campos para Meia a Meia - aparecem apenas quando selecionado meia -->
-                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}">
+                    <!-- Campos para Meia a Meia -->
+                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia1Field-${colaboradorId}">
                         <label>1ª Metade</label>
                         <select id="pizzaSelect1-${colaboradorId}">
                             <option value="">Selecione...</option>
@@ -3998,7 +4011,7 @@
                         </select>
                     </div>
                     
-                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}">
+                    <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia2Field-${colaboradorId}">
                         <label>2ª Metade</label>
                         <select id="pizzaSelect2-${colaboradorId}">
                             <option value="">Selecione...</option>
@@ -4066,19 +4079,16 @@
             const tipo = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
             
             // Esconder todos os campos de pizza
-            document.querySelectorAll(`.pizza-fields`).forEach(el => {
-                el.classList.remove('active');
-            });
+            document.getElementById(`pizzaInteiraField-${colaboradorId}`).style.display = 'none';
+            document.getElementById(`pizzaMeia1Field-${colaboradorId}`).style.display = 'none';
+            document.getElementById(`pizzaMeia2Field-${colaboradorId}`).style.display = 'none';
             
             // Mostrar apenas os campos do tipo selecionado
             if (tipo === 'inteira') {
-                document.querySelectorAll(`.pizza-inteira-${colaboradorId}`).forEach(el => {
-                    el.classList.add('active');
-                });
+                document.getElementById(`pizzaInteiraField-${colaboradorId}`).style.display = 'block';
             } else if (tipo === 'meia') {
-                document.querySelectorAll(`.pizza-meia-${colaboradorId}`).forEach(el => {
-                    el.classList.add('active');
-                });
+                document.getElementById(`pizzaMeia1Field-${colaboradorId}`).style.display = 'block';
+                document.getElementById(`pizzaMeia2Field-${colaboradorId}`).style.display = 'block';
             }
         }
 
@@ -5310,7 +5320,7 @@
                 const doc = await checklistRef.get();
                 
                 let itens;
-                let tipo = currentSection;
+                let tipo = currentSection === 'vida' ? 'vida' : 'empresa';
                 
                 if (doc.exists) {
                     itens = doc.data().itens;
@@ -5368,7 +5378,7 @@
                 const doc = await checklistRef.get();
                 
                 let itens;
-                let tipo = currentSection;
+                let tipo = currentSection === 'vida' ? 'vida' : 'empresa';
                 
                 if (doc.exists) {
                     itens = doc.data().itens || [];
@@ -5468,9 +5478,11 @@
                         dataAtualizacao: new Date()
                     });
                     
-                    const checklistDiv = document.getElementById(`checklist-${colaboradorId}`);
-                    if (checklistDiv) {
-                        checklistDiv.innerHTML = renderChecklistItems(colaboradorId, { itens }, data.tipo);
+                    // Recarregar a seção atual para mostrar os itens atualizados
+                    if (currentSection === 'vida') {
+                        await loadVida(document.getElementById('mainContent'));
+                    } else if (currentSection === 'empresa') {
+                        await loadEmpresa(document.getElementById('mainContent'));
                     }
                     
                     showToast('Item removido com sucesso!', 'success');
