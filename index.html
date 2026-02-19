@@ -1944,15 +1944,15 @@
                     <p>Formato esperado (CSV ou Excel):</p>
                     <ul style="margin: 10px 0 20px 20px; color: var(--secondary);">
                         <li><strong>nome</strong> - Nome completo</li>
-                        <li><strong>dataNascimento</strong> - Data de nascimento (DD/MM/AAAA ou DD/MM/AAAA HH:MM:SS)</li>
-                        <li><strong>dataAdmissao</strong> - Data de admissão (DD/MM/AAAA ou DD/MM/AAAA HH:MM:SS)</li>
+                        <li><strong>dataNascimento</strong> - Data de nascimento (DD/MM/AAAA)</li>
+                        <li><strong>dataAdmissao</strong> - Data de admissão (DD/MM/AAAA)</li>
                         <li><strong>cidade</strong> - Cidade (Itanhaém, Peruíbe, Mongaguá, Outra)</li>
                         <li><strong>empresa</strong> - Nome da empresa</li>
                         <li><strong>departamento</strong> - Nome do departamento</li>
                         <li><strong>status</strong> - Ativo ou Inativo (opcional, padrão: Ativo)</li>
                     </ul>
                     <p style="color: var(--primary); font-weight: 500;">
-                        <i class="fas fa-info-circle"></i> O sistema aceita datas com ou sem horário (ex: 02/04/1980 00:00:00)
+                        <i class="fas fa-info-circle"></i> Use formato DD/MM/AAAA para as datas
                     </p>
                 </div>
                 
@@ -2154,7 +2154,7 @@
             return `${day}/${month}`;
         }
 
-        // Função CORRIGIDA para parse de datas no formato brasileiro (com ou sem horário)
+        // Função CORRIGIDA para parse de datas no formato brasileiro - PRESERVA A DATA EXATA
         function parseDateBR(dateStr) {
             if (!dateStr) return null;
             
@@ -2186,10 +2186,12 @@
                 if (match) {
                     if (pattern === patterns[2]) { // ISO
                         const [_, year, month, day] = match;
-                        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        // Cria a data no fuso horário local para preservar o dia exato
+                        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
                     } else {
                         const [_, day, month, year] = match;
-                        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        // Cria a data no fuso horário local para preservar o dia exato
+                        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
                     }
                 }
             }
@@ -2200,7 +2202,8 @@
         function parseDateISO(dateStr) {
             if (!dateStr) return null;
             const [year, month, day] = dateStr.split('-');
-            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            // Cria a data no fuso horário local para preservar o dia exato
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
         }
 
         // Função CORRIGIDA para validar data brasileira
@@ -2450,7 +2453,7 @@
             showToast('Modelo baixado com sucesso!', 'success');
         }
 
-        // Função CORRIGIDA para importar colaboradores (sem duplicatas)
+        // Função CORRIGIDA para importar colaboradores (sem duplicatas) - PRESERVA DATAS EXATAS
         async function importColaboradores() {
             const fileInput = document.getElementById('importFile');
             const file = fileInput.files[0];
@@ -2516,7 +2519,7 @@
                             continue;
                         }
                         
-                        // Converter datas
+                        // Converter datas - PRESERVA A DATA EXATA
                         const dataNascimento = parseDateBR(String(row.dataNascimento));
                         const dataAdmissao = parseDateBR(String(row.dataAdmissao));
                         
@@ -2532,7 +2535,7 @@
                             continue;
                         }
                         
-                        // Formatar datas para ISO (YYYY-MM-DD)
+                        // Formatar datas para ISO (YYYY-MM-DD) - PRESERVA O DIA EXATO
                         const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
                         const admissaoISO = `${dataAdmissao.getFullYear()}-${String(dataAdmissao.getMonth() + 1).padStart(2, '0')}-${String(dataAdmissao.getDate()).padStart(2, '0')}`;
                         
@@ -3039,7 +3042,7 @@
             }
         }
 
-        // Load Dashboard
+        // Load Dashboard - COM FILTROS OCULTOS POR PADRÃO E ATUALIZAÇÃO AUTOMÁTICA
         async function loadDashboard(container) {
             try {
                 await loadAllData();
@@ -3061,30 +3064,22 @@
                             </button>
                         </div>
                         
-                        <!-- Filtro de Período Global do Dashboard -->
+                        <!-- Filtro de Período Global do Dashboard - OCULTO POR PADRÃO -->
                         <div class="filters-container" style="margin: 10px;">
-                            <div class="filters-header expanded" onclick="toggleFilters('dashboardPeriodo')">
+                            <div class="filters-header" onclick="toggleFilters('dashboardPeriodo')">
                                 <span><i class="fas fa-calendar-alt"></i> Filtro de Período</span>
-                                <i class="fas fa-chevron-down" id="dashboardPeriodoFiltersIcon" style="transform: rotate(180deg);"></i>
+                                <i class="fas fa-chevron-down" id="dashboardPeriodoFiltersIcon"></i>
                             </div>
-                            <div class="filters-content expanded" id="dashboardPeriodoFiltersContent">
+                            <div class="filters-content" id="dashboardPeriodoFiltersContent">
                                 <div class="filters-grid">
                                     <div class="filter-group">
                                         <label>Data Inicial (DD/MM/AAAA)</label>
-                                        <input type="text" id="dashboardFiltroInicio" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                                        <input type="text" id="dashboardFiltroInicio" placeholder="DD/MM/AAAA" oninput="applyDateMask(this); aplicarFiltroDashboardAuto();">
                                     </div>
                                     <div class="filter-group">
                                         <label>Data Final (DD/MM/AAAA)</label>
-                                        <input type="text" id="dashboardFiltroFim" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                                        <input type="text" id="dashboardFiltroFim" placeholder="DD/MM/AAAA" oninput="applyDateMask(this); aplicarFiltroDashboardAuto();">
                                     </div>
-                                </div>
-                                <div style="margin-top: 15px; display: flex; gap: 10px;">
-                                    <button class="btn btn-primary btn-sm" onclick="aplicarFiltroDashboard()">
-                                        <i class="fas fa-filter"></i> Aplicar Filtro
-                                    </button>
-                                    <button class="btn btn-secondary btn-sm" onclick="limparFiltroDashboard()">
-                                        <i class="fas fa-undo"></i> Limpar
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -3103,14 +3098,14 @@
                 if (inicioInput) {
                     inicioInput.addEventListener('input', () => {
                         if (dashboardFilterTimeout) clearTimeout(dashboardFilterTimeout);
-                        dashboardFilterTimeout = setTimeout(() => aplicarFiltroDashboard(), 1000);
+                        dashboardFilterTimeout = setTimeout(() => aplicarFiltroDashboardAuto(), 500);
                     });
                 }
                 
                 if (fimInput) {
                     fimInput.addEventListener('input', () => {
                         if (dashboardFilterTimeout) clearTimeout(dashboardFilterTimeout);
-                        dashboardFilterTimeout = setTimeout(() => aplicarFiltroDashboard(), 1000);
+                        dashboardFilterTimeout = setTimeout(() => aplicarFiltroDashboardAuto(), 500);
                     });
                 }
                 
@@ -3145,33 +3140,18 @@
             }
         }
 
-        function aplicarFiltroDashboard() {
+        function aplicarFiltroDashboardAuto() {
             const dataInicio = document.getElementById('dashboardFiltroInicio')?.value;
             const dataFim = document.getElementById('dashboardFiltroFim')?.value;
             
-            if (dataInicio && !validateDateBR(dataInicio)) {
-                showToast('Data inicial inválida', 'error');
-                return;
-            }
-            
-            if (dataFim && !validateDateBR(dataFim)) {
-                showToast('Data final inválida', 'error');
-                return;
-            }
-            
-            showToast('Filtro aplicado com sucesso!', 'success');
+            if (dataInicio && !validateDateBR(dataInicio)) return;
+            if (dataFim && !validateDateBR(dataFim)) return;
             
             // Recarregar todas as abas com o filtro aplicado
             loadDashboardVida();
             loadDashboardEmpresa();
             loadDashboardFinanceiro();
             loadDashboardPedidos();
-        }
-
-        function limparFiltroDashboard() {
-            document.getElementById('dashboardFiltroInicio').value = '';
-            document.getElementById('dashboardFiltroFim').value = '';
-            aplicarFiltroDashboard();
         }
 
         function getFiltroPeriodo() {
