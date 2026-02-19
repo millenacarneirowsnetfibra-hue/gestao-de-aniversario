@@ -1001,7 +1001,7 @@
             background: var(--primary-dark);
         }
 
-        /* Pizza Order - NOVO ESTILO CONFORME AS IMAGENS */
+        /* Pizza Order */
         .pizza-order {
             margin-top: 15px;
             border-top: 1px solid var(--gray-200);
@@ -1032,19 +1032,6 @@
             max-height: 2000px;
         }
 
-        /* Título "Novo Pedido de Pizza" */
-        .pizza-order-header span {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-        }
-
-        .pizza-order-header span i {
-            color: var(--primary);
-        }
-
-        /* Seletor de tipo de pizza - estilizado como imagem */
         .tipo-pizza-selector {
             display: flex;
             gap: 30px;
@@ -1068,7 +1055,6 @@
             cursor: pointer;
         }
 
-        /* Campos de pizza */
         .pizza-fields {
             display: none;
         }
@@ -2082,15 +2068,8 @@
                 <i class="fas fa-times modal-close" onclick="closePizzaBonusModal()"></i>
             </div>
             <div class="modal-body">
-                <div class="form-grid">
-                    <div class="form-group full-width">
-                        <label>Colaborador *</label>
-                        <select id="bonusColaboradorId" style="width: 100%; padding: 8px;">
-                            <option value="">Selecione um colaborador...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group full-width">
+                <div class="pizza-order-grid">
+                    <div class="pizza-order-field full-width">
                         <div class="tipo-pizza-selector">
                             <label>
                                 <input type="radio" name="bonusTipoPizza" value="inteira" checked onchange="toggleBonusPizzaFields()">
@@ -2103,44 +2082,49 @@
                         </div>
                     </div>
                     
-                    <!-- Campo para Pizza Inteira -->
-                    <div class="form-group bonus-pizza-fields bonus-pizza-inteira active">
+                    <div class="pizza-order-field full-width">
+                        <label>Colaborador *</label>
+                        <select id="bonusColaboradorId" style="width: 100%; padding: 8px;">
+                            <option value="">Selecione um colaborador...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Pizza Inteira -->
+                    <div class="pizza-order-field pizza-fields pizza-inteira active" id="bonusPizzaInteiraField">
                         <label>Pizza *</label>
-                        <select id="bonusPizzaSelect1">
+                        <select id="bonusPizzaSelect1" class="pizza-select" onchange="atualizarPreviewBonus()">
                             <option value="">Selecione uma pizza...</option>
                         </select>
                     </div>
                     
-                    <!-- Campos para Meia a Meia -->
-                    <div class="form-group bonus-pizza-fields bonus-pizza-meia">
+                    <!-- Meia a Meia -->
+                    <div class="pizza-order-field pizza-fields pizza-meia" id="bonusPizzaMeia1Field" style="display: none;">
                         <label>1ª Metade *</label>
-                        <select id="bonusPizzaSelect1Meia">
+                        <select id="bonusPizzaSelect1Meia" class="pizza-select" onchange="atualizarPreviewBonus()">
                             <option value="">Selecione...</option>
                         </select>
                     </div>
                     
-                    <div class="form-group bonus-pizza-fields bonus-pizza-meia">
+                    <div class="pizza-order-field pizza-fields pizza-meia" id="bonusPizzaMeia2Field" style="display: none;">
                         <label>2ª Metade *</label>
-                        <select id="bonusPizzaSelect2Meia">
+                        <select id="bonusPizzaSelect2Meia" class="pizza-select" onchange="atualizarPreviewBonus()">
                             <option value="">Selecione...</option>
                         </select>
                     </div>
                     
-                    <div class="form-group full-width" id="bonusValorPreview" style="margin: 10px 0;">
-                        <!-- Preview do valor será inserido via JS -->
-                    </div>
+                    <div class="pizza-order-field full-width" id="bonusValorPreview"></div>
                     
-                    <div class="form-group">
+                    <div class="pizza-order-field">
                         <label>Data de Entrega *</label>
                         <input type="text" id="bonusPizzaData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="pizza-order-field">
                         <label>Horário de Entrega *</label>
                         <input type="time" id="bonusPizzaHora">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="pizza-order-field">
                         <label>Cidade de Entrega *</label>
                         <select id="bonusPizzaCidade">
                             <option value="Itanhaém">Itanhaém</option>
@@ -2149,12 +2133,12 @@
                         </select>
                     </div>
                     
-                    <div class="form-group full-width">
+                    <div class="pizza-order-field full-width">
                         <label>Endereço Completo *</label>
                         <input type="text" id="bonusPizzaEndereco" placeholder="Rua, número, complemento, bairro">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="pizza-order-field">
                         <label>Borda Recheada</label>
                         <div class="radio-group">
                             <label>
@@ -2172,7 +2156,7 @@
                         </div>
                     </div>
                     
-                    <div class="form-group full-width">
+                    <div class="pizza-order-field full-width">
                         <label>Observações</label>
                         <textarea id="bonusPizzaObs" rows="3" placeholder="Observações sobre o pedido..."></textarea>
                     </div>
@@ -2505,7 +2489,7 @@
             return aniversarioEsteAno < hoje;
         }
 
-        // NOVA FUNÇÃO: Calcular valor da pizza meia a meia
+        // Função para calcular valor da pizza meia a meia
         function calcularValorMeiaMeia(pizzaId1, pizzaId2) {
             const pizza1 = pizzas.find(p => p.id === pizzaId1);
             const pizza2 = pizzas.find(p => p.id === pizzaId2);
@@ -2518,16 +2502,19 @@
             return (valor1 / 2) + (valor2 / 2);
         }
 
-        // NOVA FUNÇÃO: Atualizar preview do valor
-        function atualizarPreviewValor(tipo, pizzaId1, pizzaId2 = null) {
+        // Função para atualizar preview do valor
+        function atualizarPreviewBonus() {
+            const tipo = document.querySelector('input[name="bonusTipoPizza"]:checked')?.value;
             const previewContainer = document.getElementById('bonusValorPreview');
             if (!previewContainer) return;
             
             let valorTotal = 0;
             let html = '';
             
-            if (tipo === 'inteira' && pizzaId1) {
-                const pizza = pizzas.find(p => p.id === pizzaId1);
+            if (tipo === 'inteira') {
+                const pizzaId = document.getElementById('bonusPizzaSelect1')?.value;
+                const pizza = pizzas.find(p => p.id === pizzaId);
+                
                 if (pizza) {
                     valorTotal = parseFloat(pizza.valor) || 0;
                     html = `
@@ -2537,24 +2524,29 @@
                         </div>
                     `;
                 }
-            } else if (tipo === 'meia' && pizzaId1 && pizzaId2) {
-                valorTotal = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+            } else if (tipo === 'meia') {
+                const pizzaId1 = document.getElementById('bonusPizzaSelect1Meia')?.value;
+                const pizzaId2 = document.getElementById('bonusPizzaSelect2Meia')?.value;
                 
-                const pizza1 = pizzas.find(p => p.id === pizzaId1);
-                const pizza2 = pizzas.find(p => p.id === pizzaId2);
-                
-                if (pizza1 && pizza2) {
-                    const metade1 = parseFloat(pizza1.valor) / 2;
-                    const metade2 = parseFloat(pizza2.valor) / 2;
+                if (pizzaId1 && pizzaId2) {
+                    valorTotal = calcularValorMeiaMeia(pizzaId1, pizzaId2);
                     
-                    html = `
-                        <div class="valor-preview">
-                            <i class="fas fa-calculator"></i>
-                            Metade ${pizza1.nome}: R$ ${metade1.toFixed(2)}<br>
-                            Metade ${pizza2.nome}: R$ ${metade2.toFixed(2)}<br>
-                            <strong>Total: R$ ${valorTotal.toFixed(2)}</strong>
-                        </div>
-                    `;
+                    const pizza1 = pizzas.find(p => p.id === pizzaId1);
+                    const pizza2 = pizzas.find(p => p.id === pizzaId2);
+                    
+                    if (pizza1 && pizza2) {
+                        const metade1 = parseFloat(pizza1.valor) / 2;
+                        const metade2 = parseFloat(pizza2.valor) / 2;
+                        
+                        html = `
+                            <div class="valor-preview">
+                                <i class="fas fa-calculator"></i>
+                                Metade ${pizza1.nome}: R$ ${metade1.toFixed(2)}<br>
+                                Metade ${pizza2.nome}: R$ ${metade2.toFixed(2)}<br>
+                                <strong>Total: R$ ${valorTotal.toFixed(2)}</strong>
+                            </div>
+                        `;
+                    }
                 }
             }
             
@@ -2581,7 +2573,30 @@
             }
             
             // Preencher selects de pizzas
-            preencherSelectsPizza();
+            const selectInteira = document.getElementById('bonusPizzaSelect1');
+            const selectMeia1 = document.getElementById('bonusPizzaSelect1Meia');
+            const selectMeia2 = document.getElementById('bonusPizzaSelect2Meia');
+            
+            if (selectInteira) {
+                selectInteira.innerHTML = '<option value="">Selecione uma pizza...</option>';
+                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                    selectInteira.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`;
+                });
+            }
+            
+            if (selectMeia1) {
+                selectMeia1.innerHTML = '<option value="">Selecione...</option>';
+                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                    selectMeia1.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
+                });
+            }
+            
+            if (selectMeia2) {
+                selectMeia2.innerHTML = '<option value="">Selecione...</option>';
+                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                    selectMeia2.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
+                });
+            }
             
             // Resetar campos
             document.querySelectorAll('input[name="bonusTipoPizza"]').forEach(r => r.checked = false);
@@ -2601,71 +2616,21 @@
             document.getElementById('modalPizzaBonus').classList.remove('active');
         }
 
-        function preencherSelectsPizza() {
-            const selectInteira = document.getElementById('bonusPizzaSelect1');
-            const selectMeia1 = document.getElementById('bonusPizzaSelect1Meia');
-            const selectMeia2 = document.getElementById('bonusPizzaSelect2Meia');
-            
-            if (selectInteira) {
-                selectInteira.innerHTML = '<option value="">Selecione uma pizza...</option>';
-                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
-                    selectInteira.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`;
-                });
-                
-                selectInteira.addEventListener('change', () => {
-                    atualizarPreviewValor('inteira', selectInteira.value);
-                });
-            }
-            
-            if (selectMeia1) {
-                selectMeia1.innerHTML = '<option value="">Selecione...</option>';
-                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
-                    selectMeia1.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria}</option>`;
-                });
-                
-                selectMeia1.addEventListener('change', () => {
-                    atualizarPreviewValor('meia', selectMeia1.value, selectMeia2.value);
-                });
-            }
-            
-            if (selectMeia2) {
-                selectMeia2.innerHTML = '<option value="">Selecione...</option>';
-                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
-                    selectMeia2.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria}</option>`;
-                });
-                
-                selectMeia2.addEventListener('change', () => {
-                    atualizarPreviewValor('meia', selectMeia1.value, selectMeia2.value);
-                });
-            }
-        }
-
         function toggleBonusPizzaFields() {
             const tipo = document.querySelector('input[name="bonusTipoPizza"]:checked')?.value;
             
-            document.querySelectorAll('.bonus-pizza-fields').forEach(el => {
-                el.classList.remove('active');
+            document.querySelectorAll('#modalPizzaBonus .pizza-fields').forEach(el => {
+                el.style.display = 'none';
             });
             
             if (tipo === 'inteira') {
-                document.querySelectorAll('.bonus-pizza-inteira').forEach(el => {
-                    el.classList.add('active');
-                });
-                
-                // Atualizar preview
-                const pizzaId = document.getElementById('bonusPizzaSelect1')?.value;
-                atualizarPreviewValor('inteira', pizzaId);
-                
+                document.getElementById('bonusPizzaInteiraField').style.display = 'block';
             } else if (tipo === 'meia') {
-                document.querySelectorAll('.bonus-pizza-meia').forEach(el => {
-                    el.classList.add('active');
-                });
-                
-                // Atualizar preview
-                const pizzaId1 = document.getElementById('bonusPizzaSelect1Meia')?.value;
-                const pizzaId2 = document.getElementById('bonusPizzaSelect2Meia')?.value;
-                atualizarPreviewValor('meia', pizzaId1, pizzaId2);
+                document.getElementById('bonusPizzaMeia1Field').style.display = 'block';
+                document.getElementById('bonusPizzaMeia2Field').style.display = 'block';
             }
+            
+            atualizarPreviewBonus();
         }
 
         async function savePizzaBonus() {
@@ -2739,9 +2704,8 @@
                     pedidoData.pizzaId1 = pizzaId1;
                     pedidoData.pizzaId2 = pizzaId2;
                     
-                    // Calcular o valor total baseado na regra de meia a meia
-                    const valorTotal = calcularValorMeiaMeia(pizzaId1, pizzaId2);
-                    pedidoData.valorCalculado = valorTotal;
+                    const valorCalculado = calcularValorMeiaMeia(pizzaId1, pizzaId2);
+                    pedidoData.valorCalculado = valorCalculado;
                 }
                 
                 await db.collection('pedidos').add(pedidoData);
@@ -3216,7 +3180,6 @@
                     el.classList.add('active');
                 });
                 
-                // Atualizar preview
                 const pizzaId = document.getElementById('editPizzaSelect1')?.value;
                 atualizarEditPreviewValor('inteira', pizzaId);
                 
@@ -3225,7 +3188,6 @@
                     el.classList.add('active');
                 });
                 
-                // Atualizar preview
                 const pizzaId1 = document.getElementById('editPizzaSelect1Meia')?.value;
                 const pizzaId2 = document.getElementById('editPizzaSelect2Meia')?.value;
                 atualizarEditPreviewValor('meia', pizzaId1, pizzaId2);
@@ -3336,7 +3298,6 @@
                     updateData.pizzaId1 = pizzaId1;
                     updateData.pizzaId2 = pizzaId2;
                     
-                    // Calcular e armazenar o valor baseado na regra de meia a meia
                     const valorCalculado = calcularValorMeiaMeia(pizzaId1, pizzaId2);
                     updateData.valorCalculado = valorCalculado;
                 }
@@ -3826,10 +3787,10 @@
             const pedidosPendentes = pedidosFiltrados.filter(p => p.status === 'pendente');
             const pedidosCancelados = pedidosFiltrados.filter(p => p.status === 'cancelado');
             
+            // CORREÇÃO: Calcular gasto total considerando TODOS os pedidos (não apenas entregues)
             let totalGasto = 0;
-            const gastosPorMes = Array(12).fill(0);
             
-            pedidosEntregues.forEach(ped => {
+            pedidosFiltrados.forEach(ped => {
                 let valor = 0;
                 
                 if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
@@ -3842,7 +3803,10 @@
                 }
                 
                 totalGasto += valor;
-                
+            });
+            
+            const gastosPorMes = Array(12).fill(0);
+            pedidosEntregues.forEach(ped => {
                 const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
                 gastosPorMes[dataEntrega.getMonth()] += valor;
             });
@@ -3851,7 +3815,7 @@
                 <div class="cards-grid">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Gasto no Período</h3>
+                            <h3>Gasto Total (Todos os Pedidos)</h3>
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="card-value">R$ ${totalGasto.toFixed(2)}</div>
@@ -3884,7 +3848,7 @@
                 
                 <div class="card" style="margin-bottom: 20px;">
                     <div class="card-header">
-                        <h3><i class="fas fa-chart-line"></i> Gasto por Mês</h3>
+                        <h3><i class="fas fa-chart-line"></i> Gasto por Mês (Entregues)</h3>
                     </div>
                     <div style="height: 300px;">
                         <canvas id="dashboardFinanceiroChart"></canvas>
@@ -4937,7 +4901,6 @@
                 document.getElementById(`pizzaMeia2Field-${colaboradorId}`).style.display = 'block';
             }
             
-            // Atualizar preview após mudar o tipo
             atualizarPreviewPedido(colaboradorId);
         }
 
@@ -5018,7 +4981,6 @@
                 </div>
             `;
 
-            // Adicionar listeners para filtros automáticos
             const dataInicial = document.getElementById('filtroDataInicial');
             const dataFinal = document.getElementById('filtroDataFinal');
             
@@ -5109,7 +5071,6 @@
                 
                 valoresAbertos = valoresAbertosAtualizados;
                 
-                // Filtrar pedidos para exibição
                 const pedidosFiltrados = pedidos.filter(ped => {
                     const colaborador = colaboradoresMap[ped.colaboradorId];
                     if (!colaborador) return false;
@@ -5132,25 +5093,23 @@
                     return true;
                 });
                 
-                // Calcular totais usando a nova regra de cálculo
+                // CORREÇÃO: Calcular gasto total considerando TODOS os pedidos
                 let totalGasto = 0;
                 let totalPedidos = pedidosFiltrados.length;
                 
                 pedidosFiltrados.forEach(ped => {
-                    if (ped.status === 'entregue') {
-                        let valor = 0;
-                        
-                        if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
-                            valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
-                        } else if (ped.pizzaId || ped.pizzaId1) {
-                            const pizza = pizzasMap[ped.pizzaId || ped.pizzaId1];
-                            if (pizza) {
-                                valor = parseFloat(pizza.valor) || 0;
-                            }
+                    let valor = 0;
+                    
+                    if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
+                        valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
+                    } else if (ped.pizzaId || ped.pizzaId1) {
+                        const pizza = pizzasMap[ped.pizzaId || ped.pizzaId1];
+                        if (pizza) {
+                            valor = parseFloat(pizza.valor) || 0;
                         }
-                        
-                        totalGasto += valor;
                     }
+                    
+                    totalGasto += valor;
                 });
                 
                 const cardsContainer = document.getElementById('financeiroCards');
@@ -5158,7 +5117,7 @@
                     cardsContainer.innerHTML = `
                         <div class="card">
                             <div class="card-header">
-                                <h3>Gasto Total (Entregues)</h3>
+                                <h3>Gasto Total (Todos os Pedidos)</h3>
                                 <i class="fas fa-dollar-sign"></i>
                             </div>
                             <div class="card-value">R$ ${totalGasto.toFixed(2)}</div>
@@ -6118,7 +6077,6 @@
                     pedidoData.pizzaId1 = pizzaId1;
                     pedidoData.pizzaId2 = pizzaId2;
                     
-                    // Calcular e armazenar o valor baseado na regra de meia a meia
                     const valorCalculado = calcularValorMeiaMeia(pizzaId1, pizzaId2);
                     pedidoData.valorCalculado = valorCalculado;
                 }
