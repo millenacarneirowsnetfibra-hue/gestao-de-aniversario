@@ -3225,11 +3225,9 @@
             }, 100);
         }
 
-        // Load Aniversário de Vida
+        // Load Aniversário de Vida - CORRIGIDO
         async function loadVida(container) {
             await loadEmpresasDropDowns();
-            
-            const currentMonth = new Date().getMonth() + 1;
             
             container.innerHTML = `
                 <div class="filters-container" id="vidaFilters">
@@ -3237,7 +3235,7 @@
                         <span><i class="fas fa-filter"></i> Filtros</span>
                         <i class="fas fa-chevron-down" id="vidaFiltersIcon"></i>
                     </div>
-                    <div class="filters-content" id="vidaFiltersContent">
+                    <div class="filters-content expanded" id="vidaFiltersContent">
                         <div class="filters-grid">
                             <div class="filter-group">
                                 <label>Nome do Colaborador</label>
@@ -3268,9 +3266,9 @@
                             <div class="filter-group">
                                 <label>Status</label>
                                 <select id="filtroStatusVida">
+                                    <option value="todos">Todos</option>
                                     <option value="ativos">Ativos</option>
                                     <option value="inativos">Inativos</option>
-                                    <option value="todos">Todos</option>
                                 </select>
                             </div>
                         </div>
@@ -3285,14 +3283,15 @@
             const filtroAno = document.getElementById('filtroAnoVida');
             const filtroStatus = document.getElementById('filtroStatusVida');
             
-            if (filtroNome) filtroNome.addEventListener('input', () => filterVida());
-            if (filtroMes) filtroMes.addEventListener('change', () => filterVida());
-            if (filtroAno) filtroAno.addEventListener('input', () => filterVida());
-            if (filtroStatus) filtroStatus.addEventListener('change', () => filterVida());
+            if (filtroNome) filtroNome.addEventListener('input', filterVida);
+            if (filtroMes) filtroMes.addEventListener('change', filterVida);
+            if (filtroAno) filtroAno.addEventListener('input', filterVida);
+            if (filtroStatus) filtroStatus.addEventListener('change', filterVida);
 
             await loadVidaCards();
         }
 
+        // CORRIGIDO: Carregar TODOS os colaboradores com data de nascimento, ordenar por proximidade e aplicar filtro inicial do mês atual
         async function loadVidaCards() {
             const container = document.getElementById('vidaCardsList');
             if (!container) return;
@@ -3307,25 +3306,19 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Filtrar colaboradores que têm data de nascimento e aniversário no mês atual
+                // Pegar todos os colaboradores que têm data de nascimento, não apenas do mês atual
                 const colaboradoresComData = colaboradores.filter(col => {
-                    if (!col.dataNascimento) return false;
+                    return col.dataNascimento; // Todos que têm data de nascimento
+                });
+                
+                // Adicionar informação de dias até o próximo aniversário para ordenação
+                colaboradoresComData.forEach(col => {
                     const dataNasc = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
-                    return dataNasc.getMonth() === mesAtual;
+                    col.diasAteAniversario = getDaysUntilNextBirthday(dataNasc);
                 });
                 
                 // Ordenar por proximidade da data
-                colaboradoresComData.sort((a, b) => {
-                    const dataA = parseDateISO(a.dataNascimento) || new Date(a.dataNascimento);
-                    const dataB = parseDateISO(b.dataNascimento) || new Date(b.dataNascimento);
-                    
-                    // Calcular dias até o próximo aniversário
-                    const diasA = getDaysUntilNextBirthday(dataA);
-                    const diasB = getDaysUntilNextBirthday(dataB);
-                    
-                    // Ordenar por proximidade (menor distância primeiro)
-                    return diasA - diasB;
-                });
+                colaboradoresComData.sort((a, b) => a.diasAteAniversario - b.diasAteAniversario);
                 
                 for (const col of colaboradoresComData) {
                     const checklist = checklists.find(c => c.colaboradorId === col.id && c.tipo === 'vida');
@@ -3335,11 +3328,16 @@
                     container.appendChild(card);
                 }
                 
+                // Aplicar filtro inicial para mostrar apenas mês atual
+                const filtroMes = document.getElementById('filtroMesVida');
+                if (filtroMes) {
+                    filtroMes.value = mesAtual + 1; // +1 porque os meses vão de 1-12 no select
+                }
                 filterVida();
                 
                 // Inicializar Sortable para cada checklist após renderizar
                 setTimeout(() => {
-                    document.querySelectorAll('.checklist-sortable').forEach((element, index) => {
+                    document.querySelectorAll('.checklist-sortable').forEach((element) => {
                         const colaboradorId = element.dataset.colaboradorId;
                         if (colaboradorId && !sortableInstances[colaboradorId]) {
                             sortableInstances[colaboradorId] = new Sortable(element, {
@@ -3371,6 +3369,10 @@
             const dataFormatada = formatDateBR(dataNascimento);
             const dataCurta = formatDateShortBR(dataNascimento);
             const idade = calculateAge(dataNascimento);
+            const mesNascimento = dataNascimento.getMonth() + 1; // Para filtro
+            
+            // Adicionar atributo de mês para filtro
+            card.dataset.mesNascimento = mesNascimento;
             
             if (colaborador.status === 'Inativo') {
                 card.classList.add('inactive');
@@ -3677,7 +3679,7 @@
             }
         }
 
-        // Load Empresa
+        // Load Empresa - CORRIGIDO
         async function loadEmpresa(container) {
             await loadEmpresasDropDowns();
             
@@ -3687,7 +3689,7 @@
                         <span><i class="fas fa-filter"></i> Filtros</span>
                         <i class="fas fa-chevron-down" id="empresaFiltersIcon"></i>
                     </div>
-                    <div class="filters-content" id="empresaFiltersContent">
+                    <div class="filters-content expanded" id="empresaFiltersContent">
                         <div class="filters-grid">
                             <div class="filter-group">
                                 <label>Nome do Colaborador</label>
@@ -3718,9 +3720,9 @@
                             <div class="filter-group">
                                 <label>Status</label>
                                 <select id="filtroStatusEmpresa">
+                                    <option value="todos">Todos</option>
                                     <option value="ativos">Ativos</option>
                                     <option value="inativos">Inativos</option>
-                                    <option value="todos">Todos</option>
                                 </select>
                             </div>
                         </div>
@@ -3735,14 +3737,15 @@
             const filtroAno = document.getElementById('filtroAnoEmpresa');
             const filtroStatus = document.getElementById('filtroStatusEmpresa');
             
-            if (filtroNome) filtroNome.addEventListener('input', () => filterEmpresa());
-            if (filtroMes) filtroMes.addEventListener('change', () => filterEmpresa());
-            if (filtroAno) filtroAno.addEventListener('input', () => filterEmpresa());
-            if (filtroStatus) filtroStatus.addEventListener('change', () => filterEmpresa());
+            if (filtroNome) filtroNome.addEventListener('input', filterEmpresa);
+            if (filtroMes) filtroMes.addEventListener('change', filterEmpresa);
+            if (filtroAno) filtroAno.addEventListener('input', filterEmpresa);
+            if (filtroStatus) filtroStatus.addEventListener('change', filterEmpresa);
 
             await loadEmpresaCards();
         }
 
+        // CORRIGIDO: Carregar TODOS os colaboradores com data de admissão, ordenar por proximidade e aplicar filtro inicial do mês atual
         async function loadEmpresaCards() {
             const container = document.getElementById('empresaCardsList');
             if (!container) return;
@@ -3757,25 +3760,19 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Filtrar colaboradores que têm data de admissão e aniversário no mês atual
+                // Pegar todos os colaboradores que têm data de admissão, não apenas do mês atual
                 const colaboradoresComData = colaboradores.filter(col => {
-                    if (!col.dataAdmissao) return false;
+                    return col.dataAdmissao; // Todos que têm data de admissão
+                });
+                
+                // Adicionar informação de dias até o próximo aniversário para ordenação
+                colaboradoresComData.forEach(col => {
                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                    return dataAdm.getMonth() === mesAtual;
+                    col.diasAteAniversarioEmpresa = getDaysUntilNextCompanyAnniversary(dataAdm);
                 });
                 
                 // Ordenar por proximidade da data
-                colaboradoresComData.sort((a, b) => {
-                    const dataA = parseDateISO(a.dataAdmissao) || new Date(a.dataAdmissao);
-                    const dataB = parseDateISO(b.dataAdmissao) || new Date(b.dataAdmissao);
-                    
-                    // Calcular dias até o próximo aniversário de empresa
-                    const diasA = getDaysUntilNextCompanyAnniversary(dataA);
-                    const diasB = getDaysUntilNextCompanyAnniversary(dataB);
-                    
-                    // Ordenar por proximidade (menor distância primeiro)
-                    return diasA - diasB;
-                });
+                colaboradoresComData.sort((a, b) => a.diasAteAniversarioEmpresa - b.diasAteAniversarioEmpresa);
                 
                 for (const col of colaboradoresComData) {
                     const checklist = checklists.find(c => c.colaboradorId === col.id && c.tipo === 'empresa');
@@ -3785,11 +3782,16 @@
                     container.appendChild(card);
                 }
                 
+                // Aplicar filtro inicial para mostrar apenas mês atual
+                const filtroMes = document.getElementById('filtroMesEmpresa');
+                if (filtroMes) {
+                    filtroMes.value = mesAtual + 1; // +1 porque os meses vão de 1-12 no select
+                }
                 filterEmpresa();
                 
                 // Inicializar Sortable para cada checklist após renderizar
                 setTimeout(() => {
-                    document.querySelectorAll('.checklist-sortable').forEach((element, index) => {
+                    document.querySelectorAll('.checklist-sortable').forEach((element) => {
                         const colaboradorId = element.dataset.colaboradorId;
                         if (colaboradorId && !sortableInstances[colaboradorId]) {
                             sortableInstances[colaboradorId] = new Sortable(element, {
@@ -3821,6 +3823,10 @@
             const dataFormatada = formatDateBR(dataAdmissao);
             const dataCurta = formatDateShortBR(dataAdmissao);
             const anosEmpresa = new Date().getFullYear() - dataAdmissao.getFullYear();
+            const mesAdmissao = dataAdmissao.getMonth() + 1; // Para filtro
+            
+            // Adicionar atributo de mês para filtro
+            card.dataset.mesAdmissao = mesAdmissao;
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
             
@@ -6215,7 +6221,7 @@
             }
         }
 
-        // Filter Functions for Vida and Empresa
+        // Filter Functions for Vida and Empresa - CORRIGIDAS
         function filterVida() {
             const nome = document.getElementById('filtroNomeVida')?.value?.toLowerCase() || '';
             const mes = document.getElementById('filtroMesVida')?.value;
@@ -6229,19 +6235,23 @@
                 const dataText = card.querySelector('.person-info p:last-child').textContent;
                 const dataMatch = dataText.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                 const colaboradorStatus = card.dataset.status;
+                const mesNascimento = card.dataset.mesNascimento;
                 
                 let show = true;
                 
+                // Filtro por status
                 if (statusFilter === 'ativos' && colaboradorStatus === 'Inativo') show = false;
                 if (statusFilter === 'inativos' && colaboradorStatus === 'Ativo') show = false;
                 
+                // Filtro por nome
                 if (nome && !nomeColaborador.includes(nome)) show = false;
                 
-                if (mes && dataMatch) {
-                    const mesCard = parseInt(dataMatch[2]);
-                    if (mesCard !== parseInt(mes)) show = false;
+                // Filtro por mês - se selecionado, mostra apenas os do mês selecionado
+                if (mes) {
+                    if (!mesNascimento || parseInt(mesNascimento) !== parseInt(mes)) show = false;
                 }
                 
+                // Filtro por ano
                 if (ano && dataMatch) {
                     const anoCard = parseInt(dataMatch[3]);
                     if (anoCard !== parseInt(ano)) show = false;
@@ -6264,19 +6274,23 @@
                 const dataText = card.querySelector('.person-info p:last-child').textContent;
                 const dataMatch = dataText.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                 const colaboradorStatus = card.dataset.status;
+                const mesAdmissao = card.dataset.mesAdmissao;
                 
                 let show = true;
                 
+                // Filtro por status
                 if (statusFilter === 'ativos' && colaboradorStatus === 'Inativo') show = false;
                 if (statusFilter === 'inativos' && colaboradorStatus === 'Ativo') show = false;
                 
+                // Filtro por nome
                 if (nome && !nomeColaborador.includes(nome)) show = false;
                 
-                if (mes && dataMatch) {
-                    const mesCard = parseInt(dataMatch[2]);
-                    if (mesCard !== parseInt(mes)) show = false;
+                // Filtro por mês - se selecionado, mostra apenas os do mês selecionado
+                if (mes) {
+                    if (!mesAdmissao || parseInt(mesAdmissao) !== parseInt(mes)) show = false;
                 }
                 
+                // Filtro por ano
                 if (ano && dataMatch) {
                     const anoCard = parseInt(dataMatch[3]);
                     if (anoCard !== parseInt(ano)) show = false;
