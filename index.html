@@ -414,6 +414,7 @@
             justify-content: flex-end;
             margin-bottom: 20px;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .btn-add {
@@ -454,6 +455,27 @@
 
         .btn-import:hover {
             background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-clear {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-clear:hover {
+            background: #dc2626;
             transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
@@ -1954,6 +1976,36 @@
         </div>
     </div>
 
+    <!-- Confirm Clear Modal -->
+    <div class="modal" id="modalConfirmClear">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> Confirmar Limpeza</h3>
+                <i class="fas fa-times modal-close" onclick="closeModal('confirmClear')"></i>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px;">Tem certeza que deseja <strong>EXCLUIR TODOS OS COLABORADORES</strong>?</p>
+                <p style="color: var(--danger); font-weight: 500;">Esta ação irá:</p>
+                <ul style="margin: 10px 0 0 20px; color: var(--secondary);">
+                    <li>Remover todos os colaboradores</li>
+                    <li>Remover todos os pedidos de pizza</li>
+                    <li>Remover todas as observações</li>
+                    <li>Remover todos os checklists</li>
+                    <li>Remover todos os valores em aberto</li>
+                </ul>
+                <p style="margin-top: 15px; font-weight: 500;">Empresas, departamentos e pizzas serão mantidos.</p>
+                <p style="margin-top: 15px;">Digite <strong>CONFIRMAR</strong> para prosseguir:</p>
+                <input type="text" id="confirmClearInput" placeholder="Digite CONFIRMAR" style="width: 100%; padding: 8px; border: 1px solid var(--gray-200); border-radius: 4px;">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('confirmClear')">Cancelar</button>
+                <button class="btn btn-danger" onclick="clearAllColaboradores()">
+                    <i class="fas fa-trash"></i> Excluir Todos
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -2352,6 +2404,10 @@
                 document.getElementById('modalImportColaboradores').classList.add('active');
                 document.getElementById('importFile').value = '';
             }
+            else if (tipo === 'confirmClear') {
+                document.getElementById('modalConfirmClear').classList.add('active');
+                document.getElementById('confirmClearInput').value = '';
+            }
         }
 
         function closeModal(tipo) {
@@ -2372,6 +2428,9 @@
             else if (tipo === 'import') {
                 document.getElementById('modalImportColaboradores').classList.remove('active');
             }
+            else if (tipo === 'confirmClear') {
+                document.getElementById('modalConfirmClear').classList.remove('active');
+            }
         }
 
         // Import Functions
@@ -2391,7 +2450,7 @@
             showToast('Modelo baixado com sucesso!', 'success');
         }
 
-        // Função CORRIGIDA para importar colaboradores
+        // Função CORRIGIDA para importar colaboradores (sem duplicatas)
         async function importColaboradores() {
             const fileInput = document.getElementById('importFile');
             const file = fileInput.files[0];
@@ -2428,7 +2487,15 @@
                 // Carregar empresas e departamentos existentes
                 await loadAllData();
                 
+                // Criar um Set para verificar duplicatas (baseado no nome + data de nascimento + data de admissão)
+                const colaboradoresExistentes = new Set();
+                colaboradores.forEach(col => {
+                    const chave = `${col.nome}_${col.dataNascimento}_${col.dataAdmissao}`.toLowerCase();
+                    colaboradoresExistentes.add(chave);
+                });
+                
                 let imported = 0;
+                let duplicates = 0;
                 let errors = 0;
                 const errorsList = [];
                 
@@ -2469,6 +2536,15 @@
                         const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
                         const admissaoISO = `${dataAdmissao.getFullYear()}-${String(dataAdmissao.getMonth() + 1).padStart(2, '0')}-${String(dataAdmissao.getDate()).padStart(2, '0')}`;
                         
+                        // Verificar se já existe (evitar duplicatas)
+                        const nomeLimpo = String(row.nome).trim();
+                        const chave = `${nomeLimpo}_${nascimentoISO}_${admissaoISO}`.toLowerCase();
+                        
+                        if (colaboradoresExistentes.has(chave)) {
+                            duplicates++;
+                            continue;
+                        }
+                        
                         // Buscar ou criar empresa
                         let empresaId = null;
                         let empresaNome = String(row.empresa).trim();
@@ -2502,7 +2578,7 @@
                         }
                         
                         const colaboradorData = {
-                            nome: String(row.nome).trim(),
+                            nome: nomeLimpo,
                             dataNascimento: nascimentoISO,
                             dataAdmissao: admissaoISO,
                             cidade: cidade,
@@ -2520,7 +2596,10 @@
                         
                         await db.collection('colaboradores').add(colaboradorData);
                         
+                        // Adicionar ao Set para evitar duplicatas na mesma importação
+                        colaboradoresExistentes.add(chave);
                         imported++;
+                        
                     } catch (err) {
                         console.error('Erro ao importar linha:', err, row);
                         errors++;
@@ -2535,13 +2614,16 @@
                     await loadColaboradoresList();
                 }
                 
-                if (errorsList.length > 0) {
-                    console.error('Erros na importação:', errorsList);
-                    showToast(`${imported} colaborador(es) importado(s) com sucesso! ${errors} erro(s). Verifique o console para detalhes.`, 
-                            errors > 0 ? 'warning' : 'success');
-                } else {
-                    showToast(`${imported} colaborador(es) importado(s) com sucesso!`, 'success');
+                let mensagem = `${imported} colaborador(es) importado(s) com sucesso!`;
+                if (duplicates > 0) {
+                    mensagem += ` ${duplicates} duplicata(s) ignorada(s).`;
                 }
+                if (errors > 0) {
+                    mensagem += ` ${errors} erro(s).`;
+                    console.error('Erros na importação:', errorsList);
+                }
+                
+                showToast(mensagem, errors > 0 ? 'warning' : 'success');
                 
             } catch (error) {
                 console.error('Erro ao importar:', error);
@@ -4801,6 +4883,9 @@
                             <button class="btn-import" onclick="openModal('import')">
                                 <i class="fas fa-file-import"></i> Importar Colaboradores
                             </button>
+                            <button class="btn-clear" onclick="openModal('confirmClear')">
+                                <i class="fas fa-trash"></i> Limpar Todos
+                            </button>
                         </div>
                         
                         <div class="filters-container">
@@ -5147,6 +5232,70 @@
             } catch (error) {
                 console.error('Error deleting colaborador:', error);
                 showToast('Erro ao excluir colaborador', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Clear All Colaboradores Function
+        async function clearAllColaboradores() {
+            const confirmInput = document.getElementById('confirmClearInput').value;
+            
+            if (confirmInput !== 'CONFIRMAR') {
+                showToast('Digite CONFIRMAR para prosseguir', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                // Buscar todos os colaboradores
+                const colaboradoresSnapshot = await db.collection('colaboradores').get();
+                
+                // Buscar todos os pedidos
+                const pedidosSnapshot = await db.collection('pedidos').get();
+                
+                // Buscar todas as observações
+                const observacoesSnapshot = await db.collection('observacoes').get();
+                
+                // Buscar todos os checklists
+                const checklistsSnapshot = await db.collection('checklists').get();
+                
+                // Buscar todos os valores em aberto
+                const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
+                
+                // Criar batch para deletar tudo
+                const batch = db.batch();
+                
+                colaboradoresSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                pedidosSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                observacoesSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                checklistsSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                valoresAbertosSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+                
+                closeModal('confirmClear');
+                await loadAllData();
+                await loadColaboradoresList();
+                
+                showToast('Todos os colaboradores e dados relacionados foram excluídos com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error clearing all colaboradores:', error);
+                showToast('Erro ao excluir todos os colaboradores', 'error');
             } finally {
                 hideLoading();
             }
