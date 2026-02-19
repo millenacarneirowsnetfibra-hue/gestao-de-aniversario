@@ -2006,6 +2006,115 @@
         </div>
     </div>
 
+    <!-- Pizza Bonus Modal -->
+    <div class="modal" id="modalPizzaBonus">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-gift"></i> Bonificar Colaborador com Pizza</h3>
+                <i class="fas fa-times modal-close" onclick="closePizzaBonusModal()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Colaborador *</label>
+                        <select id="bonusColaboradorId" style="width: 100%; padding: 8px;">
+                            <option value="">Selecione um colaborador...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <div class="tipo-pizza-selector">
+                            <label>
+                                <input type="radio" name="bonusTipoPizza" value="inteira" checked onchange="toggleBonusPizzaFields()">
+                                Pizza Inteira
+                            </label>
+                            <label>
+                                <input type="radio" name="bonusTipoPizza" value="meia" onchange="toggleBonusPizzaFields()">
+                                Meia a Meia
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Campo para Pizza Inteira -->
+                    <div class="form-group bonus-pizza-fields bonus-pizza-inteira active">
+                        <label>Pizza</label>
+                        <select id="bonusPizzaSelect1">
+                            <option value="">Selecione uma pizza...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Campos para Meia a Meia -->
+                    <div class="form-group bonus-pizza-fields bonus-pizza-meia">
+                        <label>1ª Metade</label>
+                        <select id="bonusPizzaSelect1Meia">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group bonus-pizza-fields bonus-pizza-meia">
+                        <label>2ª Metade</label>
+                        <select id="bonusPizzaSelect2Meia">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Data de Entrega</label>
+                        <input type="text" id="bonusPizzaData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Horário de Entrega</label>
+                        <input type="time" id="bonusPizzaHora">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cidade de Entrega</label>
+                        <select id="bonusPizzaCidade">
+                            <option value="Itanhaém">Itanhaém</option>
+                            <option value="Peruíbe">Peruíbe</option>
+                            <option value="Mongaguá">Mongaguá</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Endereço Completo</label>
+                        <input type="text" id="bonusPizzaEndereco" placeholder="Rua, número, complemento, bairro">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Borda Recheada</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="bonusBorda" value="cheddar"> Cheddar
+                            </label>
+                            <label>
+                                <input type="radio" name="bonusBorda" value="requeijao"> Requeijão
+                            </label>
+                            <label>
+                                <input type="radio" name="bonusBorda" value="catupiry"> Catupiry
+                            </label>
+                            <label>
+                                <input type="radio" name="bonusBorda" value="sem" checked> Sem recheio
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Observações</label>
+                        <textarea id="bonusPizzaObs" rows="3" placeholder="Observações sobre o pedido..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePizzaBonusModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="savePizzaBonus()">
+                    <i class="fas fa-save"></i> Salvar Bonificação
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -2100,6 +2209,7 @@
         let charts = {};
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
+        let financeiroFilterTimeout = null;
         let sortableInstances = {};
 
         // Utility Functions
@@ -2154,43 +2264,35 @@
             return `${day}/${month}`;
         }
 
-        // Função CORRIGIDA para parse de datas no formato brasileiro - PRESERVA A DATA EXATA
         function parseDateBR(dateStr) {
             if (!dateStr) return null;
             
-            // Converte para string e remove espaços extras
             const str = String(dateStr).trim();
             
-            // Se for um número (timestamp do Excel), converte
             if (!isNaN(str) && str.length > 0) {
                 const excelDate = parseFloat(str);
                 if (excelDate > 0) {
-                    // Data do Excel começa em 1900-01-01
                     const date = new Date((excelDate - 25569) * 86400 * 1000);
                     if (!isNaN(date.getTime())) return date;
                 }
             }
             
-            // Remove o horário se existir (ex: "02/04/1980 00:00:00" -> "02/04/1980")
             const cleanDateStr = str.split(' ')[0];
             
-            // Tenta vários formatos
             const patterns = [
-                /^(\d{2})\/(\d{2})\/(\d{4})$/, // DD/MM/AAAA
-                /^(\d{2})-(\d{2})-(\d{4})$/,   // DD-MM-AAAA
-                /^(\d{4})-(\d{2})-(\d{2})$/    // AAAA-MM-DD (ISO)
+                /^(\d{2})\/(\d{2})\/(\d{4})$/,
+                /^(\d{2})-(\d{2})-(\d{4})$/,
+                /^(\d{4})-(\d{2})-(\d{2})$/
             ];
             
             for (const pattern of patterns) {
                 const match = cleanDateStr.match(pattern);
                 if (match) {
-                    if (pattern === patterns[2]) { // ISO
+                    if (pattern === patterns[2]) {
                         const [_, year, month, day] = match;
-                        // Cria a data no fuso horário local para preservar o dia exato
                         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
                     } else {
                         const [_, day, month, year] = match;
-                        // Cria a data no fuso horário local para preservar o dia exato
                         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
                     }
                 }
@@ -2202,21 +2304,15 @@
         function parseDateISO(dateStr) {
             if (!dateStr) return null;
             const [year, month, day] = dateStr.split('-');
-            // Cria a data no fuso horário local para preservar o dia exato
             return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
         }
 
-        // Função CORRIGIDA para validar data brasileira
         function validateDateBR(dateStr) {
             if (!dateStr) return false;
             
-            // Converte para string e remove espaços
             const str = String(dateStr).trim();
-            
-            // Remove o horário se existir
             const cleanDateStr = str.split(' ')[0];
             
-            // Aceita formato DD/MM/AAAA ou DD-MM-AAAA
             const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
             if (!regex.test(cleanDateStr)) return false;
             
@@ -2337,6 +2433,180 @@
             return aniversarioEsteAno < hoje;
         }
 
+        // Pizza Bonus Modal Functions
+        function openPizzaBonusModal() {
+            const modal = document.getElementById('modalPizzaBonus');
+            if (!modal) return;
+            
+            // Preencher select de colaboradores
+            const select = document.getElementById('bonusColaboradorId');
+            if (select) {
+                select.innerHTML = '<option value="">Selecione um colaborador...</option>';
+                
+                const colaboradoresAtivos = colaboradores
+                    .filter(col => col.status === 'Ativo')
+                    .sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+                
+                colaboradoresAtivos.forEach(col => {
+                    select.innerHTML += `<option value="${col.id}">${col.nome} (${col.cidade})</option>`;
+                });
+            }
+            
+            // Preencher selects de pizzas
+            preencherSelectsPizza();
+            
+            // Resetar campos
+            document.querySelectorAll('input[name="bonusTipoPizza"]').forEach(r => r.checked = false);
+            document.querySelector('input[name="bonusTipoPizza"][value="inteira"]').checked = true;
+            document.getElementById('bonusPizzaData').value = '';
+            document.getElementById('bonusPizzaHora').value = '';
+            document.getElementById('bonusPizzaEndereco').value = '';
+            document.getElementById('bonusPizzaObs').value = '';
+            document.querySelector('input[name="bonusBorda"][value="sem"]').checked = true;
+            
+            toggleBonusPizzaFields();
+            modal.classList.add('active');
+        }
+
+        function closePizzaBonusModal() {
+            document.getElementById('modalPizzaBonus').classList.remove('active');
+        }
+
+        function preencherSelectsPizza() {
+            const selectInteira = document.getElementById('bonusPizzaSelect1');
+            const selectMeia1 = document.getElementById('bonusPizzaSelect1Meia');
+            const selectMeia2 = document.getElementById('bonusPizzaSelect2Meia');
+            
+            if (selectInteira) {
+                selectInteira.innerHTML = '<option value="">Selecione uma pizza...</option>';
+                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                    selectInteira.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria} (R$ ${parseFloat(p.valor).toFixed(2)})</option>`;
+                });
+            }
+            
+            if (selectMeia1) {
+                selectMeia1.innerHTML = '<option value="">Selecione...</option>';
+                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                    selectMeia1.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria}</option>`;
+                });
+            }
+            
+            if (selectMeia2) {
+                selectMeia2.innerHTML = '<option value="">Selecione...</option>';
+                pizzas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                    selectMeia2.innerHTML += `<option value="${p.id}">${p.nome} - ${p.pizzaria}</option>`;
+                });
+            }
+        }
+
+        function toggleBonusPizzaFields() {
+            const tipo = document.querySelector('input[name="bonusTipoPizza"]:checked')?.value;
+            
+            document.querySelectorAll('.bonus-pizza-fields').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            if (tipo === 'inteira') {
+                document.querySelectorAll('.bonus-pizza-inteira').forEach(el => {
+                    el.classList.add('active');
+                });
+            } else {
+                document.querySelectorAll('.bonus-pizza-meia').forEach(el => {
+                    el.classList.add('active');
+                });
+            }
+        }
+
+        async function savePizzaBonus() {
+            const colaboradorId = document.getElementById('bonusColaboradorId').value;
+            const tipoPizza = document.querySelector('input[name="bonusTipoPizza"]:checked')?.value;
+            const dataEntrega = document.getElementById('bonusPizzaData').value;
+            const horarioEntrega = document.getElementById('bonusPizzaHora').value;
+            const local = document.getElementById('bonusPizzaCidade').value;
+            const enderecoCompleto = document.getElementById('bonusPizzaEndereco').value;
+            const borda = document.querySelector('input[name="bonusBorda"]:checked')?.value;
+            const observacoes = document.getElementById('bonusPizzaObs').value;
+            
+            let pizzaId1, pizzaId2;
+            
+            if (tipoPizza === 'inteira') {
+                pizzaId1 = document.getElementById('bonusPizzaSelect1').value;
+                pizzaId2 = null;
+            } else {
+                pizzaId1 = document.getElementById('bonusPizzaSelect1Meia').value;
+                pizzaId2 = document.getElementById('bonusPizzaSelect2Meia').value;
+            }
+            
+            if (!colaboradorId) {
+                showToast('Selecione um colaborador', 'error');
+                return;
+            }
+            
+            if (!dataEntrega || !horarioEntrega || !local || !enderecoCompleto) {
+                showToast('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+            
+            if (!validateDateBR(dataEntrega)) {
+                showToast('Data inválida', 'error');
+                return;
+            }
+            
+            if (tipoPizza === 'inteira' && !pizzaId1) {
+                showToast('Selecione uma pizza', 'error');
+                return;
+            }
+            
+            if (tipoPizza === 'meia' && (!pizzaId1 || !pizzaId2)) {
+                showToast('Selecione os dois sabores', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                const pedidoData = {
+                    colaboradorId,
+                    tipoPizza,
+                    dataEntrega: parseDateBR(dataEntrega),
+                    dataEntregaBR: dataEntrega,
+                    horarioEntrega,
+                    local,
+                    enderecoCompleto,
+                    borda: borda || 'sem',
+                    observacoes,
+                    status: 'pendente',
+                    tipoBonus: true,
+                    dataCriacao: new Date()
+                };
+                
+                if (tipoPizza === 'inteira') {
+                    pedidoData.pizzaId = pizzaId1;
+                    pedidoData.pizzaId1 = pizzaId1;
+                    pedidoData.pizzaId2 = null;
+                } else {
+                    pedidoData.pizzaId = null;
+                    pedidoData.pizzaId1 = pizzaId1;
+                    pedidoData.pizzaId2 = pizzaId2;
+                }
+                
+                await db.collection('pedidos').add(pedidoData);
+                
+                closePizzaBonusModal();
+                await loadAllData();
+                
+                if (currentSection === 'financeiro') {
+                    await loadFinanceiro(document.getElementById('mainContent'));
+                }
+                
+                showToast('Bonificação salva com sucesso e sincronizada no Controle Financeiro!', 'success');
+            } catch (error) {
+                console.error('Error saving bonus:', error);
+                showToast('Erro ao salvar bonificação', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
         // Modal Functions
         function openModal(tipo, editId = null) {
             if (tipo === 'colaborador') {
@@ -2453,7 +2723,6 @@
             showToast('Modelo baixado com sucesso!', 'success');
         }
 
-        // Função CORRIGIDA para importar colaboradores (sem duplicatas) - PRESERVA DATAS EXATAS
         async function importColaboradores() {
             const fileInput = document.getElementById('importFile');
             const file = fileInput.files[0];
@@ -2477,7 +2746,6 @@
                     return;
                 }
                 
-                // Verificar cabeçalhos
                 const expectedHeaders = ['nome', 'dataNascimento', 'dataAdmissao', 'cidade', 'empresa', 'departamento'];
                 const firstRow = jsonData[0];
                 const missingHeaders = expectedHeaders.filter(h => !(h in firstRow));
@@ -2487,10 +2755,8 @@
                     return;
                 }
                 
-                // Carregar empresas e departamentos existentes
                 await loadAllData();
                 
-                // Criar um Set para verificar duplicatas (baseado no nome + data de nascimento + data de admissão)
                 const colaboradoresExistentes = new Set();
                 colaboradores.forEach(col => {
                     const chave = `${col.nome}_${col.dataNascimento}_${col.dataAdmissao}`.toLowerCase();
@@ -2504,14 +2770,12 @@
                 
                 for (const [index, row] of jsonData.entries()) {
                     try {
-                        // Validar dados obrigatórios
                         if (!row.nome || !row.dataNascimento || !row.dataAdmissao || !row.cidade || !row.empresa || !row.departamento) {
                             errors++;
                             errorsList.push(`Linha ${index + 2}: Dados incompletos`);
                             continue;
                         }
                         
-                        // Validar cidade
                         const cidade = String(row.cidade).trim();
                         if (!['Itanhaém', 'Peruíbe', 'Mongaguá', 'Outra'].includes(cidade)) {
                             errors++;
@@ -2519,7 +2783,6 @@
                             continue;
                         }
                         
-                        // Converter datas - PRESERVA A DATA EXATA
                         const dataNascimento = parseDateBR(String(row.dataNascimento));
                         const dataAdmissao = parseDateBR(String(row.dataAdmissao));
                         
@@ -2535,11 +2798,9 @@
                             continue;
                         }
                         
-                        // Formatar datas para ISO (YYYY-MM-DD) - PRESERVA O DIA EXATO
                         const nascimentoISO = `${dataNascimento.getFullYear()}-${String(dataNascimento.getMonth() + 1).padStart(2, '0')}-${String(dataNascimento.getDate()).padStart(2, '0')}`;
                         const admissaoISO = `${dataAdmissao.getFullYear()}-${String(dataAdmissao.getMonth() + 1).padStart(2, '0')}-${String(dataAdmissao.getDate()).padStart(2, '0')}`;
                         
-                        // Verificar se já existe (evitar duplicatas)
                         const nomeLimpo = String(row.nome).trim();
                         const chave = `${nomeLimpo}_${nascimentoISO}_${admissaoISO}`.toLowerCase();
                         
@@ -2548,7 +2809,6 @@
                             continue;
                         }
                         
-                        // Buscar ou criar empresa
                         let empresaId = null;
                         let empresaNome = String(row.empresa).trim();
                         const empresaExistente = empresas.find(e => e.nome.toLowerCase() === empresaNome.toLowerCase());
@@ -2564,7 +2824,6 @@
                             empresas.push({ id: empresaId, nome: empresaNome });
                         }
                         
-                        // Buscar ou criar departamento
                         let departamentoId = null;
                         let departamentoNome = String(row.departamento).trim();
                         const departamentoExistente = departamentos.find(d => d.nome.toLowerCase() === departamentoNome.toLowerCase());
@@ -2599,7 +2858,6 @@
                         
                         await db.collection('colaboradores').add(colaboradorData);
                         
-                        // Adicionar ao Set para evitar duplicatas na mesma importação
                         colaboradoresExistentes.add(chave);
                         imported++;
                         
@@ -2716,7 +2974,6 @@
                         </div>
                     </div>
                     
-                    <!-- Campo para Pizza Inteira -->
                     <div class="form-group pizza-fields pizza-inteira ${tipoPizza === 'inteira' ? 'active' : ''}">
                         <label>Pizza</label>
                         <select id="editPizzaSelect1">
@@ -2725,7 +2982,6 @@
                         </select>
                     </div>
                     
-                    <!-- Campos para Meia a Meia -->
                     <div class="form-group pizza-fields pizza-meia ${tipoPizza === 'meia' ? 'active' : ''}">
                         <label>1ª Metade</label>
                         <select id="editPizzaSelect1">
@@ -2980,7 +3236,6 @@
             showLoading();
             
             try {
-                // Carregar dados básicos primeiro
                 await loadAllData();
                 
                 switch(section) {
@@ -3042,7 +3297,7 @@
             }
         }
 
-        // Load Dashboard - COM FILTROS OCULTOS POR PADRÃO E ATUALIZAÇÃO AUTOMÁTICA
+        // Load Dashboard
         async function loadDashboard(container) {
             try {
                 await loadAllData();
@@ -3064,7 +3319,6 @@
                             </button>
                         </div>
                         
-                        <!-- Filtro de Período Global do Dashboard - OCULTO POR PADRÃO -->
                         <div class="filters-container" style="margin: 10px;">
                             <div class="filters-header" onclick="toggleFilters('dashboardPeriodo')">
                                 <span><i class="fas fa-calendar-alt"></i> Filtro de Período</span>
@@ -3091,7 +3345,6 @@
                     </div>
                 `;
 
-                // Adicionar listeners para atualização automática com delay
                 const inicioInput = document.getElementById('dashboardFiltroInicio');
                 const fimInput = document.getElementById('dashboardFiltroFim');
                 
@@ -3147,7 +3400,6 @@
             if (dataInicio && !validateDateBR(dataInicio)) return;
             if (dataFim && !validateDateBR(dataFim)) return;
             
-            // Recarregar todas as abas com o filtro aplicado
             loadDashboardVida();
             loadDashboardEmpresa();
             loadDashboardFinanceiro();
@@ -3184,13 +3436,11 @@
             
             const colaboradoresAtivos = colaboradores.filter(c => c.status === 'Ativo');
             
-            // Filtrar aniversariantes por período se aplicável
             const aniversariantesVida = colaboradoresAtivos.filter(col => {
                 if (!col.dataNascimento) return false;
                 const dataNasc = new Date(col.dataNascimento);
                 
                 if (inicio || fim) {
-                    // Criar data do aniversário no ano do período
                     const anoInicio = inicio ? inicio.getFullYear() : new Date().getFullYear();
                     const anoFim = fim ? fim.getFullYear() : anoInicio;
                     
@@ -3201,7 +3451,6 @@
                     return dentroPeriodo;
                 }
                 
-                // Sem filtro: mostrar apenas mês atual
                 const hoje = new Date();
                 return dataNasc.getMonth() === hoje.getMonth();
             });
@@ -3268,7 +3517,6 @@
             
             const colaboradoresAtivos = colaboradores.filter(c => c.status === 'Ativo');
             
-            // Filtrar aniversariantes de empresa por período
             const aniversariantesEmpresa = colaboradoresAtivos.filter(col => {
                 if (!col.dataAdmissao) return false;
                 const dataAdm = new Date(col.dataAdmissao);
@@ -3348,7 +3596,6 @@
             
             const { inicio, fim } = getFiltroPeriodo();
             
-            // Filtrar pedidos por período de entrega
             const pedidosFiltrados = pedidos.filter(ped => {
                 if (!ped.dataEntrega) return false;
                 const dataEntrega = ped.dataEntrega.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
@@ -3397,7 +3644,7 @@
                     
                     <div class="card">
                         <div class="card-header">
-                            <h3>Pedidos no Período</h3>
+                            <h3>Total de Pedidos</h3>
                             <i class="fas fa-shopping-cart"></i>
                         </div>
                         <div class="card-value">${pedidosFiltrados.length}</div>
@@ -3494,7 +3741,6 @@
             
             const { inicio, fim } = getFiltroPeriodo();
             
-            // Filtrar pedidos por período
             const pedidosFiltrados = pedidos.filter(ped => {
                 if (!ped.dataEntrega) return false;
                 const dataEntrega = ped.dataEntrega.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
@@ -3508,7 +3754,6 @@
                 const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
                 pedidosPorMes[dataEntrega.getMonth()]++;
                 
-                // Contar sabores para o top 5
                 if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
                     const pizza1 = pizzas.find(pz => pz.id === ped.pizzaId1);
                     const pizza2 = pizzas.find(pz => pz.id === ped.pizzaId2);
@@ -3527,7 +3772,6 @@
                 }
             });
             
-            // Ordenar sabores e pegar top 5
             const topSabores = Object.entries(saboresCount)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
@@ -3701,18 +3945,15 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Pegar todos os colaboradores que têm data de nascimento
                 const colaboradoresComData = colaboradores.filter(col => {
                     return col.dataNascimento;
                 });
                 
-                // Adicionar informação de dias até o próximo aniversário para ordenação
                 colaboradoresComData.forEach(col => {
                     const dataNasc = parseDateISO(col.dataNascimento) || new Date(col.dataNascimento);
                     col.diasAteAniversario = getDaysUntilNextBirthday(dataNasc);
                 });
                 
-                // Ordenar por proximidade da data
                 colaboradoresComData.sort((a, b) => a.diasAteAniversario - b.diasAteAniversario);
                 
                 for (const col of colaboradoresComData) {
@@ -3723,14 +3964,12 @@
                     container.appendChild(card);
                 }
                 
-                // Aplicar filtro inicial para mostrar apenas mês atual
                 const filtroMes = document.getElementById('filtroMesVida');
                 if (filtroMes) {
                     filtroMes.value = mesAtual + 1;
                 }
                 filterVida();
                 
-                // Inicializar Sortable para cada checklist após renderizar
                 setTimeout(() => {
                     document.querySelectorAll('.checklist-sortable').forEach((element) => {
                         const colaboradorId = element.dataset.colaboradorId;
@@ -3766,7 +4005,6 @@
             const idade = calculateAge(dataNascimento);
             const mesNascimento = dataNascimento.getMonth() + 1;
             
-            // Adicionar atributo de mês para filtro
             card.dataset.mesNascimento = mesNascimento;
             
             if (colaborador.status === 'Inativo') {
@@ -3796,7 +4034,6 @@
                     </span>
                 </div>
                 
-                <!-- Campo de Observação (Texto do Aniversário) -->
                 <div class="observacao-container">
                     <div class="observacao-header">
                         <span><i class="fas fa-pen"></i> Texto do Aniversário</span>
@@ -3857,7 +4094,6 @@
             return card;
         }
 
-        // Funções para Observação
         function toggleObservacao(colaboradorId) {
             const texto = document.getElementById(`observacaoText-${colaboradorId}`);
             const btnText = document.getElementById(`observacaoBtnText-${colaboradorId}`);
@@ -3902,21 +4138,18 @@
             
             showLoading();
             try {
-                // Verificar se já existe uma observação
                 const observacaoSnapshot = await db.collection('observacoes')
                     .where('colaboradorId', '==', colaboradorId)
                     .where('tipo', '==', tipo)
                     .get();
                 
                 if (!observacaoSnapshot.empty) {
-                    // Atualizar existente
                     const doc = observacaoSnapshot.docs[0];
                     await db.collection('observacoes').doc(doc.id).update({
                         texto,
                         dataAtualizacao: new Date()
                     });
                 } else {
-                    // Criar nova
                     await db.collection('observacoes').add({
                         colaboradorId,
                         tipo,
@@ -3925,7 +4158,6 @@
                     });
                 }
                 
-                // Recarregar a seção atual para mostrar o texto salvo
                 await loadSection(currentSection);
                 
                 cancelarEdicaoObservacao(colaboradorId);
@@ -3956,7 +4188,6 @@
                     await batch.commit();
                 }
                 
-                // Recarregar a seção atual
                 await loadSection(currentSection);
                 
                 showToast('Texto excluído com sucesso!', 'success');
@@ -3968,11 +4199,9 @@
             }
         }
 
-        // Função para reordenar checklist
         async function reordenarChecklist(colaboradorId, oldIndex, newIndex) {
             showLoading();
             try {
-                // Buscar o documento do checklist
                 const checklistSnapshot = await db.collection('checklists')
                     .where('colaboradorId', '==', colaboradorId)
                     .get();
@@ -3982,7 +4211,6 @@
                     const data = doc.data();
                     const itens = data.itens || [];
                     
-                    // Reordenar array
                     const [movedItem] = itens.splice(oldIndex, 1);
                     itens.splice(newIndex, 0, movedItem);
                     
@@ -4154,18 +4382,15 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Pegar todos os colaboradores que têm data de admissão
                 const colaboradoresComData = colaboradores.filter(col => {
                     return col.dataAdmissao;
                 });
                 
-                // Adicionar informação de dias até o próximo aniversário para ordenação
                 colaboradoresComData.forEach(col => {
                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
                     col.diasAteAniversarioEmpresa = getDaysUntilNextCompanyAnniversary(dataAdm);
                 });
                 
-                // Ordenar por proximidade da data
                 colaboradoresComData.sort((a, b) => a.diasAteAniversarioEmpresa - b.diasAteAniversarioEmpresa);
                 
                 for (const col of colaboradoresComData) {
@@ -4176,14 +4401,12 @@
                     container.appendChild(card);
                 }
                 
-                // Aplicar filtro inicial para mostrar apenas mês atual
                 const filtroMes = document.getElementById('filtroMesEmpresa');
                 if (filtroMes) {
                     filtroMes.value = mesAtual + 1;
                 }
                 filterEmpresa();
                 
-                // Inicializar Sortable para cada checklist após renderizar
                 setTimeout(() => {
                     document.querySelectorAll('.checklist-sortable').forEach((element) => {
                         const colaboradorId = element.dataset.colaboradorId;
@@ -4219,7 +4442,6 @@
             const anosEmpresa = new Date().getFullYear() - dataAdmissao.getFullYear();
             const mesAdmissao = dataAdmissao.getMonth() + 1;
             
-            // Adicionar atributo de mês para filtro
             card.dataset.mesAdmissao = mesAdmissao;
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
@@ -4237,13 +4459,12 @@
                 card.classList.add('mongagua-alert');
             }
             
-            // Renderizar pedidos existentes
             let pedidosHtml = '';
             if (pedidosExistentes && pedidosExistentes.length > 0) {
                 pedidosExistentes.sort((a, b) => {
                     const dataA = a.dataEntrega?.toDate ? a.dataEntrega.toDate() : new Date(a.dataEntrega);
                     const dataB = b.dataEntrega?.toDate ? b.dataEntrega.toDate() : new Date(b.dataEntrega);
-                    return dataB - dataA; // Mais recentes primeiro
+                    return dataB - dataA;
                 });
                 
                 pedidosExistentes.forEach(pedido => {
@@ -4263,6 +4484,7 @@
                         <div class="pedido-existente">
                             <h5>
                                 Pedido ${pedido.dataEntregaBR || ''} - ${pedido.horarioEntrega || ''}
+                                ${pedido.tipoBonus ? '<span class="badge success" style="margin-left: 5px;"><i class="fas fa-gift"></i> Bonificação</span>' : ''}
                                 <span class="pedido-existente-actions">
                                     <button class="edit" onclick="openEditPizzaModal('${pedido.id}')">
                                         <i class="fas fa-edit"></i>
@@ -4302,7 +4524,6 @@
                 
                 ${isMongagua && colaborador.status === 'Ativo' ? '<div class="badge warning" style="margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i> Verificar disponibilidade de entrega</div>' : ''}
                 
-                <!-- Pedidos existentes -->
                 ${pedidosHtml}
                 
                 <div class="checklist-container">
@@ -4354,7 +4575,6 @@
                         </div>
                     </div>
                     
-                    <!-- Campo para Pizza Inteira -->
                     <div class="pizza-order-field pizza-fields pizza-inteira-${colaboradorId} active" id="pizzaInteiraField-${colaboradorId}">
                         <label>Pizza</label>
                         <select id="pizzaSelect1-${colaboradorId}" class="pizza-select">
@@ -4363,7 +4583,6 @@
                         </select>
                     </div>
                     
-                    <!-- Campos para Meia a Meia -->
                     <div class="pizza-order-field pizza-fields pizza-meia-${colaboradorId}" id="pizzaMeia1Field-${colaboradorId}" style="display: none;">
                         <label>1ª Metade</label>
                         <select id="pizzaSelect1-${colaboradorId}" class="pizza-select">
@@ -4439,12 +4658,10 @@
         function togglePizzaFields(colaboradorId) {
             const tipo = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
             
-            // Esconder todos os campos de pizza
             document.getElementById(`pizzaInteiraField-${colaboradorId}`).style.display = 'none';
             document.getElementById(`pizzaMeia1Field-${colaboradorId}`).style.display = 'none';
             document.getElementById(`pizzaMeia2Field-${colaboradorId}`).style.display = 'none';
             
-            // Mostrar apenas os campos do tipo selecionado
             if (tipo === 'inteira') {
                 document.getElementById(`pizzaInteiraField-${colaboradorId}`).style.display = 'block';
             } else if (tipo === 'meia') {
@@ -4456,60 +4673,40 @@
         // Load Controle Financeiro
         async function loadFinanceiro(container) {
             container.innerHTML = `
+                <div class="add-button-container">
+                    <button class="btn-add" onclick="openPizzaBonusModal()">
+                        <i class="fas fa-gift"></i> Bonificar Colaborador com Pizza
+                    </button>
+                </div>
+                
                 <div class="filters-container" id="financeiroFilters">
                     <div class="filters-header" onclick="toggleFilters('financeiro')">
                         <span><i class="fas fa-filter"></i> Filtros Avançados</span>
                         <i class="fas fa-chevron-down" id="financeiroFiltersIcon"></i>
                     </div>
-                    <div class="filters-content" id="financeiroFiltersContent">
+                    <div class="filters-content expanded" id="financeiroFiltersContent">
                         <div class="filters-grid">
                             <div class="filter-group">
-                                <label>Mês Inicial</label>
-                                <select id="filtroMesInicial">
-                                    <option value="1">Janeiro</option>
-                                    <option value="2">Fevereiro</option>
-                                    <option value="3">Março</option>
-                                    <option value="4">Abril</option>
-                                    <option value="5">Maio</option>
-                                    <option value="6">Junho</option>
-                                    <option value="7">Julho</option>
-                                    <option value="8">Agosto</option>
-                                    <option value="9">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
+                                <label>Data Inicial (DD/MM/AAAA)</label>
+                                <input type="text" id="filtroDataInicial" placeholder="DD/MM/AAAA" oninput="applyDateMask(this); aplicarFiltroFinanceiroAuto();">
+                            </div>
+                            <div class="filter-group">
+                                <label>Data Final (DD/MM/AAAA)</label>
+                                <input type="text" id="filtroDataFinal" placeholder="DD/MM/AAAA" oninput="applyDateMask(this); aplicarFiltroFinanceiroAuto();">
+                            </div>
+                            <div class="filter-group">
+                                <label>Status</label>
+                                <select id="filtroStatusFinanceiro" onchange="aplicarFiltroFinanceiroAuto()">
+                                    <option value="">Todos</option>
+                                    <option value="entregue">Entregue</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="cancelado">Cancelado</option>
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label>Ano Inicial</label>
-                                <input type="number" id="filtroAnoInicial" value="${new Date().getFullYear()}">
+                                <label>Colaborador</label>
+                                <input type="text" id="filtroColaboradorFinanceiro" placeholder="Buscar por nome..." oninput="aplicarFiltroFinanceiroAuto()">
                             </div>
-                            <div class="filter-group">
-                                <label>Mês Final</label>
-                                <select id="filtroMesFinal">
-                                    <option value="1">Janeiro</option>
-                                    <option value="2">Fevereiro</option>
-                                    <option value="3">Março</option>
-                                    <option value="4">Abril</option>
-                                    <option value="5">Maio</option>
-                                    <option value="6">Junho</option>
-                                    <option value="7">Julho</option>
-                                    <option value="8">Agosto</option>
-                                    <option value="9">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label>Ano Final</label>
-                                <input type="number" id="filtroAnoFinal" value="${new Date().getFullYear()}">
-                            </div>
-                        </div>
-                        <div style="margin-top: 15px;">
-                            <button class="btn btn-primary" onclick="applyFinanceiroFilters()">
-                                <i class="fas fa-search"></i> Aplicar Filtros
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -4535,12 +4732,13 @@
                                 <th>Data Entrega</th>
                                 <th>Valor</th>
                                 <th>Status</th>
+                                <th>Bonificação</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="pedidosTableBody">
                             <tr>
-                                <td colspan="7" style="text-align: center; color: var(--secondary);">
+                                <td colspan="8" style="text-align: center; color: var(--secondary);">
                                     Nenhum pedido encontrado
                                 </td>
                             </tr>
@@ -4549,29 +4747,57 @@
                 </div>
             `;
 
+            // Adicionar listeners para filtros automáticos
+            const dataInicial = document.getElementById('filtroDataInicial');
+            const dataFinal = document.getElementById('filtroDataFinal');
+            
+            if (dataInicial) {
+                dataInicial.addEventListener('input', () => {
+                    if (financeiroFilterTimeout) clearTimeout(financeiroFilterTimeout);
+                    financeiroFilterTimeout = setTimeout(() => aplicarFiltroFinanceiroAuto(), 500);
+                });
+            }
+            
+            if (dataFinal) {
+                dataFinal.addEventListener('input', () => {
+                    if (financeiroFilterTimeout) clearTimeout(financeiroFilterTimeout);
+                    financeiroFilterTimeout = setTimeout(() => aplicarFiltroFinanceiroAuto(), 500);
+                });
+            }
+
             await loadFinanceiroData();
+        }
+
+        function aplicarFiltroFinanceiroAuto() {
+            loadFinanceiroData();
         }
 
         async function loadFinanceiroData() {
             showLoading();
             try {
-                const pedidosSnapshot = await db.collection('pedidos').get();
-                const pedidos = pedidosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                await loadAllData();
                 
-                const colaboradoresSnapshot = await db.collection('colaboradores').get();
+                const dataInicialStr = document.getElementById('filtroDataInicial')?.value;
+                const dataFinalStr = document.getElementById('filtroDataFinal')?.value;
+                const statusFiltro = document.getElementById('filtroStatusFinanceiro')?.value;
+                const colaboradorFiltro = document.getElementById('filtroColaboradorFinanceiro')?.value?.toLowerCase() || '';
+                
+                const dataInicial = dataInicialStr && validateDateBR(dataInicialStr) ? parseDateBR(dataInicialStr) : null;
+                const dataFinal = dataFinalStr && validateDateBR(dataFinalStr) ? parseDateBR(dataFinalStr) : null;
+                
+                if (dataFinal) {
+                    dataFinal.setHours(23, 59, 59, 999);
+                }
+                
                 const colaboradoresMap = {};
-                colaboradoresSnapshot.docs.forEach(doc => {
-                    colaboradoresMap[doc.id] = { id: doc.id, ...doc.data() };
+                colaboradores.forEach(col => {
+                    colaboradoresMap[col.id] = col;
                 });
                 
-                const pizzasSnapshot = await db.collection('pizzas').get();
                 const pizzasMap = {};
-                pizzasSnapshot.docs.forEach(doc => {
-                    pizzasMap[doc.id] = { id: doc.id, ...doc.data() };
+                pizzas.forEach(pizza => {
+                    pizzasMap[pizza.id] = pizza;
                 });
-                
-                const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
-                valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 for (const pedido of pedidos) {
                     const colaborador = colaboradoresMap[pedido.colaboradorId];
@@ -4587,6 +4813,9 @@
                         }
                     }
                 }
+                
+                const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
+                valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 const valoresAbertosAtualizados = [];
                 for (const valor of valoresAbertos) {
@@ -4609,52 +4838,60 @@
                 
                 valoresAbertos = valoresAbertosAtualizados;
                 
+                // Filtrar pedidos para exibição
+                const pedidosFiltrados = pedidos.filter(ped => {
+                    const colaborador = colaboradoresMap[ped.colaboradorId];
+                    if (!colaborador) return false;
+                    
+                    if (colaboradorFiltro && !colaborador.nome.toLowerCase().includes(colaboradorFiltro)) {
+                        return false;
+                    }
+                    
+                    if (statusFiltro && ped.status !== statusFiltro) {
+                        return false;
+                    }
+                    
+                    if (dataInicial || dataFinal) {
+                        const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
+                        
+                        if (dataInicial && dataEntrega < dataInicial) return false;
+                        if (dataFinal && dataEntrega > dataFinal) return false;
+                    }
+                    
+                    return true;
+                });
+                
                 // Calcular totais
                 let totalGasto = 0;
-                let totalPedidos = 0;
-                let pizzarias = new Set();
+                let totalPedidos = pedidosFiltrados.length;
                 
-                for (const pedido of pedidos) {
-                    const colaborador = colaboradoresMap[pedido.colaboradorId];
-                    if (!colaborador) continue;
-                    
-                    totalPedidos++;
-                    
-                    if (pedido.tipoPizza === 'meia' && pedido.pizzaId1 && pedido.pizzaId2) {
-                        const pizza1 = pizzasMap[pedido.pizzaId1];
-                        const pizza2 = pizzasMap[pedido.pizzaId2];
-                        
-                        if (pizza1 && pizza2) {
-                            totalGasto += (parseFloat(pizza1.valor) + parseFloat(pizza2.valor)) / 2;
-                            pizzarias.add(pizza1.pizzaria);
-                            pizzarias.add(pizza2.pizzaria);
-                        }
-                    } else if (pedido.pizzaId || pedido.pizzaId1) {
-                        const pizza = pizzasMap[pedido.pizzaId || pedido.pizzaId1];
-                        if (pizza) {
-                            totalGasto += parseFloat(pizza.valor) || 0;
-                            pizzarias.add(pizza.pizzaria);
+                pedidosFiltrados.forEach(ped => {
+                    if (ped.status === 'entregue') {
+                        if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
+                            const pizza1 = pizzasMap[ped.pizzaId1];
+                            const pizza2 = pizzasMap[ped.pizzaId2];
+                            
+                            if (pizza1 && pizza2) {
+                                totalGasto += (parseFloat(pizza1.valor) + parseFloat(pizza2.valor)) / 2;
+                            }
+                        } else if (ped.pizzaId || ped.pizzaId1) {
+                            const pizza = pizzasMap[ped.pizzaId || ped.pizzaId1];
+                            if (pizza) {
+                                totalGasto += parseFloat(pizza.valor) || 0;
+                            }
                         }
                     }
-                }
+                });
                 
                 const cardsContainer = document.getElementById('financeiroCards');
                 if (cardsContainer) {
                     cardsContainer.innerHTML = `
                         <div class="card">
                             <div class="card-header">
-                                <h3>Gasto Total</h3>
+                                <h3>Gasto Total (Entregues)</h3>
                                 <i class="fas fa-dollar-sign"></i>
                             </div>
                             <div class="card-value">R$ ${totalGasto.toFixed(2)}</div>
-                        </div>
-                        
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>Pizzarias Ativas</h3>
-                                <i class="fas fa-store"></i>
-                            </div>
-                            <div class="card-value">${pizzarias.size}</div>
                         </div>
                         
                         <div class="card">
@@ -4671,6 +4908,14 @@
                                 <i class="fas fa-calculator"></i>
                             </div>
                             <div class="card-value">R$ ${totalPedidos > 0 ? (totalGasto / totalPedidos).toFixed(2) : '0.00'}</div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Bonificações</h3>
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="card-value">${pedidosFiltrados.filter(p => p.tipoBonus).length}</div>
                         </div>
                     `;
                 }
@@ -4767,10 +5012,15 @@
                 if (tbody) {
                     tbody.innerHTML = '';
                     
-                    // Filtrar apenas pedidos que têm colaborador válido
-                    const pedidosComColaborador = pedidos.filter(p => colaboradoresMap[p.colaboradorId]);
+                    const pedidosComColaborador = pedidosFiltrados.filter(p => colaboradoresMap[p.colaboradorId]);
                     
                     if (pedidosComColaborador.length > 0) {
+                        pedidosComColaborador.sort((a, b) => {
+                            const dataA = a.dataEntrega?.toDate ? a.dataEntrega.toDate() : new Date(a.dataEntrega);
+                            const dataB = b.dataEntrega?.toDate ? b.dataEntrega.toDate() : new Date(b.dataEntrega);
+                            return dataB - dataA;
+                        });
+                        
                         for (const pedido of pedidosComColaborador) {
                             const colaborador = colaboradoresMap[pedido.colaboradorId];
                             
@@ -4813,6 +5063,9 @@
                                 <td>
                                     <span class="badge ${pedido.status === 'entregue' ? 'entregue' : pedido.status === 'cancelado' ? 'cancelado' : 'pendente'}">${pedido.status || 'pendente'}</span>
                                 </td>
+                                <td>
+                                    ${pedido.tipoBonus ? '<span class="badge success"><i class="fas fa-gift"></i> Sim</span>' : '-'}
+                                </td>
                                 <td class="action-buttons">
                                     <button class="edit" onclick="openStatusModal('${pedido.id}')">
                                         <i class="fas fa-edit"></i> Editar Status
@@ -4822,7 +5075,7 @@
                             tbody.appendChild(row);
                         }
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--secondary);">Nenhum pedido encontrado</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--secondary);">Nenhum pedido encontrado</td></tr>';
                     }
                 }
             } catch (error) {
@@ -5072,7 +5325,6 @@
             document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
         }
 
-        // Filter Functions for Cadastros
         function filterColaboradores() {
             const nome = document.getElementById('filtroNomeColab')?.value?.toLowerCase() || '';
             const cidade = document.getElementById('filtroCidadeColab')?.value || '';
@@ -5136,7 +5388,6 @@
             });
         }
 
-        // Colaborador Functions
         async function loadColaboradoresList() {
             showLoading();
             try {
@@ -5217,7 +5468,6 @@
             }
         }
 
-        // Clear All Colaboradores Function
         async function clearAllColaboradores() {
             const confirmInput = document.getElementById('confirmClearInput').value;
             
@@ -5228,22 +5478,12 @@
             
             showLoading();
             try {
-                // Buscar todos os colaboradores
                 const colaboradoresSnapshot = await db.collection('colaboradores').get();
-                
-                // Buscar todos os pedidos
                 const pedidosSnapshot = await db.collection('pedidos').get();
-                
-                // Buscar todas as observações
                 const observacoesSnapshot = await db.collection('observacoes').get();
-                
-                // Buscar todos os checklists
                 const checklistsSnapshot = await db.collection('checklists').get();
-                
-                // Buscar todos os valores em aberto
                 const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
                 
-                // Criar batch para deletar tudo
                 const batch = db.batch();
                 
                 colaboradoresSnapshot.docs.forEach(doc => {
@@ -5281,7 +5521,6 @@
             }
         }
 
-        // Empresa Functions
         async function loadEmpresasList() {
             showLoading();
             try {
@@ -5361,7 +5600,6 @@
             }
         }
 
-        // Departamento Functions
         async function loadDepartamentosList() {
             showLoading();
             try {
@@ -5441,7 +5679,6 @@
             }
         }
 
-        // Pizza Functions
         async function loadPizzasList() {
             showLoading();
             try {
@@ -5544,7 +5781,6 @@
             }
         }
 
-        // Pizza Order Functions
         async function savePizzaOrder(colaboradorId) {
             const tipoPizza = document.querySelector(`input[name="tipoPizza-${colaboradorId}"]:checked`)?.value;
             const pizzaSelect1 = document.getElementById(`pizzaSelect1-${colaboradorId}`);
@@ -5604,7 +5840,6 @@
                 
                 await db.collection('pedidos').add(pedidoData);
                 
-                // Limpar formulário
                 document.getElementById(`pizzaSelect1-${colaboradorId}`).value = '';
                 if (pizzaSelect2) pizzaSelect2.value = '';
                 document.getElementById(`pizzaData-${colaboradorId}`).value = '';
@@ -5619,7 +5854,6 @@
                 togglePizzaOrder(colaboradorId);
                 await loadAllData();
                 
-                // Recarregar a seção para mostrar o novo pedido
                 if (currentSection === 'empresa') {
                     await loadEmpresa(document.getElementById('mainContent'));
                 }
@@ -5633,7 +5867,6 @@
             }
         }
 
-        // Valor em Aberto Functions
         async function criarValorAbertoParaInativo(colaboradorId, dataInativacao) {
             try {
                 const pedidosSnapshot = await db.collection('pedidos')
@@ -5780,11 +6013,9 @@
             }
         }
 
-        // Checklist Functions
         async function toggleChecklistItem(colaboradorId, index) {
             showLoading();
             try {
-                // Buscar o documento do checklist
                 const checklistSnapshot = await db.collection('checklists')
                     .where('colaboradorId', '==', colaboradorId)
                     .get();
@@ -5819,7 +6050,6 @@
                     
                     showToast('Checklist atualizado com sucesso!', 'success');
                 } else {
-                    // Criar novo checklist se não existir
                     const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
                     const itens = getDefaultChecklistItems(tipo);
                     itens[index].checked = !itens[index].checked;
@@ -5852,7 +6082,6 @@
             
             showLoading();
             try {
-                // Buscar o documento do checklist
                 const checklistSnapshot = await db.collection('checklists')
                     .where('colaboradorId', '==', colaboradorId)
                     .get();
@@ -5890,7 +6119,6 @@
                     });
                 }
                 
-                // Recarregar a seção atual para mostrar o novo item
                 if (currentSection === 'vida') {
                     await loadVida(document.getElementById('mainContent'));
                 } else if (currentSection === 'empresa') {
@@ -5922,7 +6150,6 @@
             
             showLoading();
             try {
-                // Buscar o documento do checklist
                 const checklistSnapshot = await db.collection('checklists')
                     .where('colaboradorId', '==', colaboradorId)
                     .get();
@@ -5959,7 +6186,6 @@
             
             showLoading();
             try {
-                // Buscar o documento do checklist
                 const checklistSnapshot = await db.collection('checklists')
                     .where('colaboradorId', '==', colaboradorId)
                     .get();
@@ -5976,7 +6202,6 @@
                         dataAtualizacao: new Date()
                     });
                     
-                    // Recarregar a seção atual para mostrar os itens atualizados
                     if (currentSection === 'vida') {
                         await loadVida(document.getElementById('mainContent'));
                     } else if (currentSection === 'empresa') {
@@ -5993,7 +6218,6 @@
             }
         }
 
-        // Modal Save Functions
         async function saveColaboradorModal() {
             const nome = document.getElementById('modalColabNome').value.trim();
             const dataNascimento = document.getElementById('modalColabNascimento').value;
@@ -6117,7 +6341,6 @@
             }
         }
 
-        // Load Relatórios
         async function loadRelatorios(container) {
             await loadAllData();
             
@@ -6185,7 +6408,6 @@
                 </div>
             `;
 
-            // Adicionar listeners para filtros automáticos
             const periodoInicial = document.getElementById('filtroPeriodoInicial');
             const periodoFinal = document.getElementById('filtroPeriodoFinal');
             
@@ -6199,7 +6421,6 @@
                 applyDateMask(periodoFinal);
             }
             
-            // Aplicar filtro inicial automaticamente
             setTimeout(() => aplicarFiltroRelatorio(), 500);
         }
 
@@ -6228,6 +6449,10 @@
                 
                 const dataInicial = periodoInicial && periodoInicial.length === 10 ? parseDateBR(periodoInicial) : null;
                 const dataFinal = periodoFinal && periodoFinal.length === 10 ? parseDateBR(periodoFinal) : null;
+                
+                if (dataFinal) {
+                    dataFinal.setHours(23, 59, 59, 999);
+                }
                 
                 switch(tipoRelatorio) {
                     case 'colaboradores':
@@ -6284,7 +6509,8 @@
                                     'Cidade': ped.local || '-',
                                     'Borda': ped.borda || 'Sem recheio',
                                     'Valor': calcularValorPedido(ped).toFixed(2),
-                                    'Status': ped.status || 'pendente'
+                                    'Status': ped.status || 'pendente',
+                                    'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
                             });
                         break;
@@ -6319,7 +6545,8 @@
                                     'Pizza': pizzaInfo,
                                     'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
                                     'Valor': `R$ ${valor.toFixed(2)}`,
-                                    'Status': ped.status
+                                    'Status': ped.status,
+                                    'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
                             });
                         break;
@@ -6363,7 +6590,7 @@
                         }
                         break;
                         
-                    default: // 'todos'
+                    default:
                         titulo = 'Relatório Completo';
                         dadosFiltrados = colaboradores.map(col => {
                             const idade = col.dataNascimento ? calculateAge(col.dataNascimento) : '-';
@@ -6382,7 +6609,6 @@
                         });
                 }
                 
-                // Ordenar dados
                 if (dadosFiltrados.length > 0) {
                     const primeiraChave = Object.keys(dadosFiltrados[0])[0];
                     dadosFiltrados.sort((a, b) => (a[primeiraChave] || '').localeCompare(b[primeiraChave] || ''));
@@ -6435,13 +6661,11 @@
             let html = `<h4 style="margin-bottom: 15px;">${titulo} - Total: ${dados.length} registro(s)</h4>`;
             html += '<table><thead><tr>';
             
-            // Cabeçalho
             Object.keys(dados[0]).forEach(key => {
                 html += `<th>${key}</th>`;
             });
             html += '</tr></thead><tbody>';
             
-            // Linhas
             dados.forEach(item => {
                 html += '<tr>';
                 Object.values(item).forEach(valor => {
@@ -6467,7 +6691,6 @@
                 let dados = [];
                 let nomeArquivo = `relatorio_${tipoRelatorio}_${new Date().toISOString().split('T')[0]}`;
                 
-                // Reutilizar a mesma lógica de filtragem
                 switch(tipoRelatorio) {
                     case 'colaboradores':
                         dados = colaboradores
@@ -6513,7 +6736,8 @@
                                     'Cidade': ped.local || '-',
                                     'Borda': ped.borda || 'Sem recheio',
                                     'Valor': calcularValorPedido(ped).toFixed(2),
-                                    'Status': ped.status || 'pendente'
+                                    'Status': ped.status || 'pendente',
+                                    'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
                             });
                         break;
@@ -6541,7 +6765,8 @@
                                     'Pizza': pizzaInfo,
                                     'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
                                     'Valor': `R$ ${valor.toFixed(2)}`,
-                                    'Status': ped.status
+                                    'Status': ped.status,
+                                    'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
                             });
                         break;
@@ -6625,19 +6850,6 @@
             }
         }
 
-        // Helper Functions
-        async function loadEmpresasDropDowns() {
-            try {
-                const empresasSnapshot = await db.collection('empresas').get();
-                empresas = empresasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                const departamentosSnapshot = await db.collection('departamentos').get();
-                departamentos = departamentosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } catch (error) {
-                console.error('Error loading dropdowns:', error);
-            }
-        }
-
         function toggleChecklist(colaboradorId) {
             const checklist = document.getElementById(`checklist-${colaboradorId}`);
             const icon = document.getElementById(`checklistIcon-${colaboradorId}`);
@@ -6658,7 +6870,6 @@
             }
         }
 
-        // Filter Functions for Vida and Empresa
         function filterVida() {
             const nome = document.getElementById('filtroNomeVida')?.value?.toLowerCase() || '';
             const mes = document.getElementById('filtroMesVida')?.value;
@@ -6676,19 +6887,15 @@
                 
                 let show = true;
                 
-                // Filtro por status
                 if (statusFilter === 'ativos' && colaboradorStatus === 'Inativo') show = false;
                 if (statusFilter === 'inativos' && colaboradorStatus === 'Ativo') show = false;
                 
-                // Filtro por nome
                 if (nome && !nomeColaborador.includes(nome)) show = false;
                 
-                // Filtro por mês - se selecionado, mostra apenas os do mês selecionado
                 if (mes) {
                     if (!mesNascimento || parseInt(mesNascimento) !== parseInt(mes)) show = false;
                 }
                 
-                // Filtro por ano
                 if (ano && dataMatch) {
                     const anoCard = parseInt(dataMatch[3]);
                     if (anoCard !== parseInt(ano)) show = false;
@@ -6715,19 +6922,15 @@
                 
                 let show = true;
                 
-                // Filtro por status
                 if (statusFilter === 'ativos' && colaboradorStatus === 'Inativo') show = false;
                 if (statusFilter === 'inativos' && colaboradorStatus === 'Ativo') show = false;
                 
-                // Filtro por nome
                 if (nome && !nomeColaborador.includes(nome)) show = false;
                 
-                // Filtro por mês - se selecionado, mostra apenas os do mês selecionado
                 if (mes) {
                     if (!mesAdmissao || parseInt(mesAdmissao) !== parseInt(mes)) show = false;
                 }
                 
-                // Filtro por ano
                 if (ano && dataMatch) {
                     const anoCard = parseInt(dataMatch[3]);
                     if (anoCard !== parseInt(ano)) show = false;
@@ -6735,11 +6938,6 @@
                 
                 card.style.display = show ? 'block' : 'none';
             });
-        }
-
-        function applyFinanceiroFilters() {
-            showToast('Filtros aplicados com sucesso!', 'success');
-            loadFinanceiro(document.getElementById('mainContent'));
         }
 
         // Initialize
