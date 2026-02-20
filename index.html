@@ -7323,6 +7323,7 @@
             }
         }
 
+        // CORREÇÃO APLICADA AQUI: Função removeChecklistItem corrigida
         async function removeChecklistItem(colaboradorId, index) {
             if (!confirm('Tem certeza que deseja remover este item?')) return;
             
@@ -7337,17 +7338,41 @@
                     const data = doc.data();
                     const itens = data.itens || [];
                     
+                    // Remover o item do array
                     itens.splice(index, 1);
                     
+                    // Atualizar no Firebase
                     await doc.ref.update({
                         itens,
                         dataAtualizacao: new Date()
                     });
                     
-                    if (currentSection === 'vida') {
-                        await loadVida(document.getElementById('mainContent'));
-                    } else if (currentSection === 'empresa') {
-                        await loadEmpresa(document.getElementById('mainContent'));
+                    // Atualizar a interface imediatamente sem recarregar toda a página
+                    const checklistContainer = document.getElementById(`checklist-${colaboradorId}`);
+                    if (checklistContainer) {
+                        // Re-renderizar apenas o checklist
+                        const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
+                        checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
+                        
+                        // Re-inicializar o Sortable para este checklist
+                        const sortableElement = document.getElementById(`checklistSortable-${colaboradorId}`);
+                        if (sortableElement && !sortableInstances[colaboradorId]) {
+                            sortableInstances[colaboradorId] = new Sortable(sortableElement, {
+                                animation: 150,
+                                handle: '.drag-handle',
+                                onEnd: function(evt) {
+                                    reordenarChecklist(colaboradorId, evt.oldIndex, evt.newIndex);
+                                }
+                            });
+                        }
+                        
+                        // Atualizar a barra de progresso
+                        const progressBar = document.getElementById(`progress-${colaboradorId}`);
+                        if (progressBar) {
+                            const checked = itens.filter(item => item.checked).length;
+                            const progress = itens.length > 0 ? (checked / itens.length) * 100 : 0;
+                            progressBar.style.width = `${progress}%`;
+                        }
                     }
                     
                     showToast('Item removido com sucesso!', 'success');
