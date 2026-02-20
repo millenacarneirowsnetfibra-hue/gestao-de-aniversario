@@ -665,7 +665,13 @@
             background-color: #fff3cd;
         }
 
-        .person-card.mongagua-alert .city-badge {
+        .person-card.peruibe-alert {
+            border-left: 4px solid var(--info);
+            background-color: #e6f3ff;
+        }
+
+        .person-card.mongagua-alert .city-badge,
+        .person-card.peruibe-alert .city-badge {
             background-color: var(--warning);
             color: var(--dark);
         }
@@ -710,6 +716,11 @@
         .city-badge.mongagua {
             background: var(--warning);
             color: var(--dark);
+        }
+
+        .city-badge.peruibe {
+            background: var(--info);
+            color: white;
         }
 
         .date-badge {
@@ -1288,6 +1299,11 @@
             color: #856404;
         }
 
+        .badge.info {
+            background: #cff3ff;
+            color: #0369a1;
+        }
+
         .badge.entregue {
             background: #d1fae5;
             color: #065f46;
@@ -1793,6 +1809,34 @@
             .dashboard-tabs-header {
                 flex-wrap: wrap;
             }
+        }
+
+        /* Alertas de cidade */
+        .alert-message {
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-mongagua {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--warning);
+            color: #856404;
+        }
+
+        .alert-peruibe {
+            background-color: #cff3ff;
+            border-left: 4px solid var(--info);
+            color: #0369a1;
+        }
+
+        .alert-mongagua i,
+        .alert-peruibe i {
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -3702,6 +3746,10 @@
                 if (!col.dataAdmissao) return false;
                 const dataAdm = new Date(col.dataAdmissao);
                 
+                // Filtra apenas colaboradores com 1 ano ou mais de empresa
+                const anosEmpresa = calculateAge(dataAdm);
+                if (anosEmpresa < 1) return false;
+                
                 if (inicio || fim) {
                     const anoInicio = inicio ? inicio.getFullYear() : new Date().getFullYear();
                     const anoFim = fim ? fim.getFullYear() : anoInicio;
@@ -3721,7 +3769,10 @@
             colaboradoresAtivos.forEach(c => {
                 if (c.dataAdmissao) {
                     const adm = new Date(c.dataAdmissao);
-                    aniversariosPorMes[adm.getMonth()]++;
+                    const anosEmpresa = calculateAge(adm);
+                    if (anosEmpresa >= 1) {
+                        aniversariosPorMes[adm.getMonth()]++;
+                    }
                 }
             });
             
@@ -4561,8 +4612,12 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
+                // Filtrar apenas colaboradores com 1 ano ou mais de empresa
                 const colaboradoresComData = colaboradores.filter(col => {
-                    return col.dataAdmissao;
+                    if (!col.dataAdmissao) return false;
+                    const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
+                    const anosEmpresa = calculateAge(dataAdm);
+                    return anosEmpresa >= 1;
                 });
                 
                 colaboradoresComData.forEach(col => {
@@ -4624,6 +4679,7 @@
             card.dataset.mesAdmissao = mesAdmissao;
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
+            const isPeruibe = colaborador.cidade === 'Peruíbe';
             
             if (colaborador.status === 'Inativo') {
                 card.classList.add('inactive');
@@ -4636,6 +4692,9 @@
             
             if (isMongagua && colaborador.status === 'Ativo') {
                 card.classList.add('mongagua-alert');
+            }
+            if (isPeruibe && colaborador.status === 'Ativo') {
+                card.classList.add('peruibe-alert');
             }
             
             let pedidosHtml = '';
@@ -4686,6 +4745,24 @@
                 });
             }
             
+            // Alertas para cidades com restrição de entrega
+            let alertaCidade = '';
+            if (isMongagua && colaborador.status === 'Ativo') {
+                alertaCidade = `
+                    <div class="alert-message alert-mongagua">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Atenção:</strong> Mongaguá - Verificar disponibilidade de entrega (algumas pizzarias não atendem)
+                    </div>
+                `;
+            } else if (isPeruibe && colaborador.status === 'Ativo') {
+                alertaCidade = `
+                    <div class="alert-message alert-peruibe">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Informação:</strong> Peruíbe - Confirmar com a pizzaria se há taxa de entrega adicional
+                    </div>
+                `;
+            }
+            
             card.innerHTML = `
                 <div class="person-card-header">
                     <div class="person-info">
@@ -4701,7 +4778,7 @@
                     </span>
                 </div>
                 
-                ${isMongagua && colaborador.status === 'Ativo' ? '<div class="badge warning" style="margin-bottom: 10px;"><i class="fas fa-exclamation-triangle"></i> Verificar disponibilidade de entrega</div>' : ''}
+                ${alertaCidade}
                 
                 ${pedidosHtml}
                 
@@ -6816,13 +6893,17 @@
                                 }
                                 if (col.dataAdmissao) {
                                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                                    dadosFiltrados.push({
-                                        'Colaborador': col.nome || '-',
-                                        'Tipo': 'Aniversário de Empresa',
-                                        'Data': formatDateBR(dataAdm),
-                                        'Tempo Empresa': calculateAge(dataAdm),
-                                        'Mês': dataAdm.getMonth() + 1
-                                    });
+                                    const anosEmpresa = calculateAge(dataAdm);
+                                    // Incluir apenas colaboradores com 1 ano ou mais
+                                    if (anosEmpresa >= 1) {
+                                        dadosFiltrados.push({
+                                            'Colaborador': col.nome || '-',
+                                            'Tipo': 'Aniversário de Empresa',
+                                            'Data': formatDateBR(dataAdm),
+                                            'Tempo Empresa': anosEmpresa,
+                                            'Mês': dataAdm.getMonth() + 1
+                                        });
+                                    }
                                 }
                             });
                         
@@ -7036,13 +7117,16 @@
                                 }
                                 if (col.dataAdmissao) {
                                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                                    dados.push({
-                                        'Colaborador': col.nome || '-',
-                                        'Tipo': 'Aniversário de Empresa',
-                                        'Data': formatDateBR(dataAdm),
-                                        'Tempo Empresa': calculateAge(dataAdm),
-                                        'Mês': dataAdm.getMonth() + 1
-                                    });
+                                    const anosEmpresa = calculateAge(dataAdm);
+                                    if (anosEmpresa >= 1) {
+                                        dados.push({
+                                            'Colaborador': col.nome || '-',
+                                            'Tipo': 'Aniversário de Empresa',
+                                            'Data': formatDateBR(dataAdm),
+                                            'Tempo Empresa': anosEmpresa,
+                                            'Mês': dataAdm.getMonth() + 1
+                                        });
+                                    }
                                 }
                             });
                         break;
