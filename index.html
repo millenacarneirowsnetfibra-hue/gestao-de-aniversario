@@ -1669,7 +1669,7 @@
         }
 
         .historico-lista {
-            max-height: 400px;
+            max-height: 300px;
             overflow-y: auto;
             background: var(--gray-100);
             border-radius: 8px;
@@ -1724,195 +1724,152 @@
             color: var(--danger);
         }
 
-        /* Relatórios */
-        .report-period {
+        .historico-actions {
             display: flex;
-            gap: 15px;
-            align-items: flex-end;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
         }
 
-        .report-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        .historico-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
         }
 
-        .report-card {
+        .historico-btn:hover {
+            background: var(--gray-200);
+        }
+
+        .historico-btn i {
+            font-size: 0.8rem;
+        }
+
+        /* Valores em Aberto */
+        .valores-abertos-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
             box-shadow: var(--shadow);
             margin-bottom: 20px;
-        }
-
-        .report-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .report-card-header h3 {
-            color: var(--dark);
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 20px 0;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            background: var(--gray-100);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--secondary);
-            margin-top: 5px;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .btn-export {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-export:hover {
-            background: #16a34a;
-        }
-
-        .btn-pdf {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-pdf:hover {
-            background: #dc2626;
-        }
-
-        .btn-excel {
-            background: #1d6f42;
-            color: white;
-        }
-
-        .btn-excel:hover {
-            background: #145c33;
-        }
-
-        /* Valores em Aberto */
-        .valores-abertos-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .valor-aberto-card {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: var(--shadow);
             border-left: 4px solid var(--warning);
         }
 
-        .valor-aberto-header {
+        .valores-abertos-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        .valor-aberto-colaborador {
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .valor-aberto-colaborador.inativo {
-            color: var(--danger);
-        }
-
-        .valor-aberto-colaborador i {
-            margin-right: 5px;
-        }
-
-        .valor-aberto-valor {
-            font-size: 1.2rem;
+        .valores-abertos-total {
+            font-size: 2rem;
             font-weight: 600;
             color: var(--warning);
         }
 
-        .valor-aberto-detalhes {
-            margin-top: 10px;
-            padding: 10px;
-            background: var(--gray-100);
-            border-radius: 4px;
+        .valores-abertos-label {
+            font-size: 0.9rem;
+            color: var(--secondary);
         }
 
-        .valor-aberto-item {
+        .utilizar-valor-btn {
+            background: var(--warning);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: 8px;
+            transition: all 0.2s ease;
         }
 
-        .valor-aberto-item input {
-            flex: 1;
-            padding: 8px;
+        .utilizar-valor-btn:hover {
+            background: #e68900;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .utilizacao-form {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .utilizacao-form.expanded {
+            max-height: 500px;
+        }
+
+        .utilizacao-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin: 20px 0;
+        }
+
+        .utilizacao-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .utilizacao-field label {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .utilizacao-field input {
+            padding: 10px;
             border: 1px solid var(--gray-200);
-            border-radius: 4px;
-            font-size: 0.9rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
         }
 
-        .valor-aberto-item .btn-sm {
-            white-space: nowrap;
+        .utilizacao-field input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .valor-aberto-total {
+        .utilizacoes-lista {
+            margin-top: 15px;
+        }
+
+        .utilizacao-item {
+            background: var(--gray-100);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--gray-200);
-            font-weight: 600;
+            font-size: 0.9rem;
         }
 
-        .valor-aberto-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
+        .utilizacao-descricao {
+            color: var(--dark);
+        }
+
+        .utilizacao-valor {
+            font-weight: 600;
+            color: var(--danger);
+        }
+
+        .utilizacao-data {
+            font-size: 0.8rem;
+            color: var(--gray-500);
         }
 
         /* Responsive */
@@ -1950,6 +1907,10 @@
 
             .dashboard-tabs-header {
                 flex-wrap: wrap;
+            }
+
+            .utilizacao-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -2329,49 +2290,39 @@
         </div>
     </div>
 
-    <!-- Adicionar Movimentação Modal -->
-    <div class="modal" id="modalAddMovimentacao">
+    <!-- Utilizar Valor Modal -->
+    <div class="modal" id="modalUtilizarValor">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <h3><i class="fas fa-exchange-alt"></i> Adicionar Movimentação</h3>
-                <i class="fas fa-times modal-close" onclick="closeAddMovimentacaoModal()"></i>
+                <h3><i class="fas fa-hand-holding-usd"></i> Utilizar Valor em Aberto</h3>
+                <i class="fas fa-times modal-close" onclick="closeUtilizarValorModal()"></i>
             </div>
             <div class="modal-body">
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Tipo de Movimentação</label>
-                    <select id="movimentacaoTipo">
-                        <option value="entrada">Entrada (Crédito)</option>
-                        <option value="saida">Saída (Débito)</option>
-                    </select>
+                    <label>Saldo Disponível</label>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning);" id="saldoDisponivelModal">
+                        R$ 0,00
+                    </div>
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Valor (R$)</label>
-                    <input type="number" id="movimentacaoValor" step="0.01" min="0" placeholder="0.00">
+                    <label>Descrição da Utilização *</label>
+                    <input type="text" id="utilizacaoDescricao" placeholder="Ex: Compra de material de escritório">
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Descrição</label>
-                    <textarea id="movimentacaoDescricao" rows="3" placeholder="Descreva a movimentação..."></textarea>
+                    <label>Valor a Utilizar (R$) *</label>
+                    <input type="number" id="utilizacaoValor" step="0.01" min="0.01" placeholder="0.00">
                 </div>
                 
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Data</label>
-                    <input type="text" id="movimentacaoData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
-                </div>
-                
-                <div class="form-group">
-                    <label>Colaborador Relacionado (opcional)</label>
-                    <select id="movimentacaoColaborador">
-                        <option value="">Nenhum</option>
-                        <!-- Será preenchido dinamicamente -->
-                    </select>
+                <div class="utilizacoes-lista" id="utilizacoesListaModal">
+                    <!-- Será preenchido dinamicamente -->
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeAddMovimentacaoModal()">Cancelar</button>
-                <button class="btn btn-success" onclick="salvarMovimentacao()">
-                    <i class="fas fa-save"></i> Salvar Movimentação
+                <button class="btn btn-secondary" onclick="closeUtilizarValorModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="confirmarUtilizacaoValor()">
+                    <i class="fas fa-check"></i> Confirmar Utilização
                 </button>
             </div>
         </div>
@@ -2462,6 +2413,7 @@
         let pizzas = [];
         let pedidos = [];
         let valoresAbertos = [];
+        let utilizacoes = [];
         let movimentacoes = [];
         let observacoes = [];
         let checklists = [];
@@ -2474,6 +2426,7 @@
         let dashboardFilterTimeout = null;
         let financeiroFilterTimeout = null;
         let sortableInstances = {};
+        let historicoExpanded = false;
 
         // Utility Functions
         function showLoading() {
@@ -3780,6 +3733,9 @@
                 
                 const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
                 valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const utilizacoesSnapshot = await db.collection('utilizacoes').get();
+                utilizacoes = utilizacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
                 const movimentacoesSnapshot = await db.collection('movimentacoes').get();
                 movimentacoes = movimentacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -5310,12 +5266,18 @@
                 
                 <div class="cards-grid" id="financeiroCards"></div>
                 
-                <div class="card" style="margin-bottom: 20px;">
-                    <div class="card-header">
-                        <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Valores em Aberto</h3>
-                        <span class="badge warning" id="valoresAbertosCount">0 pendente(s)</span>
+                <div class="valores-abertos-card">
+                    <div class="valores-abertos-header">
+                        <div>
+                            <div class="valores-abertos-label">Saldo Total em Aberto</div>
+                            <div class="valores-abertos-total" id="saldoValoresAbertos">R$ 0,00</div>
+                        </div>
+                        <button class="utilizar-valor-btn" onclick="abrirUtilizarValorModal()">
+                            <i class="fas fa-hand-holding-usd"></i> Utilizar Valor
+                        </button>
                     </div>
-                    <div class="valores-abertos-list" id="valoresAbertosList"></div>
+                    
+                    <div class="utilizacoes-lista" id="utilizacoesLista"></div>
                 </div>
                 
                 <div class="card" style="margin-bottom: 20px;">
@@ -5328,6 +5290,12 @@
                             <span class="badge info" id="totalMovimentacoes">0 registro(s)</span>
                         </div>
                         <div class="historico-lista" id="historicoMovimentacoesLista"></div>
+                        <div class="historico-actions">
+                            <button class="historico-btn" onclick="toggleHistorico()" id="historicoToggleBtn">
+                                <span id="historicoToggleText">Ver Mais</span>
+                                <i class="fas fa-chevron-down" id="historicoToggleIcon"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -5375,6 +5343,144 @@
             }
 
             await loadFinanceiroData();
+        }
+
+        function toggleHistorico() {
+            historicoExpanded = !historicoExpanded;
+            const lista = document.getElementById('historicoMovimentacoesLista');
+            const btnText = document.getElementById('historicoToggleText');
+            const icon = document.getElementById('historicoToggleIcon');
+            
+            if (historicoExpanded) {
+                lista.style.maxHeight = '600px';
+                btnText.textContent = 'Ver Menos';
+                icon.className = 'fas fa-chevron-up';
+            } else {
+                lista.style.maxHeight = '300px';
+                btnText.textContent = 'Ver Mais';
+                icon.className = 'fas fa-chevron-down';
+            }
+        }
+
+        function abrirUtilizarValorModal() {
+            const modal = document.getElementById('modalUtilizarValor');
+            if (!modal) return;
+            
+            const saldoTotal = valoresAbertos.reduce((total, valor) => total + valor.valor, 0);
+            document.getElementById('saldoDisponivelModal').textContent = `R$ ${saldoTotal.toFixed(2)}`;
+            document.getElementById('utilizacaoDescricao').value = '';
+            document.getElementById('utilizacaoValor').value = '';
+            
+            const utilizacoesLista = document.getElementById('utilizacoesListaModal');
+            if (utilizacoesLista) {
+                if (utilizacoes.length > 0) {
+                    let html = '<h5 style="margin-bottom: 10px;">Utilizações Anteriores:</h5>';
+                    utilizacoes.slice(0, 5).forEach(util => {
+                        html += `
+                            <div class="utilizacao-item">
+                                <div>
+                                    <div class="utilizacao-descricao">${util.descricao}</div>
+                                    <div class="utilizacao-data">${formatDateTimeBR(util.data)}</div>
+                                </div>
+                                <div class="utilizacao-valor">- R$ ${util.valor.toFixed(2)}</div>
+                            </div>
+                        `;
+                    });
+                    utilizacoesLista.innerHTML = html;
+                } else {
+                    utilizacoesLista.innerHTML = '';
+                }
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeUtilizarValorModal() {
+            document.getElementById('modalUtilizarValor').classList.remove('active');
+        }
+
+        async function confirmarUtilizacaoValor() {
+            const descricao = document.getElementById('utilizacaoDescricao').value.trim();
+            const valor = parseFloat(document.getElementById('utilizacaoValor').value);
+            const saldoTotal = valoresAbertos.reduce((total, val) => total + val.valor, 0);
+            
+            if (!descricao) {
+                showToast('Digite uma descrição', 'error');
+                return;
+            }
+            
+            if (!valor || valor <= 0) {
+                showToast('Digite um valor válido', 'error');
+                return;
+            }
+            
+            if (valor > saldoTotal) {
+                showToast('Valor maior que o saldo disponível', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                const utilizacao = {
+                    descricao,
+                    valor,
+                    data: new Date(),
+                    dataBR: formatDateBR(new Date()),
+                    dataCriacao: new Date()
+                };
+                
+                await db.collection('utilizacoes').add(utilizacao);
+                
+                // Adicionar movimentação de saída
+                await db.collection('movimentacoes').add({
+                    tipo: 'saida',
+                    valor,
+                    descricao: `Utilização de saldo: ${descricao}`,
+                    data: new Date(),
+                    dataBR: formatDateBR(new Date()),
+                    dataCriacao: new Date()
+                });
+                
+                // Atualizar saldo nos valores em aberto (distribuir proporcionalmente)
+                const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => a.dataCriacao - b.dataCriacao);
+                let valorRestante = valor;
+                
+                for (const valorAberto of valoresAbertosOrdenados) {
+                    if (valorRestante <= 0) break;
+                    
+                    if (valorAberto.valor >= valorRestante) {
+                        const novoValor = valorAberto.valor - valorRestante;
+                        await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                            valor: novoValor,
+                            dataAtualizacao: new Date()
+                        });
+                        valorRestante = 0;
+                    } else {
+                        valorRestante -= valorAberto.valor;
+                        await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                            valor: 0,
+                            dataAtualizacao: new Date()
+                        });
+                    }
+                }
+                
+                // Remover valores zerados
+                const valoresZerados = valoresAbertos.filter(v => v.valor <= 0);
+                for (const valorZerado of valoresZerados) {
+                    await db.collection('valoresAbertos').doc(valorZerado.id).delete();
+                }
+                
+                closeUtilizarValorModal();
+                await loadAllData();
+                await loadFinanceiro(document.getElementById('mainContent'));
+                
+                showToast('Utilização registrada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error saving utilizacao:', error);
+                showToast('Erro ao registrar utilização', 'error');
+            } finally {
+                hideLoading();
+            }
         }
 
         function aplicarFiltroFinanceiroAuto() {
@@ -5426,6 +5532,9 @@
                 const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
                 valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                const utilizacoesSnapshot = await db.collection('utilizacoes').get();
+                utilizacoes = utilizacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
                 const movimentacoesSnapshot = await db.collection('movimentacoes').get();
                 movimentacoes = movimentacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
@@ -5449,6 +5558,39 @@
                 }
                 
                 valoresAbertos = valoresAbertosAtualizados;
+                
+                const saldoTotal = valoresAbertos.reduce((total, valor) => total + valor.valor, 0);
+                const saldoElement = document.getElementById('saldoValoresAbertos');
+                if (saldoElement) {
+                    saldoElement.textContent = `R$ ${saldoTotal.toFixed(2)}`;
+                }
+                
+                const utilizacoesLista = document.getElementById('utilizacoesLista');
+                if (utilizacoesLista) {
+                    if (utilizacoes.length > 0) {
+                        const utilizacoesOrdenadas = [...utilizacoes].sort((a, b) => {
+                            const dataA = a.data?.toDate ? a.data.toDate() : new Date(a.data);
+                            const dataB = b.data?.toDate ? b.data.toDate() : new Date(b.data);
+                            return dataB - dataA;
+                        });
+                        
+                        let html = '<h5 style="margin-bottom: 10px;">Utilizações Recentes:</h5>';
+                        utilizacoesOrdenadas.slice(0, 3).forEach(util => {
+                            html += `
+                                <div class="utilizacao-item">
+                                    <div>
+                                        <div class="utilizacao-descricao">${util.descricao}</div>
+                                        <div class="utilizacao-data">${formatDateTimeBR(util.data)}</div>
+                                    </div>
+                                    <div class="utilizacao-valor">- R$ ${util.valor.toFixed(2)}</div>
+                                </div>
+                            `;
+                        });
+                        utilizacoesLista.innerHTML = html;
+                    } else {
+                        utilizacoesLista.innerHTML = '<p style="text-align: center; color: var(--secondary); padding: 10px;">Nenhuma utilização registrada</p>';
+                    }
+                }
                 
                 const pedidosFiltrados = pedidos.filter(ped => {
                     const colaborador = colaboradoresMap[ped.colaboradorId];
@@ -5527,94 +5669,6 @@
                     `;
                 }
                 
-                const valoresAbertosCount = document.getElementById('valoresAbertosCount');
-                if (valoresAbertosCount) {
-                    valoresAbertosCount.textContent = `${valoresAbertos.length} pendente(s)`;
-                }
-                
-                const valoresAbertosList = document.getElementById('valoresAbertosList');
-                if (valoresAbertosList) {
-                    if (valoresAbertos.length > 0) {
-                        valoresAbertosList.innerHTML = '';
-                        
-                        for (const valor of valoresAbertos) {
-                            const colaborador = colaboradoresMap[valor.colaboradorId];
-                            const pedido = pedidos.find(p => p.id === valor.pedidoId);
-                            const pizza = pedido ? (pizzasMap[pedido.pizzaId || pedido.pizzaId1] || null) : null;
-                            
-                            const valorCard = document.createElement('div');
-                            valorCard.className = 'valor-aberto-card';
-                            valorCard.id = `valorAberto-${valor.id}`;
-                            
-                            const isInativo = colaborador && colaborador.status === 'Inativo';
-                            
-                            let totalAtual = valor.valor;
-                            const itens = valor.itens || [];
-                            
-                            valorCard.innerHTML = `
-                                <div class="valor-aberto-header">
-                                    <span class="valor-aberto-colaborador ${isInativo ? 'inativo' : ''}">
-                                        <i class="fas ${isInativo ? 'fa-user-slash' : 'fa-user'}"></i>
-                                        ${colaborador ? colaborador.nome : 'Colaborador não encontrado'}
-                                        ${isInativo ? ' (Inativo)' : ''}
-                                    </span>
-                                    <span class="valor-aberto-valor" id="valorAbertoTotal-${valor.id}">R$ ${totalAtual.toFixed(2)}</span>
-                                </div>
-                                
-                                <div class="valor-aberto-detalhes" id="valorAbertoDetalhes-${valor.id}">
-                                    <div class="valor-aberto-item">
-                                        <span>Pizza: ${pizza ? pizza.nome : 'Desconhecida'} (${pizza ? pizza.pizzaria : 'Desconhecida'})</span>
-                                    </div>
-                                    <div class="valor-aberto-item">
-                                        <span>Data Entrega: ${pedido?.dataEntregaBR || formatDateBR(pedido?.dataEntrega) || '-'}</span>
-                                    </div>
-                                    ${itens.map((item, index) => `
-                                        <div class="valor-aberto-item" id="item-${valor.id}-${index}">
-                                            <input type="text" 
-                                                   class="item-descricao" 
-                                                   id="itemDesc-${valor.id}-${index}" 
-                                                   value="${item.descricao || ''}" 
-                                                   placeholder="Descrição...">
-                                            <input type="number" 
-                                                   class="item-valor" 
-                                                   id="itemValor-${valor.id}-${index}" 
-                                                   value="${item.valor || 0}" 
-                                                   step="0.01" 
-                                                   min="0"
-                                                   style="width: 100px;">
-                                            <button class="btn btn-sm btn-danger" onclick="removerItemValorAberto('${valor.id}', ${index})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    `).join('')}
-                                    <div class="valor-aberto-item">
-                                        <button class="btn btn-sm btn-success" onclick="adicionarItemValorAberto('${valor.id}')">
-                                            <i class="fas fa-plus"></i> Adicionar Item
-                                        </button>
-                                    </div>
-                                    <div class="valor-aberto-total">
-                                        <span>Total:</span>
-                                        <span id="totalCalculado-${valor.id}">R$ ${calcularTotalItens(itens).toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="valor-aberto-actions">
-                                    <button class="btn btn-success btn-sm" onclick="atualizarValorAberto('${valor.id}')">
-                                        <i class="fas fa-save"></i> Atualizar
-                                    </button>
-                                    <button class="btn btn-success btn-sm" onclick="marcarValorQuitado('${valor.id}')">
-                                        <i class="fas fa-check"></i> Marcar como Quitado
-                                    </button>
-                                </div>
-                            `;
-                            
-                            valoresAbertosList.appendChild(valorCard);
-                        }
-                    } else {
-                        valoresAbertosList.innerHTML = '<p style="text-align: center; color: var(--secondary);">Nenhum valor em aberto</p>';
-                    }
-                }
-                
                 const historicoLista = document.getElementById('historicoMovimentacoesLista');
                 if (historicoLista) {
                     if (movimentacoes.length > 0) {
@@ -5631,7 +5685,9 @@
                         
                         historicoLista.innerHTML = '';
                         
-                        movimentacoesOrdenadas.slice(0, 10).forEach(mov => {
+                        const limite = historicoExpanded ? movimentacoesOrdenadas.length : 5;
+                        
+                        movimentacoesOrdenadas.slice(0, limite).forEach(mov => {
                             const colaborador = mov.colaboradorId ? colaboradoresMap[mov.colaboradorId] : null;
                             
                             const item = document.createElement('div');
@@ -6594,96 +6650,6 @@
                 }
             } catch (error) {
                 console.error('Error creating valor aberto:', error);
-            }
-        }
-
-        function calcularTotalItens(itens) {
-            return itens.reduce((total, item) => total + (parseFloat(item.valor) || 0), 0);
-        }
-
-        async function adicionarItemValorAberto(valorId) {
-            const valor = valoresAbertos.find(v => v.id === valorId);
-            if (!valor) return;
-            
-            if (!valor.itens) valor.itens = [];
-            
-            valor.itens.push({
-                descricao: '',
-                valor: 0
-            });
-            
-            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
-            await loadFinanceiro(document.getElementById('mainContent'));
-        }
-
-        async function removerItemValorAberto(valorId, index) {
-            const valor = valoresAbertos.find(v => v.id === valorId);
-            if (!valor || !valor.itens) return;
-            
-            valor.itens.splice(index, 1);
-            
-            await atualizarValorAbertoNoFirestore(valorId, valor.itens);
-            await loadFinanceiro(document.getElementById('mainContent'));
-        }
-
-        async function atualizarValorAberto(valorId) {
-            const valor = valoresAbertos.find(v => v.id === valorId);
-            if (!valor) return;
-            
-            const itens = [];
-            let index = 0;
-            
-            while (true) {
-                const descInput = document.getElementById(`itemDesc-${valorId}-${index}`);
-                const valInput = document.getElementById(`itemValor-${valorId}-${index}`);
-                
-                if (!descInput || !valInput) break;
-                
-                const descricao = descInput.value.trim();
-                const valorItem = parseFloat(valInput.value) || 0;
-                
-                if (descricao || valorItem > 0) {
-                    itens.push({
-                        descricao,
-                        valor: valorItem
-                    });
-                }
-                
-                index++;
-            }
-            
-            await atualizarValorAbertoNoFirestore(valorId, itens);
-            await loadFinanceiro(document.getElementById('mainContent'));
-            showToast('Valor atualizado com sucesso!', 'success');
-        }
-
-        async function atualizarValorAbertoNoFirestore(valorId, itens) {
-            const total = calcularTotalItens(itens);
-            
-            await db.collection('valoresAbertos').doc(valorId).update({
-                itens,
-                valor: total,
-                dataAtualizacao: new Date()
-            });
-        }
-
-        async function marcarValorQuitado(id) {
-            if (!confirm('Tem certeza que deseja marcar este valor como quitado?')) return;
-            
-            showLoading();
-            try {
-                await db.collection('valoresAbertos').doc(id).update({
-                    status: 'quitado',
-                    dataQuitacao: new Date()
-                });
-                
-                await loadFinanceiro(document.getElementById('mainContent'));
-                showToast('Valor marcado como quitado com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error marking valor quitado:', error);
-                showToast('Erro ao marcar como quitado', 'error');
-            } finally {
-                hideLoading();
             }
         }
 
