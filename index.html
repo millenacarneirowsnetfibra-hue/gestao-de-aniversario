@@ -1920,7 +1920,7 @@
                             <option value="Itanhaém">Itanhaém</option>
                             <option value="Peruíbe">Peruíbe</option>
                             <option value="Mongaguá">Mongaguá</option>
-                            <option value="Outra">Outra</option>
+                            <option value="Praia Grande">Praia Grande</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -2044,7 +2044,7 @@
                         <li><strong>nome</strong> - Nome completo</li>
                         <li><strong>dataNascimento</strong> - Data de nascimento (DD/MM/AAAA)</li>
                         <li><strong>dataAdmissao</strong> - Data de admissão (DD/MM/AAAA)</li>
-                        <li><strong>cidade</strong> - Cidade (Itanhaém, Peruíbe, Mongaguá, Outra)</li>
+                        <li><strong>cidade</strong> - Cidade (Itanhaém, Peruíbe, Mongaguá, Praia Grande)</li>
                         <li><strong>empresa</strong> - Nome da empresa</li>
                         <li><strong>departamento</strong> - Nome do departamento</li>
                         <li><strong>status</strong> - Ativo ou Inativo (opcional, padrão: Ativo)</li>
@@ -2940,7 +2940,7 @@
                         }
                         
                         const cidade = String(row.cidade).trim();
-                        if (!['Itanhaém', 'Peruíbe', 'Mongaguá', 'Outra'].includes(cidade)) {
+                        if (!['Itanhaém', 'Peruíbe', 'Mongaguá', 'Praia Grande'].includes(cidade)) {
                             errors++;
                             errorsList.push(`Linha ${index + 2}: Cidade inválida: ${cidade}`);
                             continue;
@@ -3838,7 +3838,7 @@
             const pedidosPendentes = pedidosFiltrados.filter(p => p.status === 'pendente');
             const pedidosCancelados = pedidosFiltrados.filter(p => p.status === 'cancelado');
             
-            // CORREÇÃO: Calcular gasto total considerando TODOS os pedidos (não apenas entregues)
+            // CORREÇÃO: Calcular gasto total considerando TODOS os pedidos
             let totalGasto = 0;
             
             pedidosFiltrados.forEach(ped => {
@@ -5448,7 +5448,7 @@
                                             <option value="Itanhaém">Itanhaém</option>
                                             <option value="Peruíbe">Peruíbe</option>
                                             <option value="Mongaguá">Mongaguá</option>
-                                            <option value="Outra">Outra</option>
+                                            <option value="Praia Grande">Praia Grande</option>
                                         </select>
                                     </div>
                                     <div class="filter-group">
@@ -6703,6 +6703,15 @@
                                     <option value="cancelado">Cancelado</option>
                                 </select>
                             </div>
+                            <div class="filter-group">
+                                <label>Ordem do Relatório</label>
+                                <select id="filtroOrdemRelatorio" onchange="aplicarFiltroRelatorio()">
+                                    <option value="alfabetica">Ordem Alfabética</option>
+                                    <option value="departamento">Por Departamento</option>
+                                    <option value="data_recente">Data mais Recente</option>
+                                    <option value="data_antiga">Data mais Antiga</option>
+                                </select>
+                            </div>
                         </div>
                         <div style="margin-top: 15px; display: flex; gap: 10px;">
                             <button class="btn btn-success" onclick="exportarRelatorio('excel')">
@@ -6756,6 +6765,7 @@
             const periodoFinal = document.getElementById('filtroPeriodoFinal')?.value;
             const tipoRelatorio = document.getElementById('filtroTipoRelatorio')?.value;
             const statusFiltro = document.getElementById('filtroStatusRelatorio')?.value;
+            const ordemRelatorio = document.getElementById('filtroOrdemRelatorio')?.value || 'alfabetica';
             
             showLoading();
             
@@ -6786,6 +6796,25 @@
                                 'Departamento': col.departamentoNome || '-',
                                 'Status': col.status || 'Inativo'
                             }));
+                        
+                        // Aplicar ordenação
+                        if (ordemRelatorio === 'alfabetica') {
+                            dadosFiltrados.sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
+                        } else if (ordemRelatorio === 'departamento') {
+                            dadosFiltrados.sort((a, b) => (a.Departamento || '').localeCompare(b.Departamento || ''));
+                        } else if (ordemRelatorio === 'data_recente') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a.Admissão) || new Date(0);
+                                const dataB = parseDateBR(b.Admissão) || new Date(0);
+                                return dataB - dataA;
+                            });
+                        } else if (ordemRelatorio === 'data_antiga') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a.Admissão) || new Date(0);
+                                const dataB = parseDateBR(b.Admissão) || new Date(0);
+                                return dataA - dataB;
+                            });
+                        }
                         break;
                         
                     case 'pedidos':
@@ -6830,11 +6859,31 @@
                                     'Endereço': ped.enderecoCompleto || '-',
                                     'Cidade': ped.local || '-',
                                     'Borda': ped.borda || 'Sem recheio',
-                                    'Valor': `R$ ${valor.toFixed(2)}`,
+                                    'Valor Total': `R$ ${valor.toFixed(2)}`,
                                     'Status': ped.status || 'pendente',
                                     'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
                             });
+                        
+                        // Aplicar ordenação
+                        if (ordemRelatorio === 'alfabetica') {
+                            dadosFiltrados.sort((a, b) => (a.Colaborador || '').localeCompare(b.Colaborador || ''));
+                        } else if (ordemRelatorio === 'departamento') {
+                            // Para pedidos, ordenar por colaborador (já que não temos departamento direto)
+                            dadosFiltrados.sort((a, b) => (a.Colaborador || '').localeCompare(b.Colaborador || ''));
+                        } else if (ordemRelatorio === 'data_recente') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a['Data Entrega']) || new Date(0);
+                                const dataB = parseDateBR(b['Data Entrega']) || new Date(0);
+                                return dataB - dataA;
+                            });
+                        } else if (ordemRelatorio === 'data_antiga') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a['Data Entrega']) || new Date(0);
+                                const dataB = parseDateBR(b['Data Entrega']) || new Date(0);
+                                return dataA - dataB;
+                            });
+                        }
                         break;
                         
                     case 'financeiro':
@@ -6868,11 +6917,30 @@
                                     'Colaborador': col?.nome || 'Desconhecido',
                                     'Pizza': pizzaInfo,
                                     'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
-                                    'Valor': `R$ ${valor.toFixed(2)}`,
+                                    'Valor Total': `R$ ${valor.toFixed(2)}`,
                                     'Status': ped.status,
                                     'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
                             });
+                        
+                        // Aplicar ordenação
+                        if (ordemRelatorio === 'alfabetica') {
+                            dadosFiltrados.sort((a, b) => (a.Colaborador || '').localeCompare(b.Colaborador || ''));
+                        } else if (ordemRelatorio === 'departamento') {
+                            dadosFiltrados.sort((a, b) => (a.Colaborador || '').localeCompare(b.Colaborador || ''));
+                        } else if (ordemRelatorio === 'data_recente') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a['Data Entrega']) || new Date(0);
+                                const dataB = parseDateBR(b['Data Entrega']) || new Date(0);
+                                return dataB - dataA;
+                            });
+                        } else if (ordemRelatorio === 'data_antiga') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a['Data Entrega']) || new Date(0);
+                                const dataB = parseDateBR(b['Data Entrega']) || new Date(0);
+                                return dataA - dataB;
+                            });
+                        }
                         break;
                         
                     case 'aniversarios':
@@ -6916,6 +6984,25 @@
                                 return true;
                             });
                         }
+                        
+                        // Aplicar ordenação
+                        if (ordemRelatorio === 'alfabetica') {
+                            dadosFiltrados.sort((a, b) => (a.Colaborador || '').localeCompare(b.Colaborador || ''));
+                        } else if (ordemRelatorio === 'departamento') {
+                            dadosFiltrados.sort((a, b) => (a.Tipo || '').localeCompare(b.Tipo || ''));
+                        } else if (ordemRelatorio === 'data_recente') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a.Data) || new Date(0);
+                                const dataB = parseDateBR(b.Data) || new Date(0);
+                                return dataB - dataA;
+                            });
+                        } else if (ordemRelatorio === 'data_antiga') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a.Data) || new Date(0);
+                                const dataB = parseDateBR(b.Data) || new Date(0);
+                                return dataA - dataB;
+                            });
+                        }
                         break;
                         
                     default:
@@ -6935,9 +7022,28 @@
                                 'Status': col.status || 'Inativo'
                             };
                         });
+                        
+                        // Aplicar ordenação
+                        if (ordemRelatorio === 'alfabetica') {
+                            dadosFiltrados.sort((a, b) => (a.Nome || '').localeCompare(b.Nome || ''));
+                        } else if (ordemRelatorio === 'departamento') {
+                            dadosFiltrados.sort((a, b) => (a.Departamento || '').localeCompare(b.Departamento || ''));
+                        } else if (ordemRelatorio === 'data_recente') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a.Admissão) || new Date(0);
+                                const dataB = parseDateBR(b.Admissão) || new Date(0);
+                                return dataB - dataA;
+                            });
+                        } else if (ordemRelatorio === 'data_antiga') {
+                            dadosFiltrados.sort((a, b) => {
+                                const dataA = parseDateBR(a.Admissão) || new Date(0);
+                                const dataB = parseDateBR(b.Admissão) || new Date(0);
+                                return dataA - dataB;
+                            });
+                        }
                 }
                 
-                if (dadosFiltrados.length > 0) {
+                if (dadosFiltrados.length > 0 && ordemRelatorio !== 'alfabetica' && ordemRelatorio !== 'departamento' && ordemRelatorio !== 'data_recente' && ordemRelatorio !== 'data_antiga') {
                     const primeiraChave = Object.keys(dadosFiltrados[0])[0];
                     dadosFiltrados.sort((a, b) => (a[primeiraChave] || '').localeCompare(b[primeiraChave] || ''));
                 }
@@ -7062,7 +7168,7 @@
                                     'Endereço': ped.enderecoCompleto || '-',
                                     'Cidade': ped.local || '-',
                                     'Borda': ped.borda || 'Sem recheio',
-                                    'Valor': `R$ ${valor.toFixed(2)}`,
+                                    'Valor Total': `R$ ${valor.toFixed(2)}`,
                                     'Status': ped.status || 'pendente',
                                     'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
@@ -7093,7 +7199,7 @@
                                     'Colaborador': col?.nome || 'Desconhecido',
                                     'Pizza': pizzaInfo,
                                     'Data Entrega': ped.dataEntregaBR || formatDateBR(ped.dataEntrega),
-                                    'Valor': `R$ ${valor.toFixed(2)}`,
+                                    'Valor Total': `R$ ${valor.toFixed(2)}`,
                                     'Status': ped.status,
                                     'Bonificação': ped.tipoBonus ? 'Sim' : 'Não'
                                 };
