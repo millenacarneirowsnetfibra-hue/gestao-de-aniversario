@@ -1674,6 +1674,11 @@
             background: var(--gray-100);
             border-radius: 8px;
             padding: 10px;
+            transition: max-height 0.3s ease;
+        }
+
+        .historico-lista.expanded {
+            max-height: 600px;
         }
 
         .movimentacao-item {
@@ -1714,6 +1719,7 @@
         .movimentacao-valor {
             font-weight: 600;
             font-size: 1.1rem;
+            margin-right: 15px;
         }
 
         .movimentacao-valor.entrada {
@@ -1721,6 +1727,33 @@
         }
 
         .movimentacao-valor.saida {
+            color: var(--danger);
+        }
+
+        .movimentacao-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .movimentacao-actions button {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .movimentacao-actions button:hover {
+            background: var(--gray-200);
+        }
+
+        .movimentacao-actions button.edit:hover {
+            color: var(--primary);
+        }
+
+        .movimentacao-actions button.delete:hover {
             color: var(--danger);
         }
 
@@ -2343,10 +2376,6 @@
                     <label>Valor a Utilizar (R$) *</label>
                     <input type="number" id="utilizacaoValor" step="0.01" min="0.01" placeholder="0.00">
                 </div>
-                
-                <div class="utilizacoes-lista" id="utilizacoesListaModal">
-                    <!-- Será preenchido dinamicamente -->
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeUtilizarValorModal()">Cancelar</button>
@@ -2357,35 +2386,55 @@
         </div>
     </div>
 
-    <!-- Edit Utilização Modal -->
-    <div class="modal" id="modalEditUtilizacao">
+    <!-- Edit Movimentação Modal -->
+    <div class="modal" id="modalEditMovimentacao">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <h3><i class="fas fa-edit"></i> Editar Utilização</h3>
-                <i class="fas fa-times modal-close" onclick="closeEditUtilizacaoModal()"></i>
+                <h3><i class="fas fa-edit"></i> Editar Movimentação</h3>
+                <i class="fas fa-times modal-close" onclick="closeEditMovimentacaoModal()"></i>
             </div>
             <div class="modal-body">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label>Saldo Disponível</label>
-                    <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning);" id="saldoDisponivelEdit">
+                    <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning);" id="saldoDisponivelEditMov">
                         R$ 0,00
                     </div>
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Descrição da Utilização *</label>
-                    <input type="text" id="editUtilizacaoDescricao" placeholder="Ex: Compra de material de escritório">
+                    <label>Tipo *</label>
+                    <select id="editMovimentacaoTipo">
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Valor a Utilizar (R$) *</label>
-                    <input type="number" id="editUtilizacaoValor" step="0.01" min="0.01" placeholder="0.00">
+                    <label>Valor (R$) *</label>
+                    <input type="number" id="editMovimentacaoValor" step="0.01" min="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Descrição *</label>
+                    <input type="text" id="editMovimentacaoDescricao" placeholder="Descrição da movimentação">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Data *</label>
+                    <input type="text" id="editMovimentacaoData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Colaborador (opcional)</label>
+                    <select id="editMovimentacaoColaborador">
+                        <option value="">Nenhum</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeEditUtilizacaoModal()">Cancelar</button>
-                <button class="btn btn-success" onclick="updateUtilizacao()">
-                    <i class="fas fa-save"></i> Atualizar Utilização
+                <button class="btn btn-secondary" onclick="closeEditMovimentacaoModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="updateMovimentacao()">
+                    <i class="fas fa-save"></i> Atualizar Movimentação
                 </button>
             </div>
         </div>
@@ -2531,7 +2580,7 @@
         let editingColaboradorId = null;
         let editingPedidoId = null;
         let editingPizzaId = null;
-        let editingUtilizacaoId = null;
+        let editingMovimentacaoId = null;
         let charts = {};
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
@@ -2853,6 +2902,33 @@
             previewContainer.innerHTML = html;
         }
 
+        // Atualizar saldo em aberto
+        async function atualizarSaldoAberto() {
+            try {
+                const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
+                valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const saldoTotal = valoresAbertos.reduce((total, valor) => total + (valor.valor || 0), 0);
+                
+                const saldoElement = document.getElementById('saldoValoresAbertos');
+                if (saldoElement) {
+                    saldoElement.textContent = `R$ ${saldoTotal.toFixed(2)}`;
+                }
+                
+                const saldoModal = document.getElementById('saldoDisponivelModal');
+                if (saldoModal) {
+                    saldoModal.textContent = `R$ ${saldoTotal.toFixed(2)}`;
+                }
+                
+                const saldoEditMov = document.getElementById('saldoDisponivelEditMov');
+                if (saldoEditMov) {
+                    saldoEditMov.textContent = `R$ ${saldoTotal.toFixed(2)}`;
+                }
+            } catch (error) {
+                console.error('Error updating saldo aberto:', error);
+            }
+        }
+
         // Movimentações Functions
         function openAddMovimentacaoModal() {
             const modal = document.getElementById('modalAddMovimentacao');
@@ -2912,10 +2988,68 @@
                     dataCriacao: new Date()
                 };
                 
+                // Se for entrada, adicionar ao saldo em aberto
+                if (tipo === 'entrada') {
+                    await db.collection('valoresAbertos').add({
+                        colaboradorId: colaboradorId || null,
+                        pedidoId: null,
+                        valor,
+                        dataCriacao: new Date(),
+                        status: 'pendente',
+                        itens: [],
+                        observacao: descricao
+                    });
+                }
+                // Se for saída, verificar saldo e debitar
+                else if (tipo === 'saida') {
+                    const saldoTotal = valoresAbertos.reduce((total, val) => total + (val.valor || 0), 0);
+                    
+                    if (valor > saldoTotal) {
+                        showToast('Valor maior que o saldo disponível', 'error');
+                        hideLoading();
+                        return;
+                    }
+                    
+                    // Debitar dos valores em aberto
+                    const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => {
+                        const dataA = a.dataCriacao?.toDate ? a.dataCriacao.toDate() : new Date(a.dataCriacao);
+                        const dataB = b.dataCriacao?.toDate ? b.dataCriacao.toDate() : new Date(b.dataCriacao);
+                        return dataA - dataB;
+                    });
+                    
+                    let valorRestante = valor;
+                    
+                    for (const valorAberto of valoresAbertosOrdenados) {
+                        if (valorRestante <= 0) break;
+                        
+                        if (valorAberto.valor >= valorRestante) {
+                            const novoValor = valorAberto.valor - valorRestante;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: novoValor,
+                                dataAtualizacao: new Date()
+                            });
+                            valorRestante = 0;
+                        } else {
+                            valorRestante -= valorAberto.valor;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: 0,
+                                dataAtualizacao: new Date()
+                            });
+                        }
+                    }
+                    
+                    // Remover valores zerados
+                    const valoresZerados = valoresAbertos.filter(v => v.valor <= 0);
+                    for (const valorZerado of valoresZerados) {
+                        await db.collection('valoresAbertos').doc(valorZerado.id).delete();
+                    }
+                }
+                
                 await db.collection('movimentacoes').add(movimentacao);
                 
                 closeAddMovimentacaoModal();
                 await loadAllData();
+                await atualizarSaldoAberto();
                 
                 if (currentSection === 'financeiro') {
                     await loadFinanceiro(document.getElementById('mainContent'));
@@ -2925,6 +3059,283 @@
             } catch (error) {
                 console.error('Error saving movimentacao:', error);
                 showToast('Erro ao salvar movimentação', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Editar Movimentação
+        function openEditMovimentacaoModal(movimentacaoId) {
+            const movimentacao = movimentacoes.find(m => m.id === movimentacaoId);
+            if (!movimentacao) return;
+            
+            editingMovimentacaoId = movimentacaoId;
+            const modal = document.getElementById('modalEditMovimentacao');
+            if (!modal) return;
+            
+            const colaboradorSelect = document.getElementById('editMovimentacaoColaborador');
+            if (colaboradorSelect) {
+                colaboradorSelect.innerHTML = '<option value="">Nenhum</option>';
+                colaboradores.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(col => {
+                    colaboradorSelect.innerHTML += `<option value="${col.id}" ${col.id === movimentacao.colaboradorId ? 'selected' : ''}>${col.nome}</option>`;
+                });
+            }
+            
+            document.getElementById('editMovimentacaoTipo').value = movimentacao.tipo || 'entrada';
+            document.getElementById('editMovimentacaoValor').value = movimentacao.valor || '';
+            document.getElementById('editMovimentacaoDescricao').value = movimentacao.descricao || '';
+            document.getElementById('editMovimentacaoData').value = movimentacao.dataBR || formatDateBR(movimentacao.data);
+            
+            atualizarSaldoAberto();
+            
+            modal.classList.add('active');
+        }
+
+        function closeEditMovimentacaoModal() {
+            document.getElementById('modalEditMovimentacao').classList.remove('active');
+            editingMovimentacaoId = null;
+        }
+
+        async function updateMovimentacao() {
+            const tipo = document.getElementById('editMovimentacaoTipo').value;
+            const valor = parseFloat(document.getElementById('editMovimentacaoValor').value);
+            const descricao = document.getElementById('editMovimentacaoDescricao').value.trim();
+            const dataStr = document.getElementById('editMovimentacaoData').value;
+            const colaboradorId = document.getElementById('editMovimentacaoColaborador').value;
+            const movimentacaoOriginal = movimentacoes.find(m => m.id === editingMovimentacaoId);
+            
+            if (!valor || valor <= 0) {
+                showToast('Digite um valor válido', 'error');
+                return;
+            }
+            
+            if (!descricao) {
+                showToast('Digite uma descrição', 'error');
+                return;
+            }
+            
+            if (!validateDateBR(dataStr)) {
+                showToast('Data inválida', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                // Reverter efeito da movimentação original no saldo
+                if (movimentacaoOriginal.tipo === 'entrada') {
+                    // Remover do saldo (debitar)
+                    const saldoTotal = valoresAbertos.reduce((total, val) => total + (val.valor || 0), 0);
+                    const valorOriginal = movimentacaoOriginal.valor;
+                    
+                    if (valorOriginal > saldoTotal) {
+                        showToast('Erro ao reverter movimentação original', 'error');
+                        hideLoading();
+                        return;
+                    }
+                    
+                    const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => {
+                        const dataA = a.dataCriacao?.toDate ? a.dataCriacao.toDate() : new Date(a.dataCriacao);
+                        const dataB = b.dataCriacao?.toDate ? b.dataCriacao.toDate() : new Date(b.dataCriacao);
+                        return dataA - dataB;
+                    });
+                    
+                    let valorRestante = valorOriginal;
+                    
+                    for (const valorAberto of valoresAbertosOrdenados) {
+                        if (valorRestante <= 0) break;
+                        
+                        if (valorAberto.valor >= valorRestante) {
+                            const novoValor = valorAberto.valor - valorRestante;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: novoValor,
+                                dataAtualizacao: new Date()
+                            });
+                            valorRestante = 0;
+                        } else {
+                            valorRestante -= valorAberto.valor;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: 0,
+                                dataAtualizacao: new Date()
+                            });
+                        }
+                    }
+                    
+                    const valoresZerados = valoresAbertos.filter(v => v.valor <= 0);
+                    for (const valorZerado of valoresZerados) {
+                        await db.collection('valoresAbertos').doc(valorZerado.id).delete();
+                    }
+                } else if (movimentacaoOriginal.tipo === 'saida') {
+                    // Adicionar de volta ao saldo
+                    await db.collection('valoresAbertos').add({
+                        colaboradorId: movimentacaoOriginal.colaboradorId || null,
+                        pedidoId: null,
+                        valor: movimentacaoOriginal.valor,
+                        dataCriacao: new Date(),
+                        status: 'pendente',
+                        itens: [],
+                        observacao: 'Revertido de movimentação'
+                    });
+                }
+                
+                // Aplicar novo efeito
+                if (tipo === 'entrada') {
+                    await db.collection('valoresAbertos').add({
+                        colaboradorId: colaboradorId || null,
+                        pedidoId: null,
+                        valor,
+                        dataCriacao: new Date(),
+                        status: 'pendente',
+                        itens: [],
+                        observacao: descricao
+                    });
+                } else if (tipo === 'saida') {
+                    const saldoTotalAtual = valoresAbertos.reduce((total, val) => total + (val.valor || 0), 0);
+                    
+                    if (valor > saldoTotalAtual) {
+                        showToast('Valor maior que o saldo disponível', 'error');
+                        hideLoading();
+                        return;
+                    }
+                    
+                    const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => {
+                        const dataA = a.dataCriacao?.toDate ? a.dataCriacao.toDate() : new Date(a.dataCriacao);
+                        const dataB = b.dataCriacao?.toDate ? b.dataCriacao.toDate() : new Date(b.dataCriacao);
+                        return dataA - dataB;
+                    });
+                    
+                    let valorRestante = valor;
+                    
+                    for (const valorAberto of valoresAbertosOrdenados) {
+                        if (valorRestante <= 0) break;
+                        
+                        if (valorAberto.valor >= valorRestante) {
+                            const novoValor = valorAberto.valor - valorRestante;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: novoValor,
+                                dataAtualizacao: new Date()
+                            });
+                            valorRestante = 0;
+                        } else {
+                            valorRestante -= valorAberto.valor;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: 0,
+                                dataAtualizacao: new Date()
+                            });
+                        }
+                    }
+                    
+                    const valoresZerados = valoresAbertos.filter(v => v.valor <= 0);
+                    for (const valorZerado of valoresZerados) {
+                        await db.collection('valoresAbertos').doc(valorZerado.id).delete();
+                    }
+                }
+                
+                // Atualizar movimentação
+                await db.collection('movimentacoes').doc(editingMovimentacaoId).update({
+                    tipo,
+                    valor,
+                    descricao,
+                    data: parseDateBR(dataStr),
+                    dataBR: dataStr,
+                    colaboradorId: colaboradorId || null,
+                    dataAtualizacao: new Date()
+                });
+                
+                closeEditMovimentacaoModal();
+                await loadAllData();
+                await atualizarSaldoAberto();
+                
+                if (currentSection === 'financeiro') {
+                    await loadFinanceiro(document.getElementById('mainContent'));
+                }
+                
+                showToast('Movimentação atualizada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error updating movimentacao:', error);
+                showToast('Erro ao atualizar movimentação', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Excluir Movimentação
+        async function deleteMovimentacao(movimentacaoId) {
+            if (!confirm('Tem certeza que deseja excluir esta movimentação?')) return;
+            
+            const movimentacao = movimentacoes.find(m => m.id === movimentacaoId);
+            if (!movimentacao) return;
+            
+            showLoading();
+            try {
+                // Reverter efeito da movimentação no saldo
+                if (movimentacao.tipo === 'entrada') {
+                    // Remover do saldo (debitar)
+                    const saldoTotal = valoresAbertos.reduce((total, val) => total + (val.valor || 0), 0);
+                    const valorOriginal = movimentacao.valor;
+                    
+                    if (valorOriginal > saldoTotal) {
+                        showToast('Erro ao reverter movimentação', 'error');
+                        hideLoading();
+                        return;
+                    }
+                    
+                    const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => {
+                        const dataA = a.dataCriacao?.toDate ? a.dataCriacao.toDate() : new Date(a.dataCriacao);
+                        const dataB = b.dataCriacao?.toDate ? b.dataCriacao.toDate() : new Date(b.dataCriacao);
+                        return dataA - dataB;
+                    });
+                    
+                    let valorRestante = valorOriginal;
+                    
+                    for (const valorAberto of valoresAbertosOrdenados) {
+                        if (valorRestante <= 0) break;
+                        
+                        if (valorAberto.valor >= valorRestante) {
+                            const novoValor = valorAberto.valor - valorRestante;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: novoValor,
+                                dataAtualizacao: new Date()
+                            });
+                            valorRestante = 0;
+                        } else {
+                            valorRestante -= valorAberto.valor;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: 0,
+                                dataAtualizacao: new Date()
+                            });
+                        }
+                    }
+                    
+                    const valoresZerados = valoresAbertos.filter(v => v.valor <= 0);
+                    for (const valorZerado of valoresZerados) {
+                        await db.collection('valoresAbertos').doc(valorZerado.id).delete();
+                    }
+                } else if (movimentacao.tipo === 'saida') {
+                    // Adicionar de volta ao saldo
+                    await db.collection('valoresAbertos').add({
+                        colaboradorId: movimentacao.colaboradorId || null,
+                        pedidoId: null,
+                        valor: movimentacao.valor,
+                        dataCriacao: new Date(),
+                        status: 'pendente',
+                        itens: [],
+                        observacao: 'Revertido de exclusão de movimentação'
+                    });
+                }
+                
+                await db.collection('movimentacoes').doc(movimentacaoId).delete();
+                
+                await loadAllData();
+                await atualizarSaldoAberto();
+                
+                if (currentSection === 'financeiro') {
+                    await loadFinanceiro(document.getElementById('mainContent'));
+                }
+                
+                showToast('Movimentação excluída com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting movimentacao:', error);
+                showToast('Erro ao excluir movimentação', 'error');
             } finally {
                 hideLoading();
             }
@@ -3779,29 +4190,26 @@
         }
 
         // Utilização Functions
-        async function editUtilizacao(id) {
-            const utilizacao = utilizacoes.find(u => u.id === id);
-            if (!utilizacao) return;
-            
-            editingUtilizacaoId = id;
+        function abrirUtilizarValorModal() {
+            const modal = document.getElementById('modalUtilizarValor');
+            if (!modal) return;
             
             const saldoTotal = valoresAbertos.reduce((total, valor) => total + valor.valor, 0);
-            document.getElementById('saldoDisponivelEdit').textContent = `R$ ${saldoTotal.toFixed(2)}`;
-            document.getElementById('editUtilizacaoDescricao').value = utilizacao.descricao;
-            document.getElementById('editUtilizacaoValor').value = utilizacao.valor;
+            document.getElementById('saldoDisponivelModal').textContent = `R$ ${saldoTotal.toFixed(2)}`;
+            document.getElementById('utilizacaoDescricao').value = '';
+            document.getElementById('utilizacaoValor').value = '';
             
-            document.getElementById('modalEditUtilizacao').classList.add('active');
+            modal.classList.add('active');
         }
 
-        function closeEditUtilizacaoModal() {
-            document.getElementById('modalEditUtilizacao').classList.remove('active');
-            editingUtilizacaoId = null;
+        function closeUtilizarValorModal() {
+            document.getElementById('modalUtilizarValor').classList.remove('active');
         }
 
-        async function updateUtilizacao() {
-            const descricao = document.getElementById('editUtilizacaoDescricao').value.trim();
-            const valor = parseFloat(document.getElementById('editUtilizacaoValor').value);
-            const utilizacaoOriginal = utilizacoes.find(u => u.id === editingUtilizacaoId);
+        async function confirmarUtilizacaoValor() {
+            const descricao = document.getElementById('utilizacaoDescricao').value.trim();
+            const valor = parseFloat(document.getElementById('utilizacaoValor').value);
+            const saldoTotal = valoresAbertos.reduce((total, val) => total + val.valor, 0);
             
             if (!descricao) {
                 showToast('Digite uma descrição', 'error');
@@ -3813,72 +4221,58 @@
                 return;
             }
             
-            const diferenca = valor - (utilizacaoOriginal?.valor || 0);
-            const saldoTotal = valoresAbertos.reduce((total, val) => total + val.valor, 0);
-            
-            if (diferenca > saldoTotal) {
+            if (valor > saldoTotal) {
                 showToast('Valor maior que o saldo disponível', 'error');
                 return;
             }
             
             showLoading();
             try {
-                // Atualizar utilização
-                await db.collection('utilizacoes').doc(editingUtilizacaoId).update({
+                // Registrar utilização
+                await db.collection('utilizacoes').add({
                     descricao,
                     valor,
-                    dataAtualizacao: new Date()
+                    data: new Date(),
+                    dataBR: formatDateBR(new Date()),
+                    dataCriacao: new Date()
                 });
                 
-                // Atualizar movimentação correspondente
-                const movimentacoesSnapshot = await db.collection('movimentacoes')
-                    .where('descricao', '>=', `Utilização de saldo: ${utilizacaoOriginal?.descricao.substring(0, 20)}`)
-                    .get();
+                // Adicionar movimentação de saída
+                await db.collection('movimentacoes').add({
+                    tipo: 'saida',
+                    valor,
+                    descricao: `Utilização de saldo: ${descricao}`,
+                    data: new Date(),
+                    dataBR: formatDateBR(new Date()),
+                    dataCriacao: new Date()
+                });
                 
-                if (!movimentacoesSnapshot.empty) {
-                    const movDoc = movimentacoesSnapshot.docs[0];
-                    await movDoc.ref.update({
-                        descricao: `Utilização de saldo: ${descricao}`,
-                        valor
-                    });
-                }
+                // Atualizar saldo nos valores em aberto (distribuir proporcionalmente)
+                const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => {
+                    const dataA = a.dataCriacao?.toDate ? a.dataCriacao.toDate() : new Date(a.dataCriacao);
+                    const dataB = b.dataCriacao?.toDate ? b.dataCriacao.toDate() : new Date(b.dataCriacao);
+                    return dataA - dataB;
+                });
                 
-                // Ajustar valores em aberto
-                const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => a.dataCriacao - b.dataCriacao);
-                let valorRestante = diferenca;
+                let valorRestante = valor;
                 
-                if (diferenca > 0) {
-                    // Precisa tirar mais dos valores em aberto
-                    for (const valorAberto of valoresAbertosOrdenados) {
-                        if (valorRestante <= 0) break;
-                        
-                        if (valorAberto.valor >= valorRestante) {
-                            const novoValor = valorAberto.valor - valorRestante;
-                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
-                                valor: novoValor,
-                                dataAtualizacao: new Date()
-                            });
-                            valorRestante = 0;
-                        } else {
-                            valorRestante -= valorAberto.valor;
-                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
-                                valor: 0,
-                                dataAtualizacao: new Date()
-                            });
-                        }
+                for (const valorAberto of valoresAbertosOrdenados) {
+                    if (valorRestante <= 0) break;
+                    
+                    if (valorAberto.valor >= valorRestante) {
+                        const novoValor = valorAberto.valor - valorRestante;
+                        await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                            valor: novoValor,
+                            dataAtualizacao: new Date()
+                        });
+                        valorRestante = 0;
+                    } else {
+                        valorRestante -= valorAberto.valor;
+                        await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                            valor: 0,
+                            dataAtualizacao: new Date()
+                        });
                     }
-                } else if (diferenca < 0) {
-                    // Devolver para os valores em aberto (criar novo valor)
-                    const valorDevolver = Math.abs(diferenca);
-                    await db.collection('valoresAbertos').add({
-                        colaboradorId: null,
-                        pedidoId: null,
-                        valor: valorDevolver,
-                        dataCriacao: new Date(),
-                        status: 'pendente',
-                        itens: [],
-                        observacao: 'Ajuste de utilização'
-                    });
                 }
                 
                 // Remover valores zerados
@@ -3887,59 +4281,18 @@
                     await db.collection('valoresAbertos').doc(valorZerado.id).delete();
                 }
                 
-                closeEditUtilizacaoModal();
+                closeUtilizarValorModal();
                 await loadAllData();
-                await loadFinanceiro(document.getElementById('mainContent'));
+                await atualizarSaldoAberto();
                 
-                showToast('Utilização atualizada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error updating utilizacao:', error);
-                showToast('Erro ao atualizar utilização', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deleteUtilizacao(id) {
-            if (!confirm('Tem certeza que deseja excluir esta utilização?')) return;
-            
-            showLoading();
-            try {
-                const utilizacao = utilizacoes.find(u => u.id === id);
-                
-                // Excluir utilização
-                await db.collection('utilizacoes').doc(id).delete();
-                
-                // Excluir movimentação correspondente
-                const movimentacoesSnapshot = await db.collection('movimentacoes')
-                    .where('descricao', '>=', `Utilização de saldo: ${utilizacao?.descricao.substring(0, 20)}`)
-                    .get();
-                
-                if (!movimentacoesSnapshot.empty) {
-                    const movDoc = movimentacoesSnapshot.docs[0];
-                    await movDoc.ref.delete();
+                if (currentSection === 'financeiro') {
+                    await loadFinanceiro(document.getElementById('mainContent'));
                 }
                 
-                // Devolver valor para saldo
-                if (utilizacao) {
-                    await db.collection('valoresAbertos').add({
-                        colaboradorId: null,
-                        pedidoId: null,
-                        valor: utilizacao.valor,
-                        dataCriacao: new Date(),
-                        status: 'pendente',
-                        itens: [],
-                        observacao: 'Devolução de utilização excluída'
-                    });
-                }
-                
-                await loadAllData();
-                await loadFinanceiro(document.getElementById('mainContent'));
-                
-                showToast('Utilização excluída com sucesso!', 'success');
+                showToast('Utilização registrada com sucesso!', 'success');
             } catch (error) {
-                console.error('Error deleting utilizacao:', error);
-                showToast('Erro ao excluir utilização', 'error');
+                console.error('Error saving utilizacao:', error);
+                showToast('Erro ao registrar utilização', 'error');
             } finally {
                 hideLoading();
             }
@@ -4023,6 +4376,8 @@
                 
                 const checklistsSnapshot = await db.collection('checklists').get();
                 checklists = checklistsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                await atualizarSaldoAberto();
             } catch (error) {
                 console.error('Error loading all data:', error);
             }
@@ -5569,8 +5924,6 @@
                             <i class="fas fa-hand-holding-usd"></i> Utilizar Valor
                         </button>
                     </div>
-                    
-                    <div class="utilizacoes-lista" id="utilizacoesLista"></div>
                 </div>
                 
                 <div class="card" style="margin-bottom: 20px;">
@@ -5655,127 +6008,6 @@
             }
         }
 
-        function abrirUtilizarValorModal() {
-            const modal = document.getElementById('modalUtilizarValor');
-            if (!modal) return;
-            
-            const saldoTotal = valoresAbertos.reduce((total, valor) => total + valor.valor, 0);
-            document.getElementById('saldoDisponivelModal').textContent = `R$ ${saldoTotal.toFixed(2)}`;
-            document.getElementById('utilizacaoDescricao').value = '';
-            document.getElementById('utilizacaoValor').value = '';
-            
-            const utilizacoesLista = document.getElementById('utilizacoesListaModal');
-            if (utilizacoesLista) {
-                if (utilizacoes.length > 0) {
-                    let html = '<h5 style="margin-bottom: 10px;">Utilizações Anteriores:</h5>';
-                    utilizacoes.slice(0, 5).forEach(util => {
-                        html += `
-                            <div class="utilizacao-item">
-                                <div>
-                                    <div class="utilizacao-descricao">${util.descricao}</div>
-                                    <div class="utilizacao-data">${formatDateTimeBR(util.data)}</div>
-                                </div>
-                                <div class="utilizacao-valor">- R$ ${util.valor.toFixed(2)}</div>
-                            </div>
-                        `;
-                    });
-                    utilizacoesLista.innerHTML = html;
-                } else {
-                    utilizacoesLista.innerHTML = '';
-                }
-            }
-            
-            modal.classList.add('active');
-        }
-
-        function closeUtilizarValorModal() {
-            document.getElementById('modalUtilizarValor').classList.remove('active');
-        }
-
-        async function confirmarUtilizacaoValor() {
-            const descricao = document.getElementById('utilizacaoDescricao').value.trim();
-            const valor = parseFloat(document.getElementById('utilizacaoValor').value);
-            const saldoTotal = valoresAbertos.reduce((total, val) => total + val.valor, 0);
-            
-            if (!descricao) {
-                showToast('Digite uma descrição', 'error');
-                return;
-            }
-            
-            if (!valor || valor <= 0) {
-                showToast('Digite um valor válido', 'error');
-                return;
-            }
-            
-            if (valor > saldoTotal) {
-                showToast('Valor maior que o saldo disponível', 'error');
-                return;
-            }
-            
-            showLoading();
-            try {
-                const utilizacao = {
-                    descricao,
-                    valor,
-                    data: new Date(),
-                    dataBR: formatDateBR(new Date()),
-                    dataCriacao: new Date()
-                };
-                
-                await db.collection('utilizacoes').add(utilizacao);
-                
-                // Adicionar movimentação de saída
-                await db.collection('movimentacoes').add({
-                    tipo: 'saida',
-                    valor,
-                    descricao: `Utilização de saldo: ${descricao}`,
-                    data: new Date(),
-                    dataBR: formatDateBR(new Date()),
-                    dataCriacao: new Date()
-                });
-                
-                // Atualizar saldo nos valores em aberto (distribuir proporcionalmente)
-                const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => a.dataCriacao - b.dataCriacao);
-                let valorRestante = valor;
-                
-                for (const valorAberto of valoresAbertosOrdenados) {
-                    if (valorRestante <= 0) break;
-                    
-                    if (valorAberto.valor >= valorRestante) {
-                        const novoValor = valorAberto.valor - valorRestante;
-                        await db.collection('valoresAbertos').doc(valorAberto.id).update({
-                            valor: novoValor,
-                            dataAtualizacao: new Date()
-                        });
-                        valorRestante = 0;
-                    } else {
-                        valorRestante -= valorAberto.valor;
-                        await db.collection('valoresAbertos').doc(valorAberto.id).update({
-                            valor: 0,
-                            dataAtualizacao: new Date()
-                        });
-                    }
-                }
-                
-                // Remover valores zerados
-                const valoresZerados = valoresAbertos.filter(v => v.valor <= 0);
-                for (const valorZerado of valoresZerados) {
-                    await db.collection('valoresAbertos').doc(valorZerado.id).delete();
-                }
-                
-                closeUtilizarValorModal();
-                await loadAllData();
-                await loadFinanceiro(document.getElementById('mainContent'));
-                
-                showToast('Utilização registrada com sucesso!', 'success');
-            } catch (error) {
-                console.error('Error saving utilizacao:', error);
-                showToast('Erro ao registrar utilização', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
         function aplicarFiltroFinanceiroAuto() {
             loadFinanceiroData();
         }
@@ -5852,46 +6084,7 @@
                 
                 valoresAbertos = valoresAbertosAtualizados;
                 
-                const saldoTotal = valoresAbertos.reduce((total, valor) => total + valor.valor, 0);
-                const saldoElement = document.getElementById('saldoValoresAbertos');
-                if (saldoElement) {
-                    saldoElement.textContent = `R$ ${saldoTotal.toFixed(2)}`;
-                }
-                
-                const utilizacoesLista = document.getElementById('utilizacoesLista');
-                if (utilizacoesLista) {
-                    if (utilizacoes.length > 0) {
-                        const utilizacoesOrdenadas = [...utilizacoes].sort((a, b) => {
-                            const dataA = a.data?.toDate ? a.data.toDate() : new Date(a.data);
-                            const dataB = b.data?.toDate ? b.data.toDate() : new Date(b.data);
-                            return dataB - dataA;
-                        });
-                        
-                        let html = '<h5 style="margin-bottom: 10px;">Utilizações Recentes:</h5>';
-                        utilizacoesOrdenadas.slice(0, 5).forEach(util => {
-                            html += `
-                                <div class="utilizacao-item">
-                                    <div>
-                                        <div class="utilizacao-descricao">${util.descricao}</div>
-                                        <div class="utilizacao-data">${formatDateTimeBR(util.data)}</div>
-                                    </div>
-                                    <div class="utilizacao-valor">- R$ ${util.valor.toFixed(2)}</div>
-                                    <div class="utilizacao-actions">
-                                        <button class="edit" onclick="editUtilizacao('${util.id}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="delete" onclick="deleteUtilizacao('${util.id}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        utilizacoesLista.innerHTML = html;
-                    } else {
-                        utilizacoesLista.innerHTML = '<p style="text-align: center; color: var(--secondary); padding: 10px;">Nenhuma utilização registrada</p>';
-                    }
-                }
+                await atualizarSaldoAberto();
                 
                 const pedidosFiltrados = pedidos.filter(ped => {
                     const colaborador = colaboradoresMap[ped.colaboradorId];
@@ -6006,6 +6199,14 @@
                                 </div>
                                 <div class="movimentacao-valor ${mov.tipo}">
                                     ${mov.tipo === 'entrada' ? '+' : '-'} R$ ${mov.valor.toFixed(2)}
+                                </div>
+                                <div class="movimentacao-actions">
+                                    <button class="edit" onclick="openEditMovimentacaoModal('${mov.id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete" onclick="deleteMovimentacao('${mov.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                             `;
                             
