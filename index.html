@@ -56,6 +56,11 @@
             --gray-700: #334155;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            
+            /* Cores das cidades */
+            --mongagua: #f59e0b;
+            --peruibe: #8b5cf6;
+            --praiagrande: #ec4899;
         }
 
         body {
@@ -660,23 +665,17 @@
             background-color: var(--gray-100);
         }
 
+        /* Cores dos alertas por cidade */
         .person-card.mongagua-alert {
-            border-left: 4px solid var(--warning);
+            border-left: 4px solid var(--mongagua);
         }
 
         .person-card.peruibe-alert {
-            border-left: 4px solid var(--info);
+            border-left: 4px solid var(--peruibe);
         }
 
         .person-card.praiagrande-alert {
-            border-left: 4px solid var(--warning);
-        }
-
-        .person-card.mongagua-alert .city-badge,
-        .person-card.peruibe-alert .city-badge,
-        .person-card.praiagrande-alert .city-badge {
-            background-color: var(--warning);
-            color: var(--dark);
+            border-left: 4px solid var(--praiagrande);
         }
 
         .person-card:hover {
@@ -717,18 +716,18 @@
         }
 
         .city-badge.mongagua {
-            background: var(--warning);
+            background: var(--mongagua);
             color: var(--dark);
         }
 
         .city-badge.peruibe {
-            background: var(--info);
+            background: var(--peruibe);
             color: white;
         }
 
         .city-badge.praiagrande {
-            background: var(--warning);
-            color: var(--dark);
+            background: var(--praiagrande);
+            color: white;
         }
 
         .date-badge {
@@ -764,26 +763,32 @@
 
         .alert-mongagua {
             background-color: #fff3cd;
-            border-left: 4px solid var(--warning);
+            border-left: 4px solid var(--mongagua);
             color: #856404;
         }
 
         .alert-peruibe {
-            background-color: #e6f3ff;
-            border-left: 4px solid var(--info);
-            color: #0369a1;
+            background-color: #f3e8ff;
+            border-left: 4px solid var(--peruibe);
+            color: #6b21a8;
         }
 
         .alert-praiagrande {
-            background-color: #fff3cd;
-            border-left: 4px solid var(--warning);
-            color: #856404;
+            background-color: #fce7f3;
+            border-left: 4px solid var(--praiagrande);
+            color: #9d174d;
         }
 
-        .alert-mongagua i,
-        .alert-peruibe i,
+        .alert-mongagua i {
+            color: var(--mongagua);
+        }
+
+        .alert-peruibe i {
+            color: var(--peruibe);
+        }
+
         .alert-praiagrande i {
-            font-size: 1rem;
+            color: var(--praiagrande);
         }
 
         /* Observação (texto do aniversário) */
@@ -1363,6 +1368,21 @@
             color: #856404;
         }
 
+        .badge.mongagua {
+            background: var(--mongagua);
+            color: var(--dark);
+        }
+
+        .badge.peruibe {
+            background: var(--peruibe);
+            color: white;
+        }
+
+        .badge.praiagrande {
+            background: var(--praiagrande);
+            color: white;
+        }
+
         .action-buttons {
             display: flex;
             gap: 8px;
@@ -1624,6 +1644,84 @@
             display: flex;
             gap: 10px;
             justify-content: flex-end;
+        }
+
+        /* Histórico de Movimentações */
+        .historico-movimentacoes {
+            margin-top: 20px;
+            border-top: 2px solid var(--gray-200);
+            padding-top: 20px;
+        }
+
+        .historico-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .historico-header h4 {
+            color: var(--dark);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .historico-lista {
+            max-height: 400px;
+            overflow-y: auto;
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .movimentacao-item {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid;
+            box-shadow: var(--shadow);
+        }
+
+        .movimentacao-item.entrada {
+            border-left-color: var(--success);
+        }
+
+        .movimentacao-item.saida {
+            border-left-color: var(--danger);
+        }
+
+        .movimentacao-info {
+            flex: 1;
+        }
+
+        .movimentacao-descricao {
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .movimentacao-data {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .movimentacao-valor {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .movimentacao-valor.entrada {
+            color: var(--success);
+        }
+
+        .movimentacao-valor.saida {
+            color: var(--danger);
         }
 
         /* Relatórios */
@@ -2231,6 +2329,54 @@
         </div>
     </div>
 
+    <!-- Adicionar Movimentação Modal -->
+    <div class="modal" id="modalAddMovimentacao">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-exchange-alt"></i> Adicionar Movimentação</h3>
+                <i class="fas fa-times modal-close" onclick="closeAddMovimentacaoModal()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tipo de Movimentação</label>
+                    <select id="movimentacaoTipo">
+                        <option value="entrada">Entrada (Crédito)</option>
+                        <option value="saida">Saída (Débito)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="movimentacaoValor" step="0.01" min="0" placeholder="0.00">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Descrição</label>
+                    <textarea id="movimentacaoDescricao" rows="3" placeholder="Descreva a movimentação..."></textarea>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Data</label>
+                    <input type="text" id="movimentacaoData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                </div>
+                
+                <div class="form-group">
+                    <label>Colaborador Relacionado (opcional)</label>
+                    <select id="movimentacaoColaborador">
+                        <option value="">Nenhum</option>
+                        <!-- Será preenchido dinamicamente -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddMovimentacaoModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="salvarMovimentacao()">
+                    <i class="fas fa-save"></i> Salvar Movimentação
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -2316,6 +2462,7 @@
         let pizzas = [];
         let pedidos = [];
         let valoresAbertos = [];
+        let movimentacoes = [];
         let observacoes = [];
         let checklists = [];
         let currentPedidoId = null;
@@ -2378,6 +2525,19 @@
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${day}/${month}`;
+        }
+
+        function formatDateTimeBR(date) {
+            if (!date) return '';
+            if (date.toDate) date = date.toDate();
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return '';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
         }
 
         function parseDateBR(dateStr) {
@@ -2627,6 +2787,83 @@
             }
             
             previewContainer.innerHTML = html;
+        }
+
+        // Movimentações Functions
+        function openAddMovimentacaoModal() {
+            const modal = document.getElementById('modalAddMovimentacao');
+            if (!modal) return;
+            
+            const colaboradorSelect = document.getElementById('movimentacaoColaborador');
+            if (colaboradorSelect) {
+                colaboradorSelect.innerHTML = '<option value="">Nenhum</option>';
+                colaboradores.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')).forEach(col => {
+                    colaboradorSelect.innerHTML += `<option value="${col.id}">${col.nome}</option>`;
+                });
+            }
+            
+            document.getElementById('movimentacaoTipo').value = 'entrada';
+            document.getElementById('movimentacaoValor').value = '';
+            document.getElementById('movimentacaoDescricao').value = '';
+            document.getElementById('movimentacaoData').value = formatDateBR(new Date());
+            
+            modal.classList.add('active');
+        }
+
+        function closeAddMovimentacaoModal() {
+            document.getElementById('modalAddMovimentacao').classList.remove('active');
+        }
+
+        async function salvarMovimentacao() {
+            const tipo = document.getElementById('movimentacaoTipo').value;
+            const valor = parseFloat(document.getElementById('movimentacaoValor').value);
+            const descricao = document.getElementById('movimentacaoDescricao').value.trim();
+            const dataStr = document.getElementById('movimentacaoData').value;
+            const colaboradorId = document.getElementById('movimentacaoColaborador').value;
+            
+            if (!valor || valor <= 0) {
+                showToast('Digite um valor válido', 'error');
+                return;
+            }
+            
+            if (!descricao) {
+                showToast('Digite uma descrição', 'error');
+                return;
+            }
+            
+            if (!validateDateBR(dataStr)) {
+                showToast('Data inválida', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                const movimentacao = {
+                    tipo,
+                    valor,
+                    descricao,
+                    data: parseDateBR(dataStr),
+                    dataBR: dataStr,
+                    colaboradorId: colaboradorId || null,
+                    dataCriacao: new Date()
+                };
+                
+                await db.collection('movimentacoes').add(movimentacao);
+                
+                closeAddMovimentacaoModal();
+                await loadAllData();
+                
+                if (currentSection === 'financeiro') {
+                    await loadFinanceiro(document.getElementById('mainContent'));
+                }
+                
+                showToast('Movimentação adicionada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error saving movimentacao:', error);
+                showToast('Erro ao salvar movimentação', 'error');
+            } finally {
+                hideLoading();
+            }
         }
 
         // Pizza Bonus Modal Functions
@@ -3544,6 +3781,9 @@
                 const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
                 valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                const movimentacoesSnapshot = await db.collection('movimentacoes').get();
+                movimentacoes = movimentacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
                 const observacoesSnapshot = await db.collection('observacoes').get();
                 observacoes = observacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
@@ -3778,10 +4018,8 @@
                 if (!col.dataAdmissao) return false;
                 const dataAdm = new Date(col.dataAdmissao);
                 
-                // Calcula quantos anos de empresa o colaborador fará no próximo aniversário
                 const anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(dataAdm);
                 
-                // Incluir apenas colaboradores que farão 1 ano ou mais
                 if (anosEmpresaProximoAniversario < 1) return false;
                 
                 if (inicio || fim) {
@@ -3872,7 +4110,6 @@
             const pedidosPendentes = pedidosFiltrados.filter(p => p.status === 'pendente');
             const pedidosCancelados = pedidosFiltrados.filter(p => p.status === 'cancelado');
             
-            // CORREÇÃO: Calcular gasto total considerando TODOS os pedidos
             let totalGasto = 0;
             
             pedidosFiltrados.forEach(ped => {
@@ -4646,7 +4883,6 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Filtrar apenas colaboradores que farão 1 ano ou mais de empresa no próximo aniversário
                 const colaboradoresComData = colaboradores.filter(col => {
                     if (!col.dataAdmissao) return false;
                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
@@ -4726,7 +4962,7 @@
                 card.classList.add('past-birthday');
             }
             
-            // Adicionar classes de alerta apenas para cidades com restrição
+            // Adicionar classes de alerta com cores específicas
             if (isMongagua && colaborador.status === 'Ativo') {
                 card.classList.add('mongagua-alert');
             }
@@ -4785,7 +5021,7 @@
                 });
             }
             
-            // Alertas para cidades com restrição de entrega - apenas a borda esquerda colorida, fundo branco
+            // Alertas para cidades com restrição de entrega
             let alertaCidade = '';
             if (isMongagua && colaborador.status === 'Ativo') {
                 alertaCidade = `
@@ -5035,6 +5271,9 @@
                     <button class="btn-add" onclick="openPizzaBonusModal()">
                         <i class="fas fa-gift"></i> Bonificar Colaborador com Pizza
                     </button>
+                    <button class="btn-import" onclick="openAddMovimentacaoModal()">
+                        <i class="fas fa-exchange-alt"></i> Adicionar Movimentação
+                    </button>
                 </div>
                 
                 <div class="filters-container" id="financeiroFilters">
@@ -5077,6 +5316,19 @@
                         <span class="badge warning" id="valoresAbertosCount">0 pendente(s)</span>
                     </div>
                     <div class="valores-abertos-list" id="valoresAbertosList"></div>
+                </div>
+                
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Histórico de Movimentações</h3>
+                    </div>
+                    <div class="historico-movimentacoes">
+                        <div class="historico-header">
+                            <h4><i class="fas fa-exchange-alt"></i> Últimas Movimentações</h4>
+                            <span class="badge info" id="totalMovimentacoes">0 registro(s)</span>
+                        </div>
+                        <div class="historico-lista" id="historicoMovimentacoesLista"></div>
+                    </div>
                 </div>
                 
                 <div class="table-container">
@@ -5174,6 +5426,9 @@
                 const valoresAbertosSnapshot = await db.collection('valoresAbertos').get();
                 valoresAbertos = valoresAbertosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
+                const movimentacoesSnapshot = await db.collection('movimentacoes').get();
+                movimentacoes = movimentacoesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
                 const valoresAbertosAtualizados = [];
                 for (const valor of valoresAbertos) {
                     const colaborador = colaboradoresMap[valor.colaboradorId];
@@ -5217,7 +5472,6 @@
                     return true;
                 });
                 
-                // CORREÇÃO: Calcular gasto total considerando TODOS os pedidos
                 let totalGasto = 0;
                 let totalPedidos = pedidosFiltrados.length;
                 
@@ -5358,6 +5612,50 @@
                         }
                     } else {
                         valoresAbertosList.innerHTML = '<p style="text-align: center; color: var(--secondary);">Nenhum valor em aberto</p>';
+                    }
+                }
+                
+                const historicoLista = document.getElementById('historicoMovimentacoesLista');
+                if (historicoLista) {
+                    if (movimentacoes.length > 0) {
+                        const movimentacoesOrdenadas = [...movimentacoes].sort((a, b) => {
+                            const dataA = a.data?.toDate ? a.data.toDate() : new Date(a.data);
+                            const dataB = b.data?.toDate ? b.data.toDate() : new Date(b.data);
+                            return dataB - dataA;
+                        });
+                        
+                        const totalMovimentacoes = document.getElementById('totalMovimentacoes');
+                        if (totalMovimentacoes) {
+                            totalMovimentacoes.textContent = `${movimentacoes.length} registro(s)`;
+                        }
+                        
+                        historicoLista.innerHTML = '';
+                        
+                        movimentacoesOrdenadas.slice(0, 10).forEach(mov => {
+                            const colaborador = mov.colaboradorId ? colaboradoresMap[mov.colaboradorId] : null;
+                            
+                            const item = document.createElement('div');
+                            item.className = `movimentacao-item ${mov.tipo}`;
+                            
+                            const dataMov = mov.data?.toDate ? mov.data.toDate() : new Date(mov.data);
+                            
+                            item.innerHTML = `
+                                <div class="movimentacao-info">
+                                    <div class="movimentacao-descricao">
+                                        ${mov.descricao}
+                                        ${colaborador ? `<br><small>Colaborador: ${colaborador.nome}</small>` : ''}
+                                    </div>
+                                    <div class="movimentacao-data">${formatDateTimeBR(dataMov)}</div>
+                                </div>
+                                <div class="movimentacao-valor ${mov.tipo}">
+                                    ${mov.tipo === 'entrada' ? '+' : '-'} R$ ${mov.valor.toFixed(2)}
+                                </div>
+                            `;
+                            
+                            historicoLista.appendChild(item);
+                        });
+                    } else {
+                        historicoLista.innerHTML = '<p style="text-align: center; color: var(--secondary); padding: 20px;">Nenhuma movimentação registrada</p>';
                     }
                 }
                 
@@ -6280,6 +6578,17 @@
                                 itens: [],
                                 observacao: 'Colaborador inativado - pedido pendente'
                             });
+                            
+                            // Adicionar movimentação automática
+                            await db.collection('movimentacoes').add({
+                                tipo: 'entrada',
+                                valor,
+                                descricao: `Valor em aberto referente a pizza de ${colaboradorId} - Colaborador inativado`,
+                                data: new Date(),
+                                dataBR: formatDateBR(new Date()),
+                                colaboradorId,
+                                dataCriacao: new Date()
+                            });
                         }
                     }
                 }
@@ -6916,7 +7225,6 @@
                         if (ordemRelatorio === 'alfabetica') {
                             dadosFiltrados.sort((a, b) => (a.Colaborador || '').localeCompare(b.Colaborador || ''));
                         } else if (ordemRelatorio === 'departamento') {
-                            // Para pedidos, ordenar por colaborador (já que não temos departamento direto)
                             dadosFiltrados.sort((a, b) => (a.Colaborador || '').localeCompare(b.Colaborador || ''));
                         } else if (ordemRelatorio === 'data_recente') {
                             dadosFiltrados.sort((a, b) => {
@@ -7009,7 +7317,6 @@
                                 if (col.dataAdmissao) {
                                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
                                     const anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(dataAdm);
-                                    // Incluir apenas colaboradores que farão 1 ano ou mais no próximo aniversário
                                     if (anosEmpresaProximoAniversario >= 1) {
                                         dadosFiltrados.push({
                                             'Colaborador': col.nome || '-',
