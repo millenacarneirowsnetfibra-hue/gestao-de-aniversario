@@ -1872,6 +1872,35 @@
             color: var(--gray-500);
         }
 
+        /* Utilização Actions */
+        .utilizacao-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .utilizacao-actions button {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .utilizacao-actions button:hover {
+            background: var(--gray-200);
+        }
+
+        .utilizacao-actions button.edit:hover {
+            color: var(--primary);
+        }
+
+        .utilizacao-actions button.delete:hover {
+            color: var(--danger);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -2328,6 +2357,87 @@
         </div>
     </div>
 
+    <!-- Edit Utilização Modal -->
+    <div class="modal" id="modalEditUtilizacao">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Editar Utilização</h3>
+                <i class="fas fa-times modal-close" onclick="closeEditUtilizacaoModal()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Saldo Disponível</label>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning);" id="saldoDisponivelEdit">
+                        R$ 0,00
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Descrição da Utilização *</label>
+                    <input type="text" id="editUtilizacaoDescricao" placeholder="Ex: Compra de material de escritório">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Valor a Utilizar (R$) *</label>
+                    <input type="number" id="editUtilizacaoValor" step="0.01" min="0.01" placeholder="0.00">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditUtilizacaoModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="updateUtilizacao()">
+                    <i class="fas fa-save"></i> Atualizar Utilização
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Movimentação Modal -->
+    <div class="modal" id="modalAddMovimentacao">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-exchange-alt"></i> Adicionar Movimentação</h3>
+                <i class="fas fa-times modal-close" onclick="closeAddMovimentacaoModal()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tipo *</label>
+                    <select id="movimentacaoTipo">
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Valor (R$) *</label>
+                    <input type="number" id="movimentacaoValor" step="0.01" min="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Descrição *</label>
+                    <input type="text" id="movimentacaoDescricao" placeholder="Descrição da movimentação">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Data *</label>
+                    <input type="text" id="movimentacaoData" placeholder="DD/MM/AAAA" oninput="applyDateMask(this)">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Colaborador (opcional)</label>
+                    <select id="movimentacaoColaborador">
+                        <option value="">Nenhum</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddMovimentacaoModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="salvarMovimentacao()">
+                    <i class="fas fa-save"></i> Salvar Movimentação
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -2421,6 +2531,7 @@
         let editingColaboradorId = null;
         let editingPedidoId = null;
         let editingPizzaId = null;
+        let editingUtilizacaoId = null;
         let charts = {};
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
@@ -3667,6 +3778,173 @@
             }
         }
 
+        // Utilização Functions
+        async function editUtilizacao(id) {
+            const utilizacao = utilizacoes.find(u => u.id === id);
+            if (!utilizacao) return;
+            
+            editingUtilizacaoId = id;
+            
+            const saldoTotal = valoresAbertos.reduce((total, valor) => total + valor.valor, 0);
+            document.getElementById('saldoDisponivelEdit').textContent = `R$ ${saldoTotal.toFixed(2)}`;
+            document.getElementById('editUtilizacaoDescricao').value = utilizacao.descricao;
+            document.getElementById('editUtilizacaoValor').value = utilizacao.valor;
+            
+            document.getElementById('modalEditUtilizacao').classList.add('active');
+        }
+
+        function closeEditUtilizacaoModal() {
+            document.getElementById('modalEditUtilizacao').classList.remove('active');
+            editingUtilizacaoId = null;
+        }
+
+        async function updateUtilizacao() {
+            const descricao = document.getElementById('editUtilizacaoDescricao').value.trim();
+            const valor = parseFloat(document.getElementById('editUtilizacaoValor').value);
+            const utilizacaoOriginal = utilizacoes.find(u => u.id === editingUtilizacaoId);
+            
+            if (!descricao) {
+                showToast('Digite uma descrição', 'error');
+                return;
+            }
+            
+            if (!valor || valor <= 0) {
+                showToast('Digite um valor válido', 'error');
+                return;
+            }
+            
+            const diferenca = valor - (utilizacaoOriginal?.valor || 0);
+            const saldoTotal = valoresAbertos.reduce((total, val) => total + val.valor, 0);
+            
+            if (diferenca > saldoTotal) {
+                showToast('Valor maior que o saldo disponível', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                // Atualizar utilização
+                await db.collection('utilizacoes').doc(editingUtilizacaoId).update({
+                    descricao,
+                    valor,
+                    dataAtualizacao: new Date()
+                });
+                
+                // Atualizar movimentação correspondente
+                const movimentacoesSnapshot = await db.collection('movimentacoes')
+                    .where('descricao', '>=', `Utilização de saldo: ${utilizacaoOriginal?.descricao.substring(0, 20)}`)
+                    .get();
+                
+                if (!movimentacoesSnapshot.empty) {
+                    const movDoc = movimentacoesSnapshot.docs[0];
+                    await movDoc.ref.update({
+                        descricao: `Utilização de saldo: ${descricao}`,
+                        valor
+                    });
+                }
+                
+                // Ajustar valores em aberto
+                const valoresAbertosOrdenados = [...valoresAbertos].sort((a, b) => a.dataCriacao - b.dataCriacao);
+                let valorRestante = diferenca;
+                
+                if (diferenca > 0) {
+                    // Precisa tirar mais dos valores em aberto
+                    for (const valorAberto of valoresAbertosOrdenados) {
+                        if (valorRestante <= 0) break;
+                        
+                        if (valorAberto.valor >= valorRestante) {
+                            const novoValor = valorAberto.valor - valorRestante;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: novoValor,
+                                dataAtualizacao: new Date()
+                            });
+                            valorRestante = 0;
+                        } else {
+                            valorRestante -= valorAberto.valor;
+                            await db.collection('valoresAbertos').doc(valorAberto.id).update({
+                                valor: 0,
+                                dataAtualizacao: new Date()
+                            });
+                        }
+                    }
+                } else if (diferenca < 0) {
+                    // Devolver para os valores em aberto (criar novo valor)
+                    const valorDevolver = Math.abs(diferenca);
+                    await db.collection('valoresAbertos').add({
+                        colaboradorId: null,
+                        pedidoId: null,
+                        valor: valorDevolver,
+                        dataCriacao: new Date(),
+                        status: 'pendente',
+                        itens: [],
+                        observacao: 'Ajuste de utilização'
+                    });
+                }
+                
+                // Remover valores zerados
+                const valoresZerados = valoresAbertos.filter(v => v.valor <= 0);
+                for (const valorZerado of valoresZerados) {
+                    await db.collection('valoresAbertos').doc(valorZerado.id).delete();
+                }
+                
+                closeEditUtilizacaoModal();
+                await loadAllData();
+                await loadFinanceiro(document.getElementById('mainContent'));
+                
+                showToast('Utilização atualizada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error updating utilizacao:', error);
+                showToast('Erro ao atualizar utilização', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteUtilizacao(id) {
+            if (!confirm('Tem certeza que deseja excluir esta utilização?')) return;
+            
+            showLoading();
+            try {
+                const utilizacao = utilizacoes.find(u => u.id === id);
+                
+                // Excluir utilização
+                await db.collection('utilizacoes').doc(id).delete();
+                
+                // Excluir movimentação correspondente
+                const movimentacoesSnapshot = await db.collection('movimentacoes')
+                    .where('descricao', '>=', `Utilização de saldo: ${utilizacao?.descricao.substring(0, 20)}`)
+                    .get();
+                
+                if (!movimentacoesSnapshot.empty) {
+                    const movDoc = movimentacoesSnapshot.docs[0];
+                    await movDoc.ref.delete();
+                }
+                
+                // Devolver valor para saldo
+                if (utilizacao) {
+                    await db.collection('valoresAbertos').add({
+                        colaboradorId: null,
+                        pedidoId: null,
+                        valor: utilizacao.valor,
+                        dataCriacao: new Date(),
+                        status: 'pendente',
+                        itens: [],
+                        observacao: 'Devolução de utilização excluída'
+                    });
+                }
+                
+                await loadAllData();
+                await loadFinanceiro(document.getElementById('mainContent'));
+                
+                showToast('Utilização excluída com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error deleting utilizacao:', error);
+                showToast('Erro ao excluir utilização', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
@@ -4056,6 +4334,7 @@
             
             const { inicio, fim } = getFiltroPeriodo();
             
+            // Agora inclui TODOS os pedidos, independente do status
             const pedidosFiltrados = pedidos.filter(ped => {
                 if (!ped.dataEntrega) return false;
                 const dataEntrega = ped.dataEntrega.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
@@ -4084,9 +4363,23 @@
             });
             
             const gastosPorMes = Array(12).fill(0);
-            pedidosEntregues.forEach(ped => {
-                const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
-                gastosPorMes[dataEntrega.getMonth()] += valor;
+            pedidosFiltrados.forEach(ped => {
+                if (ped.status !== 'cancelado') { // Excluir cancelados do gráfico, mas manter no total
+                    const dataEntrega = ped.dataEntrega?.toDate ? ped.dataEntrega.toDate() : new Date(ped.dataEntrega);
+                    const mes = dataEntrega.getMonth();
+                    
+                    let valor = 0;
+                    if (ped.tipoPizza === 'meia' && ped.pizzaId1 && ped.pizzaId2) {
+                        valor = calcularValorMeiaMeia(ped.pizzaId1, ped.pizzaId2);
+                    } else {
+                        const pizza = pizzas.find(pz => pz.id === (ped.pizzaId || ped.pizzaId1));
+                        if (pizza) {
+                            valor = parseFloat(pizza.valor) || 0;
+                        }
+                    }
+                    
+                    gastosPorMes[mes] += valor;
+                }
             });
             
             container.innerHTML = `
@@ -4126,7 +4419,7 @@
                 
                 <div class="card" style="margin-bottom: 20px;">
                     <div class="card-header">
-                        <h3><i class="fas fa-chart-line"></i> Gasto por Mês (Entregues)</h3>
+                        <h3><i class="fas fa-chart-line"></i> Gasto por Mês (inclui entregues e pendentes)</h3>
                     </div>
                     <div style="height: 300px;">
                         <canvas id="dashboardFinanceiroChart"></canvas>
@@ -5575,7 +5868,7 @@
                         });
                         
                         let html = '<h5 style="margin-bottom: 10px;">Utilizações Recentes:</h5>';
-                        utilizacoesOrdenadas.slice(0, 3).forEach(util => {
+                        utilizacoesOrdenadas.slice(0, 5).forEach(util => {
                             html += `
                                 <div class="utilizacao-item">
                                     <div>
@@ -5583,6 +5876,14 @@
                                         <div class="utilizacao-data">${formatDateTimeBR(util.data)}</div>
                                     </div>
                                     <div class="utilizacao-valor">- R$ ${util.valor.toFixed(2)}</div>
+                                    <div class="utilizacao-actions">
+                                        <button class="edit" onclick="editUtilizacao('${util.id}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="delete" onclick="deleteUtilizacao('${util.id}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             `;
                         });
