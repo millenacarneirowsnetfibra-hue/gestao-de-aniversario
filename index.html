@@ -662,16 +662,19 @@
 
         .person-card.mongagua-alert {
             border-left: 4px solid var(--warning);
-            background-color: #fff3cd;
         }
 
         .person-card.peruibe-alert {
             border-left: 4px solid var(--info);
-            background-color: #e6f3ff;
+        }
+
+        .person-card.praiagrande-alert {
+            border-left: 4px solid var(--warning);
         }
 
         .person-card.mongagua-alert .city-badge,
-        .person-card.peruibe-alert .city-badge {
+        .person-card.peruibe-alert .city-badge,
+        .person-card.praiagrande-alert .city-badge {
             background-color: var(--warning);
             color: var(--dark);
         }
@@ -723,6 +726,11 @@
             color: white;
         }
 
+        .city-badge.praiagrande {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
         .date-badge {
             padding: 4px 8px;
             border-radius: 4px;
@@ -740,6 +748,42 @@
             background: var(--danger);
             color: white;
             margin-left: 8px;
+        }
+
+        /* Alertas de cidade */
+        .alert-message {
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: white;
+        }
+
+        .alert-mongagua {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--warning);
+            color: #856404;
+        }
+
+        .alert-peruibe {
+            background-color: #e6f3ff;
+            border-left: 4px solid var(--info);
+            color: #0369a1;
+        }
+
+        .alert-praiagrande {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--warning);
+            color: #856404;
+        }
+
+        .alert-mongagua i,
+        .alert-peruibe i,
+        .alert-praiagrande i {
+            font-size: 1rem;
         }
 
         /* Observação (texto do aniversário) */
@@ -1810,34 +1854,6 @@
                 flex-wrap: wrap;
             }
         }
-
-        /* Alertas de cidade */
-        .alert-message {
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin: 10px 0;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-mongagua {
-            background-color: #fff3cd;
-            border-left: 4px solid var(--warning);
-            color: #856404;
-        }
-
-        .alert-peruibe {
-            background-color: #cff3ff;
-            border-left: 4px solid var(--info);
-            color: #0369a1;
-        }
-
-        .alert-mongagua i,
-        .alert-peruibe i {
-            font-size: 1rem;
-        }
     </style>
 </head>
 <body>
@@ -2455,6 +2471,22 @@
             }
             
             return idade;
+        }
+
+        function getYearsUntilNextAnniversary(admissionDate) {
+            if (!admissionDate) return 0;
+            const hoje = new Date();
+            const dataAdmissao = new Date(admissionDate);
+            
+            const aniversarioEsteAno = new Date(hoje.getFullYear(), dataAdmissao.getMonth(), dataAdmissao.getDate());
+            
+            if (aniversarioEsteAno < hoje) {
+                // Aniversário já passou este ano, próximo será no ano que vem
+                return hoje.getFullYear() + 1 - dataAdmissao.getFullYear();
+            } else {
+                // Aniversário ainda vai acontecer este ano
+                return hoje.getFullYear() - dataAdmissao.getFullYear();
+            }
         }
 
         function getNextBirthday(birthDate) {
@@ -3746,9 +3778,11 @@
                 if (!col.dataAdmissao) return false;
                 const dataAdm = new Date(col.dataAdmissao);
                 
-                // Filtra apenas colaboradores com 1 ano ou mais de empresa
-                const anosEmpresa = calculateAge(dataAdm);
-                if (anosEmpresa < 1) return false;
+                // Calcula quantos anos de empresa o colaborador fará no próximo aniversário
+                const anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(dataAdm);
+                
+                // Incluir apenas colaboradores que farão 1 ano ou mais
+                if (anosEmpresaProximoAniversario < 1) return false;
                 
                 if (inicio || fim) {
                     const anoInicio = inicio ? inicio.getFullYear() : new Date().getFullYear();
@@ -3769,8 +3803,8 @@
             colaboradoresAtivos.forEach(c => {
                 if (c.dataAdmissao) {
                     const adm = new Date(c.dataAdmissao);
-                    const anosEmpresa = calculateAge(adm);
-                    if (anosEmpresa >= 1) {
+                    const anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(adm);
+                    if (anosEmpresaProximoAniversario >= 1) {
                         aniversariosPorMes[adm.getMonth()]++;
                     }
                 }
@@ -4612,17 +4646,18 @@
                 const hoje = new Date();
                 const mesAtual = hoje.getMonth();
                 
-                // Filtrar apenas colaboradores com 1 ano ou mais de empresa
+                // Filtrar apenas colaboradores que farão 1 ano ou mais de empresa no próximo aniversário
                 const colaboradoresComData = colaboradores.filter(col => {
                     if (!col.dataAdmissao) return false;
                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                    const anosEmpresa = calculateAge(dataAdm);
-                    return anosEmpresa >= 1;
+                    const anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(dataAdm);
+                    return anosEmpresaProximoAniversario >= 1;
                 });
                 
                 colaboradoresComData.forEach(col => {
                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
                     col.diasAteAniversarioEmpresa = getDaysUntilNextCompanyAnniversary(dataAdm);
+                    col.anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(dataAdm);
                 });
                 
                 colaboradoresComData.sort((a, b) => a.diasAteAniversarioEmpresa - b.diasAteAniversarioEmpresa);
@@ -4673,13 +4708,14 @@
             const dataAdmissao = parseDateISO(colaborador.dataAdmissao) || new Date(colaborador.dataAdmissao);
             const dataFormatada = formatDateBR(dataAdmissao);
             const dataCurta = formatDateShortBR(dataAdmissao);
-            const anosEmpresa = new Date().getFullYear() - dataAdmissao.getFullYear();
+            const anosEmpresaProximoAniversario = colaborador.anosEmpresaProximoAniversario || getYearsUntilNextAnniversary(dataAdmissao);
             const mesAdmissao = dataAdmissao.getMonth() + 1;
             
             card.dataset.mesAdmissao = mesAdmissao;
             
             const isMongagua = colaborador.cidade === 'Mongaguá';
             const isPeruibe = colaborador.cidade === 'Peruíbe';
+            const isPraiaGrande = colaborador.cidade === 'Praia Grande';
             
             if (colaborador.status === 'Inativo') {
                 card.classList.add('inactive');
@@ -4690,11 +4726,15 @@
                 card.classList.add('past-birthday');
             }
             
+            // Adicionar classes de alerta apenas para cidades com restrição
             if (isMongagua && colaborador.status === 'Ativo') {
                 card.classList.add('mongagua-alert');
             }
             if (isPeruibe && colaborador.status === 'Ativo') {
                 card.classList.add('peruibe-alert');
+            }
+            if (isPraiaGrande && colaborador.status === 'Ativo') {
+                card.classList.add('praiagrande-alert');
             }
             
             let pedidosHtml = '';
@@ -4745,20 +4785,27 @@
                 });
             }
             
-            // Alertas para cidades com restrição de entrega
+            // Alertas para cidades com restrição de entrega - apenas a borda esquerda colorida, fundo branco
             let alertaCidade = '';
             if (isMongagua && colaborador.status === 'Ativo') {
                 alertaCidade = `
                     <div class="alert-message alert-mongagua">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Atenção:</strong> Mongaguá - Verificar disponibilidade de entrega (algumas pizzarias não atendem)
+                        <strong>Atenção:</strong> Mongaguá - Verificar disponibilidade de entrega
                     </div>
                 `;
             } else if (isPeruibe && colaborador.status === 'Ativo') {
                 alertaCidade = `
                     <div class="alert-message alert-peruibe">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Informação:</strong> Peruíbe - Confirmar com a pizzaria se há taxa de entrega adicional
+                        <strong>Atenção:</strong> Entrega em Peruíbe
+                    </div>
+                `;
+            } else if (isPraiaGrande && colaborador.status === 'Ativo') {
+                alertaCidade = `
+                    <div class="alert-message alert-praiagrande">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Atenção:</strong> Praia Grande - Verificar disponibilidade de entrega
                     </div>
                 `;
             }
@@ -4771,7 +4818,7 @@
                         </h4>
                         <p><i class="fas fa-sitemap"></i> ${colaborador.departamentoNome || 'Sem departamento'}</p>
                         <p><i class="fas fa-map-marker-alt"></i> ${colaborador.cidade || 'Não informada'}</p>
-                        <p><i class="fas fa-calendar-alt"></i> ${dataFormatada} (${anosEmpresa} anos)</p>
+                        <p><i class="fas fa-calendar-alt"></i> ${dataFormatada} (${anosEmpresaProximoAniversario} anos)</p>
                     </div>
                     <span class="date-badge">
                         ${dataCurta}
@@ -6961,14 +7008,14 @@
                                 }
                                 if (col.dataAdmissao) {
                                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                                    const anosEmpresa = calculateAge(dataAdm);
-                                    // Incluir apenas colaboradores com 1 ano ou mais
-                                    if (anosEmpresa >= 1) {
+                                    const anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(dataAdm);
+                                    // Incluir apenas colaboradores que farão 1 ano ou mais no próximo aniversário
+                                    if (anosEmpresaProximoAniversario >= 1) {
                                         dadosFiltrados.push({
                                             'Colaborador': col.nome || '-',
                                             'Tipo': 'Aniversário de Empresa',
                                             'Data': formatDateBR(dataAdm),
-                                            'Tempo Empresa': anosEmpresa,
+                                            'Tempo Empresa (próximo)': anosEmpresaProximoAniversario,
                                             'Mês': dataAdm.getMonth() + 1
                                         });
                                     }
@@ -7223,13 +7270,13 @@
                                 }
                                 if (col.dataAdmissao) {
                                     const dataAdm = parseDateISO(col.dataAdmissao) || new Date(col.dataAdmissao);
-                                    const anosEmpresa = calculateAge(dataAdm);
-                                    if (anosEmpresa >= 1) {
+                                    const anosEmpresaProximoAniversario = getYearsUntilNextAnniversary(dataAdm);
+                                    if (anosEmpresaProximoAniversario >= 1) {
                                         dados.push({
                                             'Colaborador': col.nome || '-',
                                             'Tipo': 'Aniversário de Empresa',
                                             'Data': formatDateBR(dataAdm),
-                                            'Tempo Empresa': anosEmpresa,
+                                            'Tempo Empresa (próximo)': anosEmpresaProximoAniversario,
                                             'Mês': dataAdm.getMonth() + 1
                                         });
                                     }
