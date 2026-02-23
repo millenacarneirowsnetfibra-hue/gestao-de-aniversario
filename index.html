@@ -23,6 +23,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
+    <!-- SortableJS para reordenação -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -625,7 +628,7 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* Cards List - 2 por linha */
+        /* Cards List - 2 por linha com reordenação */
         .cards-list {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -645,6 +648,20 @@
             box-shadow: var(--shadow);
             transition: all 0.2s ease;
             position: relative;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .person-card:active {
+            cursor: grabbing;
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
+        .person-card.drag-over {
+            border: 2px dashed var(--primary);
+            transform: scale(1.02);
+            box-shadow: var(--shadow-lg);
         }
 
         .person-card.inactive {
@@ -744,6 +761,28 @@
             background: var(--danger);
             color: white;
             margin-left: 8px;
+        }
+
+        /* Drag Handle */
+        .drag-handle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--gray-400);
+            font-size: 1.2rem;
+            cursor: grab;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .drag-handle:hover {
+            color: var(--primary);
+            background: var(--gray-100);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
         }
 
         /* Alertas de cidade */
@@ -905,7 +944,7 @@
             justify-content: flex-end;
         }
 
-        /* Checklist sem ordenação - removido o cursor grab e o ícone de arrastar */
+        /* Checklist */
         .checklist-container {
             margin-top: 15px;
             border-top: 1px solid var(--gray-200);
@@ -952,7 +991,6 @@
             overflow-y: auto;
         }
 
-        /* Lista de itens - removido o cursor grab e o ícone de arrastar */
         .checklist-sortable {
             list-style: none;
             padding: 0;
@@ -966,11 +1004,6 @@
             padding: 8px;
             border-bottom: 1px solid var(--gray-100);
             background: white;
-        }
-
-        /* Drag handle removido - não é mais exibido */
-        .drag-handle {
-            display: none;
         }
 
         .checklist-item input[type="checkbox"] {
@@ -2573,8 +2606,11 @@
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
         let financeiroFilterTimeout = null;
-        // Sortable não será mais utilizado - removido
         let historicoExpanded = false;
+
+        // Sortable instances
+        let vidaSortable = null;
+        let empresaSortable = null;
 
         // Utility Functions
         function showLoading() {
@@ -5062,6 +5098,35 @@
                     filtroMes.value = mesAtual + 1;
                 }
                 filterVida();
+
+                // Inicializar Sortable para reordenação
+                if (vidaSortable) {
+                    vidaSortable.destroy();
+                }
+                
+                vidaSortable = new Sortable(container, {
+                    animation: 150,
+                    handle: '.person-card',
+                    draggable: '.person-card',
+                    ghostClass: 'drag-over',
+                    onEnd: async function(evt) {
+                        const itemEl = evt.item;
+                        const colaboradorId = itemEl.dataset.colaboradorId;
+                        const newIndex = evt.newIndex;
+                        
+                        // Reordenar os cards visualmente
+                        const cards = Array.from(container.children);
+                        cards.splice(evt.oldIndex, 1);
+                        cards.splice(newIndex, 0, itemEl);
+                        
+                        // Reconstruir o container na nova ordem
+                        container.innerHTML = '';
+                        cards.forEach(card => container.appendChild(card));
+                        
+                        // Salvar a nova ordem (opcional - você pode implementar uma lógica para salvar a ordem no Firebase se desejar)
+                        showToast('Ordem dos cards atualizada!', 'success');
+                    }
+                });
                 
             } catch (error) {
                 console.error('Error loading vida cards:', error);
@@ -5098,6 +5163,7 @@
             const observacaoId = observacao?.id || null;
             
             card.innerHTML = `
+                <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
                 <div class="person-card-header">
                     <div class="person-info">
                         <h4>${colaborador.nome || 'Sem nome'}
@@ -5285,7 +5351,6 @@
         function renderChecklistItems(colaboradorId, checklist, tipo) {
             const itens = checklist?.itens || getDefaultChecklistItems(tipo);
             
-            // Removido o ícone de arrastar (drag handle) e o texto sobre reordenação
             let html = `<ul class="checklist-sortable" id="checklistSortable-${colaboradorId}" data-colaborador-id="${colaboradorId}">`;
             
             itens.forEach((item, index) => {
@@ -5457,6 +5522,35 @@
                     filtroMes.value = mesAtual + 1;
                 }
                 filterEmpresa();
+
+                // Inicializar Sortable para reordenação
+                if (empresaSortable) {
+                    empresaSortable.destroy();
+                }
+                
+                empresaSortable = new Sortable(container, {
+                    animation: 150,
+                    handle: '.person-card',
+                    draggable: '.person-card',
+                    ghostClass: 'drag-over',
+                    onEnd: async function(evt) {
+                        const itemEl = evt.item;
+                        const colaboradorId = itemEl.dataset.colaboradorId;
+                        const newIndex = evt.newIndex;
+                        
+                        // Reordenar os cards visualmente
+                        const cards = Array.from(container.children);
+                        cards.splice(evt.oldIndex, 1);
+                        cards.splice(newIndex, 0, itemEl);
+                        
+                        // Reconstruir o container na nova ordem
+                        container.innerHTML = '';
+                        cards.forEach(card => container.appendChild(card));
+                        
+                        // Salvar a nova ordem (opcional - você pode implementar uma lógica para salvar a ordem no Firebase se desejar)
+                        showToast('Ordem dos cards atualizada!', 'success');
+                    }
+                });
                 
             } catch (error) {
                 console.error('Error loading empresa cards:', error);
@@ -5578,6 +5672,7 @@
             }
             
             card.innerHTML = `
+                <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
                 <div class="person-card-header">
                     <div class="person-info">
                         <h4>${colaborador.nome || 'Sem nome'}
