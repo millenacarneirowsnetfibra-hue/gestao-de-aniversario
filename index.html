@@ -7343,7 +7343,7 @@
             }
         }
 
-        // Função corrigida para remover item do checklist com consistência transacional
+        // Função corrigida para remover item do checklist (funciona para todas as abas)
         async function removeChecklistItem(colaboradorId, index) {
             if (!confirm('Tem certeza que deseja remover este item?')) return;
             
@@ -7358,35 +7358,19 @@
                     const data = doc.data();
                     const itens = data.itens || [];
                     
-                    // Verificar se o índice é válido
-                    if (index < 0 || index >= itens.length) {
-                        showToast('Item não encontrado', 'error');
-                        hideLoading();
-                        return;
-                    }
-                    
                     // Remover o item do array
-                    const itemRemovido = itens.splice(index, 1)[0];
+                    itens.splice(index, 1);
                     
-                    // Iniciar uma transação em lote para garantir consistência
-                    const batch = db.batch();
-                    
-                    // Atualizar o checklist com os itens restantes
-                    batch.update(doc.ref, {
+                    // Atualizar no Firebase
+                    await doc.ref.update({
                         itens,
                         dataAtualizacao: new Date()
                     });
                     
-                    // Se houver um campo específico para histórico de itens removidos (opcional)
-                    // Você pode adicionar aqui uma lógica para registrar itens removidos em outra coleção
-                    
-                    // Executar a transação
-                    await batch.commit();
-                    
                     // Determinar o tipo baseado na seção atual
                     const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
                     
-                    // Atualizar a interface imediatamente
+                    // Atualizar a interface imediatamente sem recarregar toda a página
                     const checklistContainer = document.getElementById(`checklist-${colaboradorId}`);
                     if (checklistContainer) {
                         // Re-renderizar apenas o checklist
@@ -7420,12 +7404,10 @@
                     }
                     
                     showToast('Item removido com sucesso!', 'success');
-                } else {
-                    showToast('Checklist não encontrado', 'error');
                 }
             } catch (error) {
                 console.error('Error removing checklist item:', error);
-                showToast('Erro ao remover item: ' + error.message, 'error');
+                showToast('Erro ao remover item', 'error');
             } finally {
                 hideLoading();
             }
