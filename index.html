@@ -7261,10 +7261,30 @@
                     });
                 }
                 
-                if (currentSection === 'vida') {
-                    await loadVida(document.getElementById('mainContent'));
-                } else if (currentSection === 'empresa') {
-                    await loadEmpresa(document.getElementById('mainContent'));
+                // Atualizar a interface sem recarregar toda a página
+                const checklistContainer = document.getElementById(`checklist-${colaboradorId}`);
+                if (checklistContainer) {
+                    checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
+                    
+                    // Re-inicializar o Sortable para este checklist
+                    const sortableElement = document.getElementById(`checklistSortable-${colaboradorId}`);
+                    if (sortableElement && !sortableInstances[colaboradorId]) {
+                        sortableInstances[colaboradorId] = new Sortable(sortableElement, {
+                            animation: 150,
+                            handle: '.drag-handle',
+                            onEnd: function(evt) {
+                                reordenarChecklist(colaboradorId, evt.oldIndex, evt.newIndex);
+                            }
+                        });
+                    }
+                    
+                    // Atualizar a barra de progresso
+                    const progressBar = document.getElementById(`progress-${colaboradorId}`);
+                    if (progressBar) {
+                        const checked = itens.filter(item => item.checked).length;
+                        const progress = (checked / itens.length) * 100;
+                        progressBar.style.width = `${progress}%`;
+                    }
                 }
                 
                 input.value = '';
@@ -7323,7 +7343,7 @@
             }
         }
 
-        // CORREÇÃO APLICADA AQUI: Função removeChecklistItem corrigida
+        // Função corrigida para remover item do checklist (funciona para todas as abas)
         async function removeChecklistItem(colaboradorId, index) {
             if (!confirm('Tem certeza que deseja remover este item?')) return;
             
@@ -7347,16 +7367,24 @@
                         dataAtualizacao: new Date()
                     });
                     
+                    // Determinar o tipo baseado na seção atual
+                    const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
+                    
                     // Atualizar a interface imediatamente sem recarregar toda a página
                     const checklistContainer = document.getElementById(`checklist-${colaboradorId}`);
                     if (checklistContainer) {
                         // Re-renderizar apenas o checklist
-                        const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
                         checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
                         
                         // Re-inicializar o Sortable para este checklist
                         const sortableElement = document.getElementById(`checklistSortable-${colaboradorId}`);
-                        if (sortableElement && !sortableInstances[colaboradorId]) {
+                        if (sortableElement) {
+                            // Destruir instância anterior se existir
+                            if (sortableInstances[colaboradorId]) {
+                                sortableInstances[colaboradorId].destroy();
+                                delete sortableInstances[colaboradorId];
+                            }
+                            
                             sortableInstances[colaboradorId] = new Sortable(sortableElement, {
                                 animation: 150,
                                 handle: '.drag-handle',
