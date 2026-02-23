@@ -23,9 +23,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
-    <!-- SortableJS para ordenação de checklist -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -908,7 +905,7 @@
             justify-content: flex-end;
         }
 
-        /* Checklist com ordenação */
+        /* Checklist sem ordenação - removido o cursor grab e o ícone de arrastar */
         .checklist-container {
             margin-top: 15px;
             border-top: 1px solid var(--gray-200);
@@ -955,6 +952,7 @@
             overflow-y: auto;
         }
 
+        /* Lista de itens - removido o cursor grab e o ícone de arrastar */
         .checklist-sortable {
             list-style: none;
             padding: 0;
@@ -968,21 +966,11 @@
             padding: 8px;
             border-bottom: 1px solid var(--gray-100);
             background: white;
-            cursor: grab;
         }
 
-        .checklist-sortable .checklist-item:active {
-            cursor: grabbing;
-        }
-
-        .checklist-sortable .checklist-item .drag-handle {
-            cursor: grab;
-            color: var(--gray-400);
-            font-size: 1rem;
-        }
-
-        .checklist-sortable .checklist-item .drag-handle:active {
-            cursor: grabbing;
+        /* Drag handle removido - não é mais exibido */
+        .drag-handle {
+            display: none;
         }
 
         .checklist-item input[type="checkbox"] {
@@ -2585,7 +2573,7 @@
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
         let financeiroFilterTimeout = null;
-        let sortableInstances = {};
+        // Sortable não será mais utilizado - removido
         let historicoExpanded = false;
 
         // Utility Functions
@@ -5075,21 +5063,6 @@
                 }
                 filterVida();
                 
-                setTimeout(() => {
-                    document.querySelectorAll('.checklist-sortable').forEach((element) => {
-                        const colaboradorId = element.dataset.colaboradorId;
-                        if (colaboradorId && !sortableInstances[colaboradorId]) {
-                            sortableInstances[colaboradorId] = new Sortable(element, {
-                                animation: 150,
-                                handle: '.drag-handle',
-                                onEnd: function(evt) {
-                                    reordenarChecklist(colaboradorId, evt.oldIndex, evt.newIndex);
-                                }
-                            });
-                        }
-                    });
-                }, 500);
-                
             } catch (error) {
                 console.error('Error loading vida cards:', error);
                 showToast('Erro ao carregar aniversariantes', 'error');
@@ -5181,7 +5154,6 @@
                     <div class="checklist-header" onclick="toggleChecklist('${colaborador.id}')">
                         <div class="checklist-header-left">
                             <i class="fas fa-check-circle"></i> Checklist
-                            <small style="color: var(--secondary); margin-left: 5px;">(Arraste para reordenar)</small>
                         </div>
                         <i class="fas fa-chevron-down" id="checklistIcon-${colaborador.id}"></i>
                     </div>
@@ -5304,36 +5276,6 @@
             }
         }
 
-        async function reordenarChecklist(colaboradorId, oldIndex, newIndex) {
-            showLoading();
-            try {
-                const checklistSnapshot = await db.collection('checklists')
-                    .where('colaboradorId', '==', colaboradorId)
-                    .get();
-                
-                if (!checklistSnapshot.empty) {
-                    const doc = checklistSnapshot.docs[0];
-                    const data = doc.data();
-                    const itens = data.itens || [];
-                    
-                    const [movedItem] = itens.splice(oldIndex, 1);
-                    itens.splice(newIndex, 0, movedItem);
-                    
-                    await doc.ref.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    showToast('Ordem atualizada com sucesso!', 'success');
-                }
-            } catch (error) {
-                console.error('Error reordering checklist:', error);
-                showToast('Erro ao reordenar itens', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
         function getProgressWidth(checklist) {
             if (!checklist || !checklist.itens || checklist.itens.length === 0) return '0%';
             const checked = checklist.itens.filter(item => item.checked).length;
@@ -5343,13 +5285,13 @@
         function renderChecklistItems(colaboradorId, checklist, tipo) {
             const itens = checklist?.itens || getDefaultChecklistItems(tipo);
             
+            // Removido o ícone de arrastar (drag handle) e o texto sobre reordenação
             let html = `<ul class="checklist-sortable" id="checklistSortable-${colaboradorId}" data-colaborador-id="${colaboradorId}">`;
             
             itens.forEach((item, index) => {
                 const itemId = item.id || index;
                 html += `
                     <li class="checklist-item" data-item-id="${itemId}" data-item-index="${index}">
-                        <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                         <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleChecklistItem('${colaboradorId}', ${index})">
                         <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}">${item.nome}</span>
                         <div class="checklist-item-actions">
@@ -5516,21 +5458,6 @@
                 }
                 filterEmpresa();
                 
-                setTimeout(() => {
-                    document.querySelectorAll('.checklist-sortable').forEach((element) => {
-                        const colaboradorId = element.dataset.colaboradorId;
-                        if (colaboradorId && !sortableInstances[colaboradorId]) {
-                            sortableInstances[colaboradorId] = new Sortable(element, {
-                                animation: 150,
-                                handle: '.drag-handle',
-                                onEnd: function(evt) {
-                                    reordenarChecklist(colaboradorId, evt.oldIndex, evt.newIndex);
-                                }
-                            });
-                        }
-                    });
-                }, 500);
-                
             } catch (error) {
                 console.error('Error loading empresa cards:', error);
                 showToast('Erro ao carregar aniversariantes', 'error');
@@ -5673,7 +5600,6 @@
                     <div class="checklist-header" onclick="toggleChecklist('${colaborador.id}')">
                         <div class="checklist-header-left">
                             <i class="fas fa-check-circle"></i> Checklist
-                            <small style="color: var(--secondary); margin-left: 5px;">(Arraste para reordenar)</small>
                         </div>
                         <i class="fas fa-chevron-down" id="checklistIcon-${colaborador.id}"></i>
                     </div>
@@ -7266,18 +7192,6 @@
                 if (checklistContainer) {
                     checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
                     
-                    // Re-inicializar o Sortable para este checklist
-                    const sortableElement = document.getElementById(`checklistSortable-${colaboradorId}`);
-                    if (sortableElement && !sortableInstances[colaboradorId]) {
-                        sortableInstances[colaboradorId] = new Sortable(sortableElement, {
-                            animation: 150,
-                            handle: '.drag-handle',
-                            onEnd: function(evt) {
-                                reordenarChecklist(colaboradorId, evt.oldIndex, evt.newIndex);
-                            }
-                        });
-                    }
-                    
                     // Atualizar a barra de progresso
                     const progressBar = document.getElementById(`progress-${colaboradorId}`);
                     if (progressBar) {
@@ -7375,24 +7289,6 @@
                     if (checklistContainer) {
                         // Re-renderizar apenas o checklist
                         checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
-                        
-                        // Re-inicializar o Sortable para este checklist
-                        const sortableElement = document.getElementById(`checklistSortable-${colaboradorId}`);
-                        if (sortableElement) {
-                            // Destruir instância anterior se existir
-                            if (sortableInstances[colaboradorId]) {
-                                sortableInstances[colaboradorId].destroy();
-                                delete sortableInstances[colaboradorId];
-                            }
-                            
-                            sortableInstances[colaboradorId] = new Sortable(sortableElement, {
-                                animation: 150,
-                                handle: '.drag-handle',
-                                onEnd: function(evt) {
-                                    reordenarChecklist(colaboradorId, evt.oldIndex, evt.newIndex);
-                                }
-                            });
-                        }
                         
                         // Atualizar a barra de progresso
                         const progressBar = document.getElementById(`progress-${colaboradorId}`);
