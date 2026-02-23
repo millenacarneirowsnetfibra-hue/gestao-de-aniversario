@@ -23,8 +23,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
-    <!-- SortableJS para reordenação -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- SortableJS para drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -628,7 +628,7 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* Cards List - 2 por linha com reordenação */
+        /* Cards List - 2 por linha */
         .cards-list {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -648,20 +648,6 @@
             box-shadow: var(--shadow);
             transition: all 0.2s ease;
             position: relative;
-            cursor: grab;
-            user-select: none;
-        }
-
-        .person-card:active {
-            cursor: grabbing;
-            opacity: 0.8;
-            transform: scale(0.98);
-        }
-
-        .person-card.drag-over {
-            border: 2px dashed var(--primary);
-            transform: scale(1.02);
-            box-shadow: var(--shadow-lg);
         }
 
         .person-card.inactive {
@@ -761,28 +747,6 @@
             background: var(--danger);
             color: white;
             margin-left: 8px;
-        }
-
-        /* Drag Handle */
-        .drag-handle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: var(--gray-400);
-            font-size: 1.2rem;
-            cursor: grab;
-            padding: 5px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .drag-handle:hover {
-            color: var(--primary);
-            background: var(--gray-100);
-        }
-
-        .drag-handle:active {
-            cursor: grabbing;
         }
 
         /* Alertas de cidade */
@@ -944,7 +908,7 @@
             justify-content: flex-end;
         }
 
-        /* Checklist */
+        /* Checklist com ordenação */
         .checklist-container {
             margin-top: 15px;
             border-top: 1px solid var(--gray-200);
@@ -991,6 +955,7 @@
             overflow-y: auto;
         }
 
+        /* Lista de itens com drag handle */
         .checklist-sortable {
             list-style: none;
             padding: 0;
@@ -1004,6 +969,26 @@
             padding: 8px;
             border-bottom: 1px solid var(--gray-100);
             background: white;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: var(--gray-400);
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drag-handle:hover {
+            color: var(--primary);
+            background: var(--gray-100);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
         }
 
         .checklist-item input[type="checkbox"] {
@@ -2606,11 +2591,8 @@
         let reportTimeout = null;
         let dashboardFilterTimeout = null;
         let financeiroFilterTimeout = null;
+        let sortableInstances = {};
         let historicoExpanded = false;
-
-        // Sortable instances
-        let vidaSortable = null;
-        let empresaSortable = null;
 
         // Utility Functions
         function showLoading() {
@@ -5098,35 +5080,6 @@
                     filtroMes.value = mesAtual + 1;
                 }
                 filterVida();
-
-                // Inicializar Sortable para reordenação
-                if (vidaSortable) {
-                    vidaSortable.destroy();
-                }
-                
-                vidaSortable = new Sortable(container, {
-                    animation: 150,
-                    handle: '.person-card',
-                    draggable: '.person-card',
-                    ghostClass: 'drag-over',
-                    onEnd: async function(evt) {
-                        const itemEl = evt.item;
-                        const colaboradorId = itemEl.dataset.colaboradorId;
-                        const newIndex = evt.newIndex;
-                        
-                        // Reordenar os cards visualmente
-                        const cards = Array.from(container.children);
-                        cards.splice(evt.oldIndex, 1);
-                        cards.splice(newIndex, 0, itemEl);
-                        
-                        // Reconstruir o container na nova ordem
-                        container.innerHTML = '';
-                        cards.forEach(card => container.appendChild(card));
-                        
-                        // Salvar a nova ordem (opcional - você pode implementar uma lógica para salvar a ordem no Firebase se desejar)
-                        showToast('Ordem dos cards atualizada!', 'success');
-                    }
-                });
                 
             } catch (error) {
                 console.error('Error loading vida cards:', error);
@@ -5163,7 +5116,6 @@
             const observacaoId = observacao?.id || null;
             
             card.innerHTML = `
-                <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
                 <div class="person-card-header">
                     <div class="person-info">
                         <h4>${colaborador.nome || 'Sem nome'}
@@ -5357,6 +5309,7 @@
                 const itemId = item.id || index;
                 html += `
                     <li class="checklist-item" data-item-id="${itemId}" data-item-index="${index}">
+                        <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                         <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleChecklistItem('${colaboradorId}', ${index})">
                         <span class="item-text ${item.checked ? 'checked' : ''}" id="itemText-${colaboradorId}-${index}">${item.nome}</span>
                         <div class="checklist-item-actions">
@@ -5522,35 +5475,6 @@
                     filtroMes.value = mesAtual + 1;
                 }
                 filterEmpresa();
-
-                // Inicializar Sortable para reordenação
-                if (empresaSortable) {
-                    empresaSortable.destroy();
-                }
-                
-                empresaSortable = new Sortable(container, {
-                    animation: 150,
-                    handle: '.person-card',
-                    draggable: '.person-card',
-                    ghostClass: 'drag-over',
-                    onEnd: async function(evt) {
-                        const itemEl = evt.item;
-                        const colaboradorId = itemEl.dataset.colaboradorId;
-                        const newIndex = evt.newIndex;
-                        
-                        // Reordenar os cards visualmente
-                        const cards = Array.from(container.children);
-                        cards.splice(evt.oldIndex, 1);
-                        cards.splice(newIndex, 0, itemEl);
-                        
-                        // Reconstruir o container na nova ordem
-                        container.innerHTML = '';
-                        cards.forEach(card => container.appendChild(card));
-                        
-                        // Salvar a nova ordem (opcional - você pode implementar uma lógica para salvar a ordem no Firebase se desejar)
-                        showToast('Ordem dos cards atualizada!', 'success');
-                    }
-                });
                 
             } catch (error) {
                 console.error('Error loading empresa cards:', error);
@@ -5672,7 +5596,6 @@
             }
             
             card.innerHTML = `
-                <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
                 <div class="person-card-header">
                     <div class="person-info">
                         <h4>${colaborador.nome || 'Sem nome'}
@@ -7176,6 +7099,7 @@
             }
         }
 
+        // FUNÇÃO CORRIGIDA PARA ALTERNAR ITEM DO CHECKLIST
         async function toggleChecklistItem(colaboradorId, index) {
             showLoading();
             try {
@@ -7188,43 +7112,52 @@
                     const data = doc.data();
                     const itens = data.itens || [];
                     
-                    itens[index].checked = !itens[index].checked;
-                    
-                    await doc.ref.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    const checkedCount = itens.filter(item => item.checked).length;
-                    const progress = (checkedCount / itens.length) * 100;
-                    const progressBar = document.getElementById(`progress-${colaboradorId}`);
-                    if (progressBar) {
-                        progressBar.style.width = `${progress}%`;
-                    }
-                    
-                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-                    if (itemText) {
-                        if (itens[index].checked) {
-                            itemText.classList.add('checked');
-                        } else {
-                            itemText.classList.remove('checked');
+                    // Verificar se o índice existe
+                    if (index >= 0 && index < itens.length) {
+                        itens[index].checked = !itens[index].checked;
+                        
+                        await doc.ref.update({
+                            itens,
+                            dataAtualizacao: new Date()
+                        });
+                        
+                        // Atualizar interface
+                        const checkedCount = itens.filter(item => item.checked).length;
+                        const progress = (checkedCount / itens.length) * 100;
+                        const progressBar = document.getElementById(`progress-${colaboradorId}`);
+                        if (progressBar) {
+                            progressBar.style.width = `${progress}%`;
                         }
+                        
+                        const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+                        if (itemText) {
+                            if (itens[index].checked) {
+                                itemText.classList.add('checked');
+                            } else {
+                                itemText.classList.remove('checked');
+                            }
+                        }
+                        
+                        showToast('Checklist atualizado com sucesso!', 'success');
                     }
-                    
-                    showToast('Checklist atualizado com sucesso!', 'success');
                 } else {
+                    // Criar novo checklist se não existir
                     const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
                     const itens = getDefaultChecklistItems(tipo);
-                    itens[index].checked = !itens[index].checked;
                     
-                    await db.collection('checklists').add({
-                        colaboradorId,
-                        tipo,
-                        itens,
-                        dataCriacao: new Date()
-                    });
-                    
-                    showToast('Checklist criado com sucesso!', 'success');
+                    // Verificar se o índice existe
+                    if (index >= 0 && index < itens.length) {
+                        itens[index].checked = !itens[index].checked;
+                        
+                        await db.collection('checklists').add({
+                            colaboradorId,
+                            tipo,
+                            itens,
+                            dataCriacao: new Date()
+                        });
+                        
+                        showToast('Checklist criado com sucesso!', 'success');
+                    }
                 }
             } catch (error) {
                 console.error('Error updating checklist:', error);
@@ -7234,6 +7167,7 @@
             }
         }
 
+        // FUNÇÃO CORRIGIDA PARA ADICIONAR ITEM AO CHECKLIST
         async function addChecklistItem(colaboradorId) {
             const input = document.getElementById(`newItem-${colaboradorId}`);
             const itemName = input.value.trim();
@@ -7262,6 +7196,7 @@
                     itens = getDefaultChecklistItems(tipo);
                 }
                 
+                // Adicionar novo item
                 itens.push({
                     id: Date.now().toString(),
                     nome: itemName,
@@ -7282,7 +7217,7 @@
                     });
                 }
                 
-                // Atualizar a interface sem recarregar toda a página
+                // Atualizar a interface
                 const checklistContainer = document.getElementById(`checklist-${colaboradorId}`);
                 if (checklistContainer) {
                     checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
@@ -7330,19 +7265,22 @@
                     const data = doc.data();
                     const itens = data.itens || [];
                     
-                    itens[index].nome = newName;
-                    
-                    await doc.ref.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
-                    if (itemText) {
-                        itemText.textContent = newName;
+                    // Verificar se o índice existe
+                    if (index >= 0 && index < itens.length) {
+                        itens[index].nome = newName;
+                        
+                        await doc.ref.update({
+                            itens,
+                            dataAtualizacao: new Date()
+                        });
+                        
+                        const itemText = document.getElementById(`itemText-${colaboradorId}-${index}`);
+                        if (itemText) {
+                            itemText.textContent = newName;
+                        }
+                        
+                        showToast('Item atualizado com sucesso!', 'success');
                     }
-                    
-                    showToast('Item atualizado com sucesso!', 'success');
                 }
             } catch (error) {
                 console.error('Error updating checklist item:', error);
@@ -7352,7 +7290,7 @@
             }
         }
 
-        // Função corrigida para remover item do checklist (funciona para todas as abas)
+        // FUNÇÃO CORRIGIDA PARA REMOVER ITEM DO CHECKLIST
         async function removeChecklistItem(colaboradorId, index) {
             if (!confirm('Tem certeza que deseja remover este item?')) return;
             
@@ -7367,34 +7305,37 @@
                     const data = doc.data();
                     const itens = data.itens || [];
                     
-                    // Remover o item do array
-                    itens.splice(index, 1);
-                    
-                    // Atualizar no Firebase
-                    await doc.ref.update({
-                        itens,
-                        dataAtualizacao: new Date()
-                    });
-                    
-                    // Determinar o tipo baseado na seção atual
-                    const tipo = currentSection === 'vida' ? 'vida' : 'empresa';
-                    
-                    // Atualizar a interface imediatamente sem recarregar toda a página
-                    const checklistContainer = document.getElementById(`checklist-${colaboradorId}`);
-                    if (checklistContainer) {
-                        // Re-renderizar apenas o checklist
-                        checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
+                    // Verificar se o índice existe e remover
+                    if (index >= 0 && index < itens.length) {
+                        itens.splice(index, 1);
                         
-                        // Atualizar a barra de progresso
-                        const progressBar = document.getElementById(`progress-${colaboradorId}`);
-                        if (progressBar) {
-                            const checked = itens.filter(item => item.checked).length;
-                            const progress = itens.length > 0 ? (checked / itens.length) * 100 : 0;
-                            progressBar.style.width = `${progress}%`;
+                        await doc.ref.update({
+                            itens,
+                            dataAtualizacao: new Date()
+                        });
+                        
+                        // Atualizar a interface
+                        const tipo = data.tipo || (currentSection === 'vida' ? 'vida' : 'empresa');
+                        const checklistContainer = document.getElementById(`checklist-${colaboradorId}`);
+                        if (checklistContainer) {
+                            checklistContainer.innerHTML = renderChecklistItems(colaboradorId, { itens }, tipo);
+                            
+                            // Atualizar a barra de progresso
+                            const progressBar = document.getElementById(`progress-${colaboradorId}`);
+                            if (progressBar) {
+                                const checked = itens.filter(item => item.checked).length;
+                                const progress = itens.length > 0 ? (checked / itens.length) * 100 : 0;
+                                progressBar.style.width = `${progress}%`;
+                            }
                         }
+                        
+                        // Reinicializar o Sortable após remover o item
+                        setTimeout(() => {
+                            initializeSortableForColaborador(colaboradorId);
+                        }, 100);
+                        
+                        showToast('Item removido com sucesso!', 'success');
                     }
-                    
-                    showToast('Item removido com sucesso!', 'success');
                 }
             } catch (error) {
                 console.error('Error removing checklist item:', error);
@@ -7402,6 +7343,102 @@
             } finally {
                 hideLoading();
             }
+        }
+
+        // FUNÇÃO PARA SALVAR A ORDEM DO CHECKLIST APÓS REORDENAÇÃO
+        async function saveChecklistOrder(colaboradorId, newOrder) {
+            showLoading();
+            try {
+                const checklistSnapshot = await db.collection('checklists')
+                    .where('colaboradorId', '==', colaboradorId)
+                    .get();
+                
+                if (!checklistSnapshot.empty) {
+                    const doc = checklistSnapshot.docs[0];
+                    const data = doc.data();
+                    
+                    // Reordenar os itens conforme a nova ordem
+                    const reorderedItens = newOrder.map(index => data.itens[index]);
+                    
+                    await doc.ref.update({
+                        itens: reorderedItens,
+                        dataAtualizacao: new Date()
+                    });
+                    
+                    showToast('Ordem do checklist salva com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Error saving checklist order:', error);
+                showToast('Erro ao salvar ordem do checklist', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // FUNÇÃO PARA INICIALIZAR O SORTABLE EM UM CHECKLIST ESPECÍFICO
+        function initializeSortableForColaborador(colaboradorId) {
+            const el = document.getElementById(`checklistSortable-${colaboradorId}`);
+            if (el && !el.classList.contains('sortable-initialized')) {
+                // Destruir instância anterior se existir
+                if (sortableInstances[colaboradorId]) {
+                    sortableInstances[colaboradorId].destroy();
+                }
+                
+                // Criar nova instância
+                sortableInstances[colaboradorId] = new Sortable(el, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    onEnd: function(evt) {
+                        const itemElements = el.querySelectorAll('.checklist-item');
+                        const newOrder = Array.from(itemElements).map(item => 
+                            parseInt(item.dataset.itemIndex)
+                        );
+                        
+                        // Atualizar os índices nos atributos data
+                        itemElements.forEach((item, newIndex) => {
+                            item.dataset.itemIndex = newIndex;
+                            const checkbox = item.querySelector('input[type="checkbox"]');
+                            if (checkbox) {
+                                checkbox.setAttribute('onchange', `toggleChecklistItem('${colaboradorId}', ${newIndex})`);
+                            }
+                            const editBtn = item.querySelector('.edit');
+                            if (editBtn) {
+                                editBtn.setAttribute('onclick', `editChecklistItemName('${colaboradorId}', ${newIndex})`);
+                            }
+                            const deleteBtn = item.querySelector('.delete');
+                            if (deleteBtn) {
+                                deleteBtn.setAttribute('onclick', `removeChecklistItem('${colaboradorId}', ${newIndex})`);
+                            }
+                            const itemText = item.querySelector('.item-text');
+                            if (itemText) {
+                                itemText.id = `itemText-${colaboradorId}-${newIndex}`;
+                            }
+                        });
+                        
+                        // Salvar a nova ordem
+                        saveChecklistOrder(colaboradorId, newOrder);
+                    }
+                });
+                
+                el.classList.add('sortable-initialized');
+            }
+        }
+
+        // FUNÇÃO PARA INICIALIZAR TODOS OS SORTABLES APÓS CARREGAR OS CARDS
+        function initializeAllSortables() {
+            // Aguardar um pouco para garantir que os elementos foram renderizados
+            setTimeout(() => {
+                const sortableElements = document.querySelectorAll('.checklist-sortable');
+                sortableElements.forEach(el => {
+                    const colaboradorId = el.dataset.colaboradorId;
+                    if (colaboradorId) {
+                        initializeSortableForColaborador(colaboradorId);
+                    }
+                });
+            }, 500);
         }
 
         async function saveColaboradorModal() {
@@ -8161,6 +8198,11 @@
             if (checklist && icon) {
                 checklist.classList.toggle('expanded');
                 icon.style.transform = checklist.classList.contains('expanded') ? 'rotate(180deg)' : '';
+                
+                // Inicializar Sortable quando expandir
+                if (checklist.classList.contains('expanded')) {
+                    initializeSortableForColaborador(colaboradorId);
+                }
             }
         }
 
