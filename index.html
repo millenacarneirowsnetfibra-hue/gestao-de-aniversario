@@ -255,6 +255,17 @@
             border-radius: 8px;
         }
 
+        .btn-print {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: white;
+            margin-right: 12px;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(71, 85, 105, 0.4);
+        }
+
         /* Modal */
         .modal {
             display: none;
@@ -454,6 +465,19 @@
             color: #065f46;
         }
 
+        /* Header com ações */
+        .header-with-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
         /* Lançamento Card */
         .lancamento-card {
             background: white;
@@ -525,45 +549,6 @@
             justify-content: flex-end;
             gap: 16px;
             margin-top: 16px;
-        }
-
-        /* Alertas */
-        .alert {
-            padding: 16px 24px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            font-weight: 500;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #86efac;
-        }
-
-        .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Tabs */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Action buttons */
-        .action-buttons {
-            display: flex;
-            gap: 8px;
         }
 
         /* Resumo */
@@ -648,6 +633,85 @@
             margin: 4px 0;
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 16px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Tabs */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Estilos para impressão */
+        @media print {
+            .sidebar, .page-header, .filters-bar, .lancamento-card, 
+            .header-with-actions, .btn, .action-buttons, .debug-panel,
+            .resumo-info, .modal, .loading-overlay {
+                display: none !important;
+            }
+
+            .main-content {
+                padding: 0;
+                background: white;
+            }
+
+            .table-container {
+                box-shadow: none;
+                padding: 0;
+            }
+
+            table {
+                font-size: 10pt;
+            }
+
+            th {
+                background: #f1f5f9;
+                color: black;
+            }
+
+            td, th {
+                border: 1px solid #e2e8f0;
+                padding: 8px;
+            }
+
+            .badge {
+                border: 1px solid #64748b;
+                background: white !important;
+                color: black !important;
+                font-weight: normal;
+            }
         }
     </style>
 </head>
@@ -807,63 +871,17 @@
 
             <!-- LANÇAMENTOS TAB -->
             <div id="lancamentos" class="tab-content active">
-                <!-- Card de Novo Lançamento -->
-                <div class="lancamento-card">
-                    <div class="lancamento-header">
-                        <h2>➕ Novo Lançamento de Horas</h2>
+                <!-- Header com ações -->
+                <div class="header-with-actions">
+                    <h2 style="color: #0f172a;">⏱️ Banco de Horas</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-print" onclick="window.print()">
+                            🖨️ Imprimir
+                        </button>
+                        <button class="btn btn-primary" onclick="showNovoLancamentoModal()">
+                            + Novo Lançamento
+                        </button>
                     </div>
-
-                    <form id="lancamentoForm" onsubmit="event.preventDefault(); saveLancamento();">
-                        <div class="lancamento-grid">
-                            <div class="lancamento-field">
-                                <label>Colaborador *</label>
-                                <select id="lancamentoColaborador" required>
-                                    <option value="">Selecione um colaborador</option>
-                                </select>
-                            </div>
-
-                            <div class="lancamento-field">
-                                <label>Tipo *</label>
-                                <select id="lancamentoTipo" required>
-                                    <option value="positiva">➕ Horas Positivas (Extras)</option>
-                                    <option value="negativa">➖ Horas Negativas (Débitos)</option>
-                                </select>
-                            </div>
-
-                            <div class="lancamento-field">
-                                <label>Quantidade (HH:MM) *</label>
-                                <input type="text" id="lancamentoHoras" placeholder="00:00" value="00:00" required>
-                            </div>
-
-                            <div class="lancamento-field">
-                                <label>Competência *</label>
-                                <div class="competencia-picker">
-                                    <select id="lancamentoMes" required>
-                                        <option value="01">Janeiro</option>
-                                        <option value="02">Fevereiro</option>
-                                        <option value="03">Março</option>
-                                        <option value="04">Abril</option>
-                                        <option value="05">Maio</option>
-                                        <option value="06">Junho</option>
-                                        <option value="07">Julho</option>
-                                        <option value="08">Agosto</option>
-                                        <option value="09">Setembro</option>
-                                        <option value="10">Outubro</option>
-                                        <option value="11">Novembro</option>
-                                        <option value="12">Dezembro</option>
-                                    </select>
-                                    <select id="lancamentoAno" required>
-                                        <!-- Anos preenchidos via JS (2020-2030) -->
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="lancamento-actions">
-                            <button type="button" class="btn btn-secondary" onclick="limparFormulario()">Limpar</button>
-                            <button type="submit" class="btn btn-primary">Salvar Lançamento</button>
-                        </div>
-                    </form>
                 </div>
 
                 <!-- Filtros Automáticos -->
@@ -1026,7 +1044,63 @@
         </div>
     </div>
 
-    <!-- Modais -->
+    <!-- Modal de Novo Lançamento -->
+    <div id="novoLancamentoModal" class="modal">
+        <div class="modal-content">
+            <h2>➕ Novo Lançamento de Horas</h2>
+            <form id="novoLancamentoForm" onsubmit="event.preventDefault(); salvarNovoLancamento();">
+                <div class="form-group">
+                    <label>Colaborador *</label>
+                    <select id="novoLancamentoColaborador" required>
+                        <option value="">Selecione um colaborador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo *</label>
+                    <select id="novoLancamentoTipo" required>
+                        <option value="positiva">➕ Horas Positivas (Extras)</option>
+                        <option value="negativa">➖ Horas Negativas (Débitos)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Quantidade (HH:MM) *</label>
+                    <input type="text" id="novoLancamentoHoras" placeholder="00:00" value="00:00" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Competência *</label>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="novoLancamentoMes" required style="flex: 1;">
+                            <option value="01">Janeiro</option>
+                            <option value="02">Fevereiro</option>
+                            <option value="03">Março</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Maio</option>
+                            <option value="06">Junho</option>
+                            <option value="07">Julho</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                        <select id="novoLancamentoAno" required style="flex: 1;">
+                            <!-- Anos preenchidos via JS (2020-2030) -->
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="hideModal('novoLancamentoModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Salvar Lançamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modais existentes -->
     <div id="colaboradorModal" class="modal">
         <div class="modal-content">
             <h2 id="colaboradorModalTitle">Novo Colaborador</h2>
@@ -1309,7 +1383,109 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             document.getElementById(modalId).style.display = 'none';
         }
 
-        // Função para recarregar dados manualmente
+        function showNovoLancamentoModal() {
+            if (!firebaseConnected) {
+                alert('Sem conexão com o Firebase.');
+                return;
+            }
+            
+            if (colaboradores.length === 0) {
+                alert('Cadastre colaboradores primeiro!');
+                showTab('colaboradores');
+                return;
+            }
+            
+            // Carregar colaboradores no select
+            const select = document.getElementById('novoLancamentoColaborador');
+            select.innerHTML = '<option value="">Selecione um colaborador</option>';
+            colaboradores.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(colab => {
+                const status = colab.ativo !== false ? '' : ' (Inativo)';
+                select.innerHTML += `<option value="${colab.id}">${colab.nome}${status}</option>`;
+            });
+            
+            // Preencher anos
+            const anoSelect = document.getElementById('novoLancamentoAno');
+            anoSelect.innerHTML = '';
+            for (let i = 2020; i <= 2030; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === new Date().getFullYear()) option.selected = true;
+                anoSelect.appendChild(option);
+            }
+            
+            // Resetar formulário
+            document.getElementById('novoLancamentoForm').reset();
+            document.getElementById('novoLancamentoHoras').value = '00:00';
+            
+            document.getElementById('novoLancamentoModal').style.display = 'block';
+        }
+
+        async function salvarNovoLancamento() {
+            const colaboradorId = document.getElementById('novoLancamentoColaborador').value;
+            const tipo = document.getElementById('novoLancamentoTipo').value;
+            const horaStr = document.getElementById('novoLancamentoHoras').value;
+            const mes = document.getElementById('novoLancamentoMes').value;
+            const ano = document.getElementById('novoLancamentoAno').value;
+
+            if (!colaboradorId || !tipo || !horaStr || !mes || !ano) {
+                alert('Preencha todos os campos obrigatórios!');
+                return;
+            }
+
+            if (!isValidHora(horaStr)) {
+                alert('Formato de hora inválido! Use HH:MM (ex: 08:30)');
+                return;
+            }
+
+            const horas = horaParaDecimal(horaStr);
+            if (horas < 0) {
+                alert('A quantidade de horas não pode ser negativa!');
+                return;
+            }
+
+            const colaborador = colaboradores.find(c => c.id === colaboradorId);
+            if (!colaborador) {
+                alert('Colaborador não encontrado!');
+                return;
+            }
+
+            const data = `01/${mes}/${ano}`;
+
+            showLoading(true);
+            addDebugLog('Salvando lançamento', { colaboradorId, tipo, horas, mes, ano });
+            
+            try {
+                const lancamentoData = {
+                    colaboradorId: colaboradorId,
+                    colaboradorNome: colaborador.nome || '',
+                    colaboradorDepartamento: colaborador.departamento || '',
+                    data: data,
+                    mes: mes,
+                    ano: ano,
+                    tipo: tipo,
+                    horas: horas,
+                    saldoRestante: horas,
+                    compensacoes: [],
+                    createdAt: new Date().toISOString()
+                };
+
+                await db.collection('lancamentos').add(lancamentoData);
+                addDebugLog('Lançamento salvo com sucesso');
+                
+                await loadData();
+                
+                hideModal('novoLancamentoModal');
+                aplicarFiltros();
+                alert('Lançamento realizado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar lançamento:', error);
+                addDebugLog('Erro ao salvar lançamento', error.message);
+                alert('Erro ao salvar: ' + error.message);
+            }
+            showLoading(false);
+        }
+
         function recarregarDados() {
             if (firebaseConnected) {
                 addDebugLog('Recarregando dados manualmente');
@@ -1826,18 +2002,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                     });
                 }
             });
-
-            const lancamentoAno = document.getElementById('lancamentoAno');
-            if (lancamentoAno) {
-                lancamentoAno.innerHTML = '';
-                anos.forEach(ano => {
-                    const option = document.createElement('option');
-                    option.value = ano;
-                    option.textContent = ano;
-                    if (ano === new Date().getFullYear()) option.selected = true;
-                    lancamentoAno.appendChild(option);
-                });
-            }
         }
 
         // Carregar selects
@@ -1861,14 +2025,10 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             const filtroColab = document.getElementById('filtroColaborador');
             filtroColab.innerHTML = '<option value="">Todos os colaboradores</option>';
             
-            const lancamentoColab = document.getElementById('lancamentoColaborador');
-            lancamentoColab.innerHTML = '<option value="">Selecione um colaborador</option>';
-            
             colaboradores.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(colab => {
                 const status = colab.ativo !== false ? '' : ' (Inativo)';
                 const optionText = `${colab.nome}${status}`;
                 filtroColab.innerHTML += `<option value="${colab.id}">${optionText}</option>`;
-                lancamentoColab.innerHTML += `<option value="${colab.id}">${optionText}</option>`;
             });
 
             const filtroDepto = document.getElementById('filtroDepartamento');
@@ -2020,73 +2180,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                 hideModal('colaboradorModal');
             } catch (error) {
                 console.error('Erro ao salvar colaborador:', error);
-                alert('Erro ao salvar: ' + error.message);
-            }
-            showLoading(false);
-        }
-
-        async function saveLancamento() {
-            const colaboradorId = document.getElementById('lancamentoColaborador').value;
-            const tipo = document.getElementById('lancamentoTipo').value;
-            const horaStr = document.getElementById('lancamentoHoras').value;
-            const mes = document.getElementById('lancamentoMes').value;
-            const ano = document.getElementById('lancamentoAno').value;
-
-            if (!colaboradorId || !tipo || !horaStr || !mes || !ano) {
-                alert('Preencha todos os campos obrigatórios!');
-                return;
-            }
-
-            if (!isValidHora(horaStr)) {
-                alert('Formato de hora inválido! Use HH:MM (ex: 08:30)');
-                return;
-            }
-
-            const horas = horaParaDecimal(horaStr);
-            if (horas < 0) {
-                alert('A quantidade de horas não pode ser negativa!');
-                return;
-            }
-
-            const colaborador = colaboradores.find(c => c.id === colaboradorId);
-            if (!colaborador) {
-                alert('Colaborador não encontrado!');
-                return;
-            }
-
-            const data = `01/${mes}/${ano}`;
-
-            showLoading(true);
-            addDebugLog('Salvando lançamento', { colaboradorId, tipo, horas, mes, ano });
-            
-            try {
-                const lancamentoData = {
-                    colaboradorId: colaboradorId,
-                    colaboradorNome: colaborador.nome || '',
-                    colaboradorDepartamento: colaborador.departamento || '',
-                    data: data,
-                    mes: mes,
-                    ano: ano,
-                    tipo: tipo,
-                    horas: horas,
-                    saldoRestante: horas,
-                    compensacoes: [],
-                    createdAt: new Date().toISOString()
-                };
-
-                await db.collection('lancamentos').add(lancamentoData);
-                addDebugLog('Lançamento salvo com sucesso');
-                
-                await loadData();
-                
-                document.getElementById('lancamentoHoras').value = '00:00';
-                document.getElementById('lancamentoColaborador').value = '';
-                
-                aplicarFiltros();
-                alert('Lançamento realizado com sucesso!');
-            } catch (error) {
-                console.error('Erro ao salvar lançamento:', error);
-                addDebugLog('Erro ao salvar lançamento', error.message);
                 alert('Erro ao salvar: ' + error.message);
             }
             showLoading(false);
