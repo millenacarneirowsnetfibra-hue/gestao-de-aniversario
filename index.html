@@ -465,6 +465,45 @@
             color: #065f46;
         }
 
+        /* Tooltip para compensações */
+        .compensacoes-tooltip {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dotted #64748b;
+        }
+
+        .compensacoes-tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            white-space: pre-line;
+            z-index: 1000;
+            min-width: 200px;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+
+        .compensacoes-tooltip:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1e293b;
+            margin-bottom: -5px;
+            z-index: 1000;
+        }
+
         /* Header com ações */
         .header-with-actions {
             display: flex;
@@ -579,7 +618,8 @@
         /* Estilos para impressão */
         @media print {
             .sidebar, .page-header, .filters-bar, .header-with-actions, 
-            .btn, .action-buttons, .resumo-info, .modal, .loading-overlay {
+            .btn, .action-buttons, .resumo-info, .modal, .loading-overlay,
+            .compensacoes-tooltip:hover::after, .compensacoes-tooltip:hover::before {
                 display: none !important;
             }
 
@@ -1581,6 +1621,23 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             return saldosPorLancamento;
         }
 
+        // Função para gerar tooltip de compensações
+        function gerarTooltipCompensacoes(lancamento) {
+            if (!lancamento.compensacoes || lancamento.compensacoes.length === 0) {
+                return 'Nenhuma compensação registrada';
+            }
+
+            let tooltip = 'Compensado com:\n';
+            lancamento.compensacoes.forEach(comp => {
+                const lancComp = lancamentos.find(l => l.id === comp.lancamentoId);
+                if (lancComp) {
+                    const competencia = formatarCompetencia(lancComp.mes, lancComp.ano);
+                    tooltip += `${competencia}: ${decimalParaHora(comp.quantidade)}\n`;
+                }
+            });
+            return tooltip;
+        }
+
         // Função principal de compensação de horas
         function processarCompensacoes() {
             
@@ -1797,7 +1854,7 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             }
             
             const selects = [
-                'lancamentoAno', 
+                'novoLancamentoAno',
                 'filtroAno', 
                 'editLancamentoAno'
             ];
@@ -2244,9 +2301,13 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                 
                 // Horas que faltam compensar ou "Completo" para hora zero
                 const horasFaltantes = lanc.horas === 0 ? 0 : (lanc.saldoRestante || 0);
+                
+                // Gerar tooltip com as compensações
+                const tooltipText = gerarTooltipCompensacoes(lanc);
+                
                 const compensacoesText = horasFaltantes > 0 ? 
-                    `<span class="badge badge-warning">Falta ${decimalParaHora(horasFaltantes)}</span>` : 
-                    `<span class="badge badge-success">Completo</span>`;
+                    `<span class="badge badge-warning compensacoes-tooltip" data-tooltip="${tooltipText}">Falta ${decimalParaHora(horasFaltantes)}</span>` : 
+                    `<span class="badge badge-success compensacoes-tooltip" data-tooltip="${tooltipText}">Completo</span>`;
 
                 tbody.innerHTML += `
                     <tr>
