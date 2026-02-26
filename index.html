@@ -478,79 +478,6 @@
             gap: 12px;
         }
 
-        /* Lançamento Card */
-        .lancamento-card {
-            background: white;
-            border-radius: 24px;
-            padding: 32px;
-            margin-bottom: 32px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-        }
-
-        .lancamento-header {
-            margin-bottom: 24px;
-        }
-
-        .lancamento-header h2 {
-            color: #0f172a;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .lancamento-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .lancamento-field {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .lancamento-field label {
-            margin-bottom: 8px;
-            color: #334155;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .lancamento-field select,
-        .lancamento-field input {
-            padding: 14px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            font-size: 1rem;
-            background: white;
-            transition: all 0.2s;
-        }
-
-        .lancamento-field select:focus,
-        .lancamento-field input:focus {
-            border-color: #3b82f6;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-        }
-
-        .competencia-picker {
-            display: flex;
-            gap: 8px;
-        }
-
-        .competencia-picker select {
-            flex: 1;
-        }
-
-        .lancamento-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 16px;
-            margin-top: 16px;
-        }
-
         /* Resumo */
         .resumo-info {
             background: #f8fafc;
@@ -610,31 +537,6 @@
             margin-bottom: 20px;
         }
 
-        /* Debug Panel */
-        .debug-panel {
-            background: #1e293b;
-            color: #e2e8f0;
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .debug-panel.visible {
-            display: block;
-        }
-
-        .debug-panel pre {
-            color: #10b981;
-            margin: 4px 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
         /* Alertas */
         .alert {
             padding: 16px 24px;
@@ -676,9 +578,8 @@
 
         /* Estilos para impressão */
         @media print {
-            .sidebar, .page-header, .filters-bar, .lancamento-card, 
-            .header-with-actions, .btn, .action-buttons, .debug-panel,
-            .resumo-info, .modal, .loading-overlay {
+            .sidebar, .page-header, .filters-bar, .header-with-actions, 
+            .btn, .action-buttons, .resumo-info, .modal, .loading-overlay {
                 display: none !important;
             }
 
@@ -727,13 +628,13 @@
                 <h2>⏰ Banco de Horas</h2>
             </div>
             <ul class="sidebar-nav">
-                <li onclick="showTab('dashboard')">
+                <li class="active" onclick="showTab('dashboard')">
                     <span>📊</span> Dashboard
                 </li>
                 <li onclick="showTab('colaboradores')">
                     <span>👥</span> Colaboradores
                 </li>
-                <li class="active" onclick="showTab('lancamentos')">
+                <li onclick="showTab('lancamentos')">
                     <span>⏱️</span> Banco de Horas
                 </li>
                 <li onclick="showTab('configuracoes')">
@@ -754,7 +655,7 @@
             </div>
 
             <!-- Dashboard Tab -->
-            <div id="dashboard" class="tab-content">
+            <div id="dashboard" class="tab-content active">
                 <div class="dashboard-grid">
                     <div class="stat-card">
                         <div class="stat-header">
@@ -870,7 +771,7 @@
             </div>
 
             <!-- LANÇAMENTOS TAB -->
-            <div id="lancamentos" class="tab-content active">
+            <div id="lancamentos" class="tab-content">
                 <!-- Header com ações -->
                 <div class="header-with-actions">
                     <h2 style="color: #0f172a;">⏱️ Banco de Horas</h2>
@@ -901,7 +802,7 @@
                     </div>
 
                     <div class="filter-group">
-                        <label>Status</label>
+                        <label>Status Colaborador</label>
                         <select id="filtroStatus" onchange="aplicarFiltros()">
                             <option value="todos">Todos</option>
                             <option value="ativos" selected>Ativos</option>
@@ -933,16 +834,6 @@
                             </select>
                         </div>
                     </div>
-                    
-                    <div class="filter-group" style="justify-content: flex-end;">
-                        <label>Status do Lançamento</label>
-                        <select id="filtroStatusLancamento" onchange="aplicarFiltros()">
-                            <option value="">Todos</option>
-                            <option value="pendente">Pendente</option>
-                            <option value="compensada">Compensada</option>
-                            <option value="vencida">Vencida</option>
-                        </select>
-                    </div>
                 </div>
 
                 <!-- Resumo do Saldo do Colaborador Selecionado -->
@@ -961,12 +852,7 @@
                 <div class="table-container">
                     <div class="header-with-refresh">
                         <h3 style="margin-bottom: 0;">📋 Histórico de Lançamentos</h3>
-                        <div>
-                            <span id="contadorLancamentos" style="color: #64748b; margin-right: 16px;">0 lançamentos</span>
-                            <button class="btn btn-secondary btn-small" onclick="toggleDebug()">
-                                🔧 Debug
-                            </button>
-                        </div>
+                        <span id="contadorLancamentos" style="color: #64748b;">0 lançamentos</span>
                     </div>
                     
                     <div id="semResultadosMsg" style="text-align: center; padding: 40px; color: #64748b; display: none;">
@@ -990,12 +876,6 @@
                             <!-- Lançamentos serão inseridos aqui -->
                         </tbody>
                     </table>
-                    
-                    <!-- Painel de Debug -->
-                    <div id="debugPanel" class="debug-panel">
-                        <h4 style="color: white; margin-bottom: 10px;">📋 Debug - Últimos logs:</h4>
-                        <div id="debugLogs"></div>
-                    </div>
                 </div>
             </div>
 
@@ -1281,35 +1161,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
         let app;
         let db;
         let firebaseConnected = false;
-        let debugMode = false;
-        let debugLogs = [];
-
-        function addDebugLog(message, data = null) {
-            const timestamp = new Date().toLocaleTimeString();
-            const log = `[${timestamp}] ${message}` + (data ? `: ${JSON.stringify(data)}` : '');
-            debugLogs.unshift(log);
-            if (debugLogs.length > 50) debugLogs.pop();
-            
-            if (debugMode) {
-                const debugPanel = document.getElementById('debugLogs');
-                if (debugPanel) {
-                    debugPanel.innerHTML = debugLogs.map(log => `<pre>${log}</pre>`).join('');
-                }
-            }
-            console.log(log);
-        }
-
-        function toggleDebug() {
-            debugMode = !debugMode;
-            const panel = document.getElementById('debugPanel');
-            if (panel) {
-                panel.classList.toggle('visible');
-                if (debugMode) {
-                    const debugPanel = document.getElementById('debugLogs');
-                    debugPanel.innerHTML = debugLogs.map(log => `<pre>${log}</pre>`).join('');
-                }
-            }
-        }
 
         try {
             app = firebase.initializeApp(firebaseConfig);
@@ -1323,19 +1174,16 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                 .then(() => {
                     console.log('Firebase conectado com sucesso!');
                     firebaseConnected = true;
-                    addDebugLog('Firebase conectado');
                     loadData();
                 })
                 .catch((error) => {
                     console.error('Erro ao testar conexão:', error);
                     firebaseConnected = false;
-                    addDebugLog('Erro ao conectar Firebase', error.message);
                     alert('Erro ao conectar com Firebase. Verifique sua conexão.');
                 });
         } catch (error) {
             console.error('Erro ao inicializar Firebase:', error);
             firebaseConnected = false;
-            addDebugLog('Erro ao inicializar Firebase', error.message);
         }
 
         // Variáveis globais
@@ -1453,7 +1301,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             const data = `01/${mes}/${ano}`;
 
             showLoading(true);
-            addDebugLog('Salvando lançamento', { colaboradorId, tipo, horas, mes, ano });
             
             try {
                 const lancamentoData = {
@@ -1471,7 +1318,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                 };
 
                 await db.collection('lancamentos').add(lancamentoData);
-                addDebugLog('Lançamento salvo com sucesso');
                 
                 await loadData();
                 
@@ -1480,7 +1326,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                 alert('Lançamento realizado com sucesso!');
             } catch (error) {
                 console.error('Erro ao salvar lançamento:', error);
-                addDebugLog('Erro ao salvar lançamento', error.message);
                 alert('Erro ao salvar: ' + error.message);
             }
             showLoading(false);
@@ -1488,7 +1333,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
 
         function recarregarDados() {
             if (firebaseConnected) {
-                addDebugLog('Recarregando dados manualmente');
                 loadData();
             } else {
                 alert('Sem conexão com o Firebase.');
@@ -1636,11 +1480,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             document.getElementById('importModal').style.display = 'block';
         }
 
-        function limparFormulario() {
-            document.getElementById('lancamentoForm').reset();
-            document.getElementById('lancamentoHoras').value = '00:00';
-        }
-
         // Funções de conversão de horas
         function horaParaDecimal(horaStr) {
             const [horas, minutos] = horaStr.split(':').map(Number);
@@ -1744,7 +1583,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
 
         // Função principal de compensação de horas
         function processarCompensacoes() {
-            addDebugLog('Iniciando processamento de compensações');
             
             // Agrupar lançamentos por colaborador
             const lancamentosPorColaborador = {};
@@ -1829,20 +1667,12 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                                 data: new Date().toLocaleDateString('pt-BR')
                             });
 
-                            addDebugLog('Compensação realizada', {
-                                de: lancAtual.id,
-                                para: lancOposto.id,
-                                quantidade: quantidadeCompensar
-                            });
-
                             // Se o lançamento atual foi completamente compensado, sair do loop
                             if (lancAtual.saldoRestante === 0) break;
                         }
                     }
                 }
             });
-
-            addDebugLog('Processamento de compensações concluído');
         }
 
         // Função para normalizar dados do lançamento
@@ -1883,7 +1713,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             }
             
             showLoading(true);
-            addDebugLog('Iniciando carregamento de dados');
             
             try {
                 // Carregar empresas
@@ -1893,7 +1722,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                     nome: doc.data().nome
                 }));
                 empresas = empresasDocs.map(doc => doc.nome);
-                addDebugLog('Empresas carregadas', empresas.length);
 
                 // Carregar departamentos
                 const departamentosSnapshot = await db.collection('departamentos').get();
@@ -1902,7 +1730,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                     nome: doc.data().nome
                 }));
                 departamentos = departamentosDocs.map(doc => doc.nome);
-                addDebugLog('Departamentos carregados', departamentos.length);
 
                 // Carregar colaboradores
                 const colaboradoresSnapshot = await db.collection('colaboradores').get();
@@ -1916,14 +1743,11 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                     const nomeB = (b.nome || '').toLowerCase();
                     return nomeA.localeCompare(nomeB);
                 });
-                addDebugLog('Colaboradores carregados', colaboradores.length);
 
                 // Carregar lançamentos
                 const lancamentosSnapshot = await db.collection('lancamentos').get();
                 
                 lancamentos = lancamentosSnapshot.docs.map(doc => normalizarLancamento(doc));
-                
-                addDebugLog('Lançamentos carregados', lancamentos.length);
 
                 // Processar compensações
                 processarCompensacoes();
@@ -1940,11 +1764,9 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                 });
 
                 updateAllTables();
-                addDebugLog('Dados carregados com sucesso');
                 
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
-                addDebugLog('Erro ao carregar dados', error.message);
                 alert('Erro ao carregar dados: ' + error.message);
             } finally {
                 showLoading(false);
@@ -1962,7 +1784,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
                         saldoRestante: lanc.saldoRestante || lanc.horas
                     });
                 }
-                addDebugLog('Compensações salvas no Firebase');
             } catch (error) {
                 console.error('Erro ao salvar compensações:', error);
             }
@@ -2322,9 +2143,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             const status = document.getElementById('filtroStatus').value;
             const mes = document.getElementById('filtroMes').value;
             const ano = document.getElementById('filtroAno').value;
-            const statusLancamento = document.getElementById('filtroStatusLancamento').value;
-
-            addDebugLog('Aplicando filtros', { colaboradorId, departamento, status, mes, ano, statusLancamento });
 
             let lancamentosFiltrados = [...lancamentos];
 
@@ -2350,16 +2168,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
             }
             if (ano) {
                 lancamentosFiltrados = lancamentosFiltrados.filter(l => l.ano === ano);
-            }
-
-            if (statusLancamento) {
-                lancamentosFiltrados = lancamentosFiltrados.filter(l => {
-                    const statusInfo = calcularStatus(l);
-                    if (statusLancamento === 'pendente') return statusInfo.texto !== 'Compensada';
-                    if (statusLancamento === 'compensada') return statusInfo.texto === 'Compensada';
-                    if (statusLancamento === 'vencida') return statusInfo.texto === 'Vencida';
-                    return true;
-                });
             }
 
             document.getElementById('contadorLancamentos').textContent = `${lancamentosFiltrados.length} lançamentos`;
@@ -2773,7 +2581,6 @@ Maria Santos,15/03/2023,RH,Empresa B</pre>
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             preencherAnos();
-            document.getElementById('lancamentoHoras').value = '00:00';
         });
     </script>
 </body>
